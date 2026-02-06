@@ -42,14 +42,14 @@
 
 <section id={project.id} class="relative px-6 py-12 md:px-12 lg:py-20">
 	<div
-		class="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16"
+		class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16"
 		class:lg:grid-cols-[2fr_3fr]={reversed}
 	>
 		<!-- Images container -->
 		<div class="image-grid" class:lg:order-2={reversed}>
 			{#each tiles as image, i}
 				<div
-					class="overflow-hidden rounded-lg"
+					class="bg-surface overflow-hidden rounded-lg shadow-sm"
 					style="grid-column: {placement[i].col}; grid-row: {placement[i].row};"
 				>
 					<img
@@ -63,7 +63,7 @@
 		</div>
 
 		<!-- Text column -->
-		<div class="flex flex-col justify-center" class:lg:order-1={reversed} use:scrollReveal>
+		<div class="flex flex-col justify-start" class:lg:order-1={reversed} use:scrollReveal>
 			<h2 class="font-heading text-text text-2xl font-bold sm:text-3xl lg:text-5xl">
 				{project.name}
 			</h2>
@@ -81,7 +81,5 @@
 		grid-template-rows: 1fr 1fr;
 		gap: 6px;
 		aspect-ratio: 4 / 3;
-		overflow: hidden;
-		border-radius: 12px;
 	}
 </style>
