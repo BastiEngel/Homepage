@@ -102,6 +102,7 @@
 		font-family: var(--font-body);
 		transition: border-color 0.2s, box-shadow 0.2s;
 		outline: none;
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
 	}
 
 	.form-input::placeholder {
