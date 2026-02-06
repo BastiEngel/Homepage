@@ -1,0 +1,123 @@
+[
+	{
+		"id": "brand-refresh",
+		"name": "Brand Refresh",
+		"description": "Complete visual identity overhaul for a fintech startup, including logo redesign, color system, typography, and comprehensive brand guidelines.",
+		"role": "Lead Brand Designer",
+		"year": "2024",
+		"client": "FinFlow",
+		"tags": ["Branding", "Visual Identity", "Design Systems"],
+		"cover": "/images/projects/brand-refresh/cover.webp",
+		"images": [
+			{
+				"src": "/images/projects/brand-refresh/detail-01.webp",
+				"alt": "Logo variations and usage guidelines",
+				"tileSize": "medium"
+			},
+			{
+				"src": "/images/projects/brand-refresh/detail-02.webp",
+				"alt": "Color palette and typography system",
+				"tileSize": "small"
+			},
+			{
+				"src": "/images/projects/brand-refresh/detail-03.webp",
+				"alt": "Brand collateral mockups",
+				"tileSize": "small"
+			}
+		],
+		"externalUrl": "https://behance.net/gallery/brand-refresh",
+		"featured": true
+	},
+	{
+		"id": "mobile-banking",
+		"name": "Mobile Banking App",
+		"description": "End-to-end UX/UI design for a next-generation mobile banking experience, focused on simplifying complex financial tasks for everyday users.",
+		"role": "Senior Product Designer",
+		"year": "2024",
+		"client": "NeoBank",
+		"tags": ["UX Design", "Mobile App", "Fintech"],
+		"cover": "/images/projects/mobile-banking/cover.webp",
+		"images": [
+			{
+				"src": "/images/projects/mobile-banking/detail-01.webp",
+				"alt": "App home screen with account overview",
+				"tileSize": "large"
+			},
+			{
+				"src": "/images/projects/mobile-banking/detail-02.webp",
+				"alt": "Transaction history and categorization",
+				"tileSize": "medium"
+			}
+		],
+		"externalUrl": "https://behance.net/gallery/mobile-banking",
+		"featured": true
+	},
+	{
+		"id": "ecommerce-redesign",
+		"name": "E-Commerce Redesign",
+		"description": "Redesigned the shopping experience for a luxury fashion retailer, increasing conversion by 34% through streamlined checkout and improved product discovery.",
+		"role": "Product Designer",
+		"year": "2023",
+		"client": "Maison Luxe",
+		"tags": ["E-Commerce", "UX Research", "UI Design"],
+		"cover": "/images/projects/ecommerce-redesign/cover.webp",
+		"images": [
+			{
+				"src": "/images/projects/ecommerce-redesign/detail-01.webp",
+				"alt": "Product listing page with filtering",
+				"tileSize": "medium"
+			},
+			{
+				"src": "/images/projects/ecommerce-redesign/detail-02.webp",
+				"alt": "Product detail page",
+				"tileSize": "small"
+			},
+			{
+				"src": "/images/projects/ecommerce-redesign/detail-03.webp",
+				"alt": "Checkout flow redesign",
+				"tileSize": "small"
+			},
+			{
+				"src": "/images/projects/ecommerce-redesign/detail-04.webp",
+				"alt": "Mobile responsive views",
+				"tileSize": "large"
+			}
+		],
+		"featured": true
+	},
+	{
+		"id": "health-dashboard",
+		"name": "Health Dashboard",
+		"description": "Data visualization dashboard for healthcare professionals, turning complex patient data into actionable insights with an intuitive interface.",
+		"role": "UX/UI Designer",
+		"year": "2023",
+		"client": "MedViz",
+		"tags": ["Dashboard", "Data Viz", "Healthcare"],
+		"cover": "/images/projects/health-dashboard/cover.webp",
+		"images": [
+			{
+				"src": "/images/projects/health-dashboard/detail-01.webp",
+				"alt": "Main dashboard overview with patient metrics",
+				"tileSize": "large"
+			},
+			{
+				"src": "/images/projects/health-dashboard/detail-02.webp",
+				"alt": "Detailed patient timeline view",
+				"tileSize": "medium"
+			}
+		],
+		"featured": true
+	},
+	{
+		"id": "about",
+		"name": "About Me",
+		"description": "I'm a product designer with a passion for creating intuitive, beautiful digital experiences. With over 5 years of experience spanning UX research, interface design, and brand identity, I help companies turn complex problems into elegant solutions.",
+		"role": "",
+		"year": "",
+		"client": "",
+		"tags": [],
+		"cover": "/images/projects/about/cover.webp",
+		"images": [],
+		"featured": true
+	}
+]
