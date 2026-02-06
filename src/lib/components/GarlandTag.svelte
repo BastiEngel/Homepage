@@ -10,6 +10,7 @@
 
 	let { project, point, index }: Props = $props();
 
+	const threadLength = 20 + Math.random() * 20;
 	const swayDuration = 3 + Math.random() * 2;
 	const swayDelay = Math.random() * 2;
 
@@ -25,10 +26,18 @@
 	}
 </script>
 
+<!-- Anchor at the line point, tag dangles below -->
 <div
-	class="garland-tag absolute z-10 hidden -translate-x-1/2 -translate-y-1/2 sm:block"
+	class="garland-tag absolute z-10 hidden -translate-x-1/2 sm:block"
 	style="left: {point.x}px; top: {point.y}px; --sway-duration: {swayDuration}s; --sway-delay: {swayDelay}s;"
 >
+	<!-- Thread -->
+	<div
+		class="bg-line mx-auto"
+		style="width: 2px; height: {threadLength}px;"
+	></div>
+
+	<!-- Tag card -->
 	<button
 		onclick={scrollToProject}
 		onkeydown={handleKeydown}
@@ -46,6 +55,7 @@
 
 <style>
 	.garland-tag {
+		transform-origin: top center;
 		animation: sway var(--sway-duration) ease-in-out var(--sway-delay) infinite;
 	}
 
@@ -63,10 +73,10 @@
 	@keyframes sway {
 		0%,
 		100% {
-			transform: translate(-50%, -50%) rotate(-1.5deg);
+			transform: translateX(-50%) rotate(-2deg);
 		}
 		50% {
-			transform: translate(-50%, -50%) rotate(1.5deg);
+			transform: translateX(-50%) rotate(2deg);
 		}
 	}
 </style>
