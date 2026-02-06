@@ -98,7 +98,6 @@
 </script>
 
 <svg
-	bind:this={svgElement}
 	class="pointer-events-none absolute top-0 left-0 z-0 hidden sm:block"
 	width={pageWidth}
 	height={pageHeight}
