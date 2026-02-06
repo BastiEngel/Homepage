@@ -12,12 +12,48 @@
 
 	const swayDuration = 2.5 + Math.random() * 1.5;
 	const swayDelay = Math.random() * 2;
-	const sheenDelay = 2 + Math.random() * 3;
+	const variant = (index % 2) + 1;
+
+	// Offset the line segment along the path tangent to thread through one side of the ring
+	const angleRad = ((point.angle ?? 0) * Math.PI) / 180;
+	const lineOffsetX = Math.cos(angleRad) * -31;
+	const lineOffsetY = Math.sin(angleRad) * -31;
 
 	let pendulumEl: HTMLElement | undefined = $state();
 	let pushAngle = $state(0);
+	let swayAngle = $state(0);
+	let hovered = $state(false);
+	let swayBlend = 1; // 1 = full sway, 0 = no sway (smooth blend)
+	let sheenPos = $derived(50 + (swayAngle + pushAngle) * 3);
 
-	// Spring physics
+	// Idle sway driven by JS for perfect sheen sync
+	const swayAmplitude = 6;
+	const swaySpeed = (2 * Math.PI) / swayDuration;
+	let startTime = 0;
+	let swayRunning = false;
+
+	function swayTick(now: number) {
+		if (!swayRunning) return;
+		if (!startTime) startTime = now + swayDelay * 1000;
+
+		// Smoothly blend sway in/out on hover
+		const blendTarget = hovered ? 0 : 1;
+		swayBlend += (blendTarget - swayBlend) * 0.04;
+
+		if (now >= startTime) {
+			const t = (now - startTime) / 1000;
+			swayAngle = Math.sin(t * swaySpeed) * swayAmplitude * swayBlend;
+		}
+		requestAnimationFrame(swayTick);
+	}
+
+	$effect(() => {
+		swayRunning = true;
+		requestAnimationFrame(swayTick);
+		return () => { swayRunning = false; };
+	});
+
+	// Spring physics for mouse interaction
 	let angle = 0;
 	let velocity = 0;
 	let target = 0;
@@ -59,6 +95,10 @@
 		}
 	}
 
+	function handleMouseEnter() {
+		hovered = true;
+	}
+
 	function handleMouseMove(e: MouseEvent) {
 		if (!pendulumEl) return;
 		const rect = pendulumEl.getBoundingClientRect();
@@ -69,7 +109,7 @@
 	}
 
 	function handleMouseLeave() {
-		// Give a little extra kick in current direction for a natural bounce-back
+		hovered = false;
 		velocity += velocity * 0.5;
 		target = 0;
 		startSpring();
@@ -78,218 +118,180 @@
 
 <div
 	class="garland-tag absolute z-10 hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {point.y - 32}px; --sway-duration: {swayDuration}s; --sway-delay: {swayDelay}s; --sheen-delay: {sheenDelay}s;"
+	style="left: {point.x}px; top: {point.y - 47}px;"
 >
-	<div class="sway-layer">
+	<!-- Line segment through the ring — stays fixed, aligned to path tangent, offset along tangent -->
+	<div class="ring-line" style="left: calc(50% + {lineOffsetX}px); top: {47 + lineOffsetY}px; transform: translate(-50%, -50%) rotate({point.angle ?? 0}deg);"></div>
+
+	<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
 		<div
 			bind:this={pendulumEl}
 			class="push-layer"
 			style="transform: rotate({pushAngle}deg);"
+			onmouseenter={handleMouseEnter}
 			onmousemove={handleMouseMove}
 			onmouseleave={handleMouseLeave}
 		>
-			<!-- Ring back half -->
-			<svg class="ring-back mx-auto block" width="64" height="64" viewBox="0 0 64 64" fill="none">
-				<defs>
-					<linearGradient id="rb-{index}" x1="0" y1="0" x2="64" y2="64">
-						<stop offset="0%" stop-color="#aaa" />
-						<stop offset="50%" stop-color="#d0d0d0" />
-						<stop offset="100%" stop-color="#888" />
-					</linearGradient>
-				</defs>
-				<circle cx="32" cy="32" r="22" stroke="url(#rb-{index})" stroke-width="5" fill="none" />
-			</svg>
-
-			<!-- Acrylic charm -->
 			<button
 				onclick={scrollToProject}
 				onkeydown={handleKeydown}
-				class="charm-btn relative mx-auto block cursor-pointer p-0"
+				class="tag-btn"
 			>
-				<div class="charm">
-					<img
-						src="{base}{project.cover}"
-						alt=""
-						class="charm-image"
-						loading="lazy"
-					/>
-
-					<div class="charm-label">
-						<span>{project.name}</span>
-					</div>
-
-					<!-- Static gloss -->
-					<div class="charm-gloss"></div>
-				</div>
+				<!-- Back half of ring (behind the line) -->
+				<img
+					src="{base}/images/keychain-0{variant}.png"
+					alt=""
+					class="tag-img ring-back"
+					draggable="false"
+				/>
+				<!-- Cover image visible through the transparent label window -->
+				<img
+					src="{base}{project.cover}"
+					alt={project.name}
+					class="tag-cover"
+					draggable="false"
+				/>
+				<div class="tag-sheen" style="background-position: {sheenPos}% 0;"></div>
+				<span class="tag-title" class:visible={hovered}>{project.name}</span>
+				<!-- Line passes through here (ring-line div above) -->
+				<!-- Front half of ring + body (above the line) -->
+				<img
+					src="{base}/images/keychain-0{variant}.png"
+					alt=""
+					class="tag-img ring-front"
+					draggable="false"
+				/>
 			</button>
-
-			<!-- Ring sheen -->
-			<div class="ring-sheen"></div>
-
-			<!-- Ring front half -->
-			<svg class="ring-front absolute left-1/2 -translate-x-1/2" width="64" height="64" viewBox="0 0 64 64" fill="none" style="top: 0;">
-				<defs>
-					<linearGradient id="rf-{index}" x1="0" y1="0" x2="64" y2="64">
-						<stop offset="0%" stop-color="#bbb" />
-						<stop offset="50%" stop-color="#e8e8e8" />
-						<stop offset="100%" stop-color="#999" />
-					</linearGradient>
-				</defs>
-				<path d="M 14 44 A 22 22 0 1 1 50 44" stroke="url(#rf-{index})" stroke-width="5" stroke-linecap="round" fill="none" />
-			</svg>
 		</div>
 	</div>
 </div>
 
 <style>
 	.sway-layer {
-		transform-origin: center 32px;
-		animation: sway var(--sway-duration) ease-in-out var(--sway-delay) infinite;
-	}
-
-	.garland-tag:hover .sway-layer {
-		animation-play-state: paused;
+		transform-origin: center 47px;
 	}
 
 	.push-layer {
-		transform-origin: center 32px;
+		transform-origin: center 47px;
 	}
 
-	.ring-back {
+	.tag-btn {
 		position: relative;
-		z-index: 0;
-	}
-
-	.ring-front {
-		z-index: 20;
-		pointer-events: none;
-	}
-
-	.charm-btn {
-		position: relative;
-		z-index: 10;
-		margin-top: -24px;
+		display: block;
+		width: 416px;
+		height: 416px;
 		border: none;
 		background: none;
 		outline: none;
 		appearance: none;
 		-webkit-appearance: none;
+		cursor: pointer;
+		padding: 0;
 	}
 
-	.charm-btn:focus-visible .charm {
+	.tag-btn:focus-visible {
 		outline: 2px solid var(--color-accent);
-		outline-offset: 2px;
+		outline-offset: 4px;
+		border-radius: 8px;
 	}
 
-	.charm {
-		width: 150px;
-		height: 190px;
-		position: relative;
-		border-radius: 24px;
-		overflow: hidden;
-		background: rgba(255, 255, 255, 0.45);
-		border: 4px solid rgba(255, 255, 255, 0.65);
-		box-shadow:
-			0 6px 24px rgba(0, 0, 0, 0.1),
-			0 2px 6px rgba(0, 0, 0, 0.06),
-			inset 0 1px 0 rgba(255, 255, 255, 0.9);
-	}
-
-.charm-image {
+	.ring-line {
 		position: absolute;
-		inset: 8px;
-		width: calc(100% - 16px);
-		height: calc(100% - 16px);
-		object-fit: cover;
-		border-radius: 16px;
+		top: 47px;
+		left: 50%;
+		width: 36px;
+		height: 12px;
+		background: var(--color-line);
+		border-radius: 6px;
+		z-index: 5;
 	}
 
-	.charm-label {
-		position: absolute;
-		bottom: 8px;
-		left: 8px;
-		right: 8px;
-		padding: 6px 8px;
-		background: rgba(0, 0, 0, 0.5);
-		backdrop-filter: blur(6px);
-		border-radius: 0 0 16px 16px;
-		color: #fff;
-		font-size: 13px;
-		font-weight: 600;
-		text-align: center;
-		line-height: 1.2;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		z-index: 2;
-	}
-
-	.charm-gloss {
-		position: absolute;
-		inset: 0;
-		border-radius: 24px;
-		background: linear-gradient(
-			135deg,
-			rgba(255, 255, 255, 0.45) 0%,
-			rgba(255, 255, 255, 0.1) 35%,
-			transparent 55%,
-			rgba(255, 255, 255, 0.03) 100%
-		);
+	.tag-img {
+		width: 416px;
+		height: auto;
+		min-height: 416px;
 		pointer-events: none;
-		z-index: 4;
+		user-select: none;
 	}
 
-	.ring-sheen {
+	/* Back half: only the top ring area, behind the line */
+	.ring-back {
+		position: relative;
+		z-index: 1;
+		clip-path: inset(0 0 85% 0);
+	}
+
+	/* Front half: ring bottom arc + full body, above the line */
+	.ring-front {
 		position: absolute;
 		top: 0;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 64px;
-		height: 64px;
-		border-radius: 50%;
-		background: linear-gradient(
-			105deg,
-			transparent 30%,
-			rgba(255, 255, 255, 0.1) 42%,
-			rgba(255, 255, 255, 0.18) 50%,
-			rgba(255, 255, 255, 0.1) 58%,
-			transparent 70%
-		);
-		background-size: 300% 100%;
-		background-position: 200% 0;
-		animation: sheen 4s ease-in-out var(--sheen-delay) infinite;
+		left: 0;
+		z-index: 10;
+		clip-path: inset(8% 0 0 0);
+	}
+
+	.tag-cover {
+		position: absolute;
+		top: 34%;
+		left: 39%;
+		width: 20%;
+		height: 44%;
+		object-fit: cover;
+		z-index: 2;
 		pointer-events: none;
-		z-index: 25;
-		/* Mask to ring stroke: r=22, stroke-width=5 → inner 19.5px, outer 24.5px from center */
-		-webkit-mask-image: radial-gradient(circle at center, transparent 19px, black 19.5px, black 24.5px, transparent 25px);
-		mask-image: radial-gradient(circle at center, transparent 19px, black 19.5px, black 24.5px, transparent 25px);
+		user-select: none;
 	}
 
-	.charm-btn:hover .charm {
-		box-shadow:
-			0 10px 32px rgba(0, 0, 0, 0.14),
-			0 3px 10px rgba(0, 0, 0, 0.08),
-			inset 0 1px 0 rgba(255, 255, 255, 0.9);
+	.tag-title {
+		position: absolute;
+		top: 34%;
+		left: 39%;
+		width: 20%;
+		height: 44%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 4;
+		writing-mode: vertical-rl;
+		text-orientation: mixed;
+		font-size: 14px;
+		font-weight: 700;
+		color: #fff;
+		text-align: center;
+		line-height: 1.2;
+		padding: 4px;
+		background: rgba(0, 0, 0, 0.55);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.25s ease;
+		word-break: break-word;
+		overflow: hidden;
 	}
 
-	@keyframes sway {
-		0%,
-		100% {
-			transform: rotate(-6deg);
-		}
-		50% {
-			transform: rotate(6deg);
-		}
+	.tag-title.visible {
+		opacity: 1;
 	}
 
-	@keyframes sheen {
-		0%,
-		70%,
-		100% {
-			background-position: 200% 0;
-		}
-		35% {
-			background-position: -100% 0;
-		}
+	.tag-sheen {
+		position: absolute;
+		top: 34%;
+		left: 39%;
+		width: 20%;
+		height: 44%;
+		z-index: 3;
+		pointer-events: none;
+		overflow: hidden;
+		background:
+			linear-gradient(
+				110deg,
+				rgba(255, 255, 255, 0) 0%,
+				rgba(255, 255, 255, 0) 35%,
+				rgba(255, 255, 255, 0.15) 47%,
+				rgba(255, 255, 255, 0.2) 50%,
+				rgba(255, 255, 255, 0.15) 53%,
+				rgba(255, 255, 255, 0) 65%,
+				rgba(255, 255, 255, 0) 100%
+			);
+		background-size: 300% 100%;
 	}
 </style>

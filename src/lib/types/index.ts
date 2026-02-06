@@ -69,4 +69,5 @@ export interface Project {
 export interface GarlandPoint {
 	x: number;
 	y: number;
+	angle?: number;
 }

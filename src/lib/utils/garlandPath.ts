@@ -103,13 +103,71 @@ export function samplePointsAlongPath(
 		}
 	}
 
+	// Sample path densely
+	const sampleCount = 500;
+	const pathPts: { x: number; y: number; dist: number }[] = [];
+	for (let i = 0; i <= sampleCount; i++) {
+		const dist = (i / sampleCount) * heroLength;
+		const pt = pathElement.getPointAtLength(dist);
+		pathPts.push({ x: pt.x, y: pt.y, dist });
+	}
+
+	// Detect zigzag rows by finding where X direction reverses
+	type Row = typeof pathPts;
+	const rows: Row[] = [[]];
+	for (let i = 0; i < pathPts.length; i++) {
+		rows[rows.length - 1].push(pathPts[i]);
+		if (i >= 2) {
+			const prevDx = pathPts[i - 1].x - pathPts[i - 2].x;
+			const currDx = pathPts[i].x - pathPts[i - 1].x;
+			if (prevDx * currDx < 0 && Math.abs(prevDx) > 0.5) {
+				rows.push([pathPts[i]]);
+			}
+		}
+	}
+
+	// X range
+	const allXs = pathPts.map((p) => p.x);
+	const minX = Math.min(...allXs);
+	const maxX = Math.max(...allXs);
+
+	// Pick `count` evenly-spaced columns
+	const cols: number[] = [];
+	for (let i = 0; i < count; i++) {
+		cols.push(minX + ((i + 1) / (count + 1)) * (maxX - minX));
+	}
+
+	// Scatter column assignments: stride of 2 avoids diagonal
+	// e.g. for 5: row 0→col 0, row 1→col 2, row 2→col 4, row 3→col 1, row 4→col 3
+	const colOrder: number[] = [];
+	let ci = 0;
+	while (colOrder.length < count) {
+		if (!colOrder.includes(ci % count)) colOrder.push(ci % count);
+		ci += 2;
+	}
+
+	// One tag per row, at the scattered column X
 	const points: GarlandPoint[] = [];
 	for (let i = 0; i < count; i++) {
-		// Distribute evenly along the hero portion with padding
-		const t = (i + 0.5) / count;
-		const dist = t * heroLength;
-		const pt = pathElement.getPointAtLength(dist);
-		points.push({ x: pt.x, y: pt.y });
+		const row = rows[i % rows.length];
+		const targetX = cols[colOrder[i]];
+
+		let best = row[Math.floor(row.length / 2)];
+		let bestDiff = Infinity;
+		for (const s of row) {
+			const diff = Math.abs(s.x - targetX);
+			if (diff < bestDiff) {
+				bestDiff = diff;
+				best = s;
+			}
+		}
+		// Compute tangent angle at this point
+		const delta = heroLength * 0.002;
+		const ptA = pathElement.getPointAtLength(Math.max(0, best.dist - delta));
+		const ptB = pathElement.getPointAtLength(Math.min(heroLength, best.dist + delta));
+		const angle = Math.atan2(ptB.y - ptA.y, ptB.x - ptA.x) * (180 / Math.PI);
+
+		points.push({ x: best.x, y: best.y, angle });
 	}
 
 	return points;
