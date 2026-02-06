@@ -58,8 +58,8 @@
 	<button
 		onclick={scrollToProject}
 		onkeydown={handleKeydown}
-		class="tag-body relative block cursor-pointer p-0 transition-transform duration-200"
-		style="transform: rotate({tilt}deg);"
+		class="tag-body relative block cursor-pointer border-0 bg-transparent p-0 outline-none transition-transform duration-200"
+		style="transform: rotate({tilt}deg); -webkit-appearance: none; appearance: none;"
 	>
 		<div class="tag-card relative overflow-hidden px-2.5 pb-2.5 pt-5">
 			<!-- Punched hole -->
@@ -70,7 +70,7 @@
 				<img
 					src="{base}{project.cover}"
 					alt=""
-					class="block h-14 w-full object-cover"
+					class="block h-14 w-full border-0 object-cover outline-none"
 					style="min-width: 76px;"
 					loading="lazy"
 				/>
@@ -102,12 +102,29 @@
 		background: linear-gradient(to bottom, #aaa, #777);
 	}
 
+	.tag-body {
+		border: none;
+		background: none;
+		outline: none;
+	}
+
+	.tag-body:focus-visible .tag-card {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+	}
+
 	.tag-card {
 		background: var(--color-surface);
+		border: none;
 		border-radius: 4px 4px 8px 8px;
 		box-shadow:
 			0 3px 10px rgba(0, 0, 0, 0.4),
 			0 1px 3px rgba(0, 0, 0, 0.3);
+	}
+
+	.tag-card img {
+		border: none;
+		outline: none;
 	}
 
 	.tag-hole {
