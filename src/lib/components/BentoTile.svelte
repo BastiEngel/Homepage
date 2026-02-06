@@ -14,23 +14,17 @@
 	let { src, alt, tileSize = 'medium', index = 0, eager = false }: Props = $props();
 
 	const spanClass = {
-		large: 'sm:col-span-2 sm:row-span-2',
-		medium: 'sm:col-span-2 sm:row-span-1',
-		small: 'col-span-1 row-span-1'
-	};
-
-	const aspectClass = {
-		large: 'aspect-4/3',
-		medium: 'aspect-video',
-		small: 'aspect-square'
+		large: 'col-span-2',
+		medium: 'col-span-1',
+		small: 'col-span-1'
 	};
 </script>
 
 <div
-	class="group bg-surface overflow-hidden rounded-xl {spanClass[tileSize]} transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+	class="group bg-surface overflow-hidden rounded-xl {spanClass[tileSize]} transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
 	use:scrollReveal={{ delay: index * 100 }}
 >
-	<div class="{aspectClass[tileSize]} w-full overflow-hidden">
+	<div class="aspect-4/3 w-full overflow-hidden">
 		<img
 			src="{base}{src}"
 			{alt}
