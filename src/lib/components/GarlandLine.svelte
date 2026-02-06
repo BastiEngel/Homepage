@@ -77,33 +77,45 @@
 		});
 	});
 
-	// Scroll-driven draw animation
-	// The hero garland is fully visible on load; the rest draws as you scroll.
+	// Scroll-driven draw animation with smooth interpolation.
+	// The line eases toward the target instead of snapping, and draws
+	// slightly ahead of the scroll so it feels responsive.
 	$effect(() => {
 		if (!totalLength) return;
 
-		let ticking = false;
+		let currentOffset = totalLength * (1 - heroPathFraction);
+		let targetOffset = currentOffset;
+		let rafId: number;
+		let running = true;
 
-		function updateDashOffset() {
+		function getTargetOffset() {
 			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
 			const scrollFraction = scrollable > 0 ? window.scrollY / scrollable : 0;
-			// Hero portion always visible, rest draws with scroll
-			const revealed = heroPathFraction + scrollFraction * (1 - heroPathFraction);
-			dashOffset = totalLength * (1 - revealed);
-			ticking = false;
+			// Draw slightly ahead (1.15x) so the tip leads the viewport
+			const ahead = Math.min(scrollFraction * 1.15, 1);
+			const revealed = heroPathFraction + ahead * (1 - heroPathFraction);
+			return totalLength * (1 - revealed);
 		}
 
-		function onScroll() {
-			if (!ticking) {
-				requestAnimationFrame(updateDashOffset);
-				ticking = true;
+		function animate() {
+			if (!running) return;
+			targetOffset = getTargetOffset();
+			// Smooth lerp — closes 12% of the gap each frame
+			currentOffset += (targetOffset - currentOffset) * 0.12;
+			// Snap when close enough
+			if (Math.abs(currentOffset - targetOffset) < 0.5) {
+				currentOffset = targetOffset;
 			}
+			dashOffset = currentOffset;
+			rafId = requestAnimationFrame(animate);
 		}
 
-		updateDashOffset();
+		rafId = requestAnimationFrame(animate);
 
-		window.addEventListener('scroll', onScroll, { passive: true });
-		return () => window.removeEventListener('scroll', onScroll);
+		return () => {
+			running = false;
+			cancelAnimationFrame(rafId);
+		};
 	});
 </script>
 
