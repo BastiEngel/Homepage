@@ -1,0 +1,38 @@
+{
+	"meta": {
+		"name": "Firstname Lastname",
+		"title": "Product Designer",
+		"description": "Portfolio of Firstname Lastname – Product Design, UX, Branding",
+		"url": "https://username.github.io",
+		"ogImage": "/images/og-image.jpg",
+		"email": "hello@example.com",
+		"about": "I'm a product designer with a passion for creating intuitive, beautiful digital experiences. With over 5 years of experience spanning UX research, interface design, and brand identity, I help companies turn complex problems into elegant solutions.",
+		"socialLinks": [
+			{ "platform": "LinkedIn", "url": "https://linkedin.com/in/username" },
+			{ "platform": "Behance", "url": "https://behance.net/username" },
+			{ "platform": "Dribbble", "url": "https://dribbble.com/username" }
+		]
+	},
+	"colors": {
+		"primary": "#1a2ffb",
+		"primaryHover": "#1525c9",
+		"secondary": "#f0f1fa",
+		"accent": "#ff6b35",
+		"accentHover": "#e55a2b",
+		"background": "#0a0a0f",
+		"surface": "#141420",
+		"surfaceHover": "#1e1e30",
+		"border": "#2a2a3d",
+		"text": "#f0f1fa",
+		"textMuted": "#8888a0",
+		"textInverse": "#0a0a0f",
+		"line": "#1a2ffb",
+		"tagBg": "#141420",
+		"tagBorder": "#2a2a3d",
+		"tagText": "#f0f1fa"
+	},
+	"fonts": {
+		"heading": "Inter",
+		"body": "Inter"
+	}
+}
