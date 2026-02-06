@@ -10,7 +10,7 @@
 
 	let { project }: Props = $props();
 
-	const metaParts = [project.role, project.year, project.client].filter(Boolean);
+	let metaParts = $derived([project.role, project.year, project.client].filter(Boolean));
 </script>
 
 <section id={project.id} class="relative px-6 py-16 md:px-12 lg:py-24">
