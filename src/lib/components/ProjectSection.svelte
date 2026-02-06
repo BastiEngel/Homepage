@@ -5,25 +5,31 @@
 
 	interface Props {
 		project: Project;
+		index?: number;
 	}
 
-	let { project }: Props = $props();
+	let { project, index = 0 }: Props = $props();
 
-	const allImages = [
+	const reversed = index % 2 === 1;
+
+	const tiles = [
 		{ src: project.cover, alt: `${project.name} cover`, tileSize: 'large' as const },
 		...(project.images ?? [])
-	];
+	].slice(0, 4);
 </script>
 
-<section id={project.id} class="relative px-6 py-16 md:px-12 lg:py-24">
-	<div class="mx-auto grid max-w-6xl grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
+<section id={project.id} class="relative px-6 py-12 md:px-12 lg:py-20">
+	<div
+		class="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16"
+		class:lg:grid-cols-[2fr_3fr]={reversed}
+	>
 		<!-- Images column -->
-		<div class="grid grid-cols-2 gap-3">
-			{#each allImages as image, i}
+		<div class="grid grid-cols-2 gap-3" class:lg:order-2={reversed}>
+			{#each tiles as image, i}
 				<BentoTile
 					src={image.src}
 					alt={image.alt}
-					tileSize={image.tileSize ?? 'medium'}
+					tileSize={tiles.length === 1 ? 'large' : (image.tileSize ?? 'medium')}
 					index={i}
 					eager={i === 0}
 				/>
@@ -31,7 +37,7 @@
 		</div>
 
 		<!-- Text column -->
-		<div class="flex flex-col justify-center" use:scrollReveal>
+		<div class="flex flex-col justify-center" class:lg:order-1={reversed} use:scrollReveal>
 			<h2 class="font-heading text-text text-2xl font-bold sm:text-3xl lg:text-5xl">
 				{project.name}
 			</h2>

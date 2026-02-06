@@ -49,8 +49,8 @@
 		{/each}
 	</div>
 
-	{#each projects as project}
-		<ProjectSection {project} />
+	{#each projects as project, i}
+		<ProjectSection {project} index={i} />
 	{/each}
 
 	<About />
