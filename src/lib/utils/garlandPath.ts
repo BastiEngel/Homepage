@@ -26,11 +26,11 @@ function catmullRomToBezier(points: GarlandPoint[], tension: number = 0.5): stri
 }
 
 /**
- * Generate a winding-road garland path using Catmull-Rom splines.
- *
- * In the hero, the line zigzags horizontally — left to right, then right
- * to left, like switchbacks on a mountain road. After the hero it
- * continues with gentle S-curves down the page.
+ * Generate a winding-road garland path using a single continuous
+ * Catmull-Rom spline. In the hero the line zigzags left→right→left
+ * like switchbacks; below the hero it widens into gentle S-curves.
+ * Because every waypoint goes through one spline, the transition
+ * from hero to page body is perfectly smooth.
  */
 export function generateGarlandPath(
 	width: number,
@@ -41,52 +41,44 @@ export function generateGarlandPath(
 	const left = margin;
 	const right = width - margin;
 
+	const allPoints: GarlandPoint[] = [];
+
 	// --- Hero: winding road passes ---
 	const passes = width >= 1024 ? 5 : width >= 640 ? 4 : 3;
 	const topY = heroHeight * 0.12;
 	const bottomY = heroHeight * 0.85;
 	const passHeight = (bottomY - topY) / (passes - 1);
 
-	const heroPoints: GarlandPoint[] = [];
-
 	for (let i = 0; i < passes; i++) {
 		const y = topY + i * passHeight;
 		const goRight = i % 2 === 0;
 
 		if (i === 0) {
-			// First pass: start from the left
-			heroPoints.push({ x: left, y });
-			heroPoints.push({ x: (left + right) / 2, y });
-			heroPoints.push({ x: right, y });
+			allPoints.push({ x: left, y });
+			allPoints.push({ x: (left + right) / 2, y });
+			allPoints.push({ x: right, y });
 		} else {
-			// Subsequent passes: just the endpoint on the opposite side
-			heroPoints.push({ x: goRight ? right : left, y });
+			allPoints.push({ x: goRight ? right : left, y });
 		}
 	}
 
-	const heroPath = catmullRomToBezier(heroPoints, 0.8);
-
-	// --- Below hero: gentle S-curves ---
+	// --- Below hero: wider S-curves flowing from the last hero point ---
 	const belowHeight = height - heroHeight;
-	if (belowHeight <= 200) return heroPath;
+	if (belowHeight > 200) {
+		const curves = Math.max(2, Math.round(belowHeight / 800));
+		const segH = belowHeight / curves;
+		const lastHero = allPoints[allPoints.length - 1];
+		const lastWasRight = lastHero.x > width / 2;
 
-	const curves = Math.max(2, Math.round(belowHeight / 800));
-	const segH = belowHeight / curves;
-	const lastHero = heroPoints[heroPoints.length - 1];
-
-	const belowPoints: GarlandPoint[] = [{ x: lastHero.x, y: lastHero.y }];
-
-	for (let i = 0; i < curves; i++) {
-		const y = heroHeight + (i + 1) * segH;
-		const goLeft = i % 2 === 0;
-		const x = goLeft ? left + (right - left) * 0.2 : left + (right - left) * 0.8;
-		belowPoints.push({ x, y });
+		for (let i = 0; i < curves; i++) {
+			const y = heroHeight + (i + 1) * segH;
+			const goLeft = (i % 2 === 0) === lastWasRight;
+			const x = goLeft ? left + (right - left) * 0.2 : left + (right - left) * 0.8;
+			allPoints.push({ x, y });
+		}
 	}
 
-	const belowPath = catmullRomToBezier(belowPoints, 0.6);
-	const belowCommands = belowPath.replace(/^M\s*[\d.]+\s*[\d.]+\s*/, '');
-
-	return heroPath + ' ' + belowCommands;
+	return catmullRomToBezier(allPoints, 0.75);
 }
 
 /**
