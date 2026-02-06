@@ -87,11 +87,11 @@
 
 					<!-- Static gloss -->
 					<div class="charm-gloss"></div>
-
-					<!-- Animated sheen sweep -->
-					<div class="charm-sheen"></div>
 				</div>
 			</button>
+
+			<!-- Ring sheen -->
+			<div class="ring-sheen"></div>
 
 			<!-- Ring front half -->
 			<svg class="ring-front absolute left-1/2 -translate-x-1/2" width="64" height="64" viewBox="0 0 64 64" fill="none" style="top: 0;">
@@ -221,23 +221,27 @@
 		z-index: 4;
 	}
 
-	.charm-sheen {
+	.ring-sheen {
 		position: absolute;
-		inset: 0;
-		border-radius: 24px;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 64px;
+		height: 64px;
+		border-radius: 50%;
 		background: linear-gradient(
 			105deg,
-			transparent 35%,
-			rgba(255, 255, 255, 0.35) 43%,
-			rgba(255, 255, 255, 0.55) 50%,
-			rgba(255, 255, 255, 0.35) 57%,
-			transparent 65%
+			transparent 30%,
+			rgba(255, 255, 255, 0.5) 42%,
+			rgba(255, 255, 255, 0.8) 50%,
+			rgba(255, 255, 255, 0.5) 58%,
+			transparent 70%
 		);
-		background-size: 250% 100%;
+		background-size: 300% 100%;
 		background-position: 200% 0;
-		animation: sheen 5s ease-in-out var(--sheen-delay) infinite;
+		animation: sheen 4s ease-in-out var(--sheen-delay) infinite;
 		pointer-events: none;
-		z-index: 5;
+		z-index: 25;
 	}
 
 	.charm-btn:hover .charm {
