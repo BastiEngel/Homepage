@@ -232,9 +232,9 @@
 		background: linear-gradient(
 			105deg,
 			transparent 30%,
-			rgba(255, 255, 255, 0.5) 42%,
-			rgba(255, 255, 255, 0.8) 50%,
-			rgba(255, 255, 255, 0.5) 58%,
+			rgba(255, 255, 255, 0.25) 42%,
+			rgba(255, 255, 255, 0.4) 50%,
+			rgba(255, 255, 255, 0.25) 58%,
 			transparent 70%
 		);
 		background-size: 300% 100%;
