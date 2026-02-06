@@ -91,9 +91,7 @@
 		function getTargetOffset() {
 			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
 			const scrollFraction = scrollable > 0 ? window.scrollY / scrollable : 0;
-			// Draw slightly ahead (1.15x) so the tip leads the viewport
-			const ahead = Math.min(scrollFraction * 1.15, 1);
-			const revealed = heroPathFraction + ahead * (1 - heroPathFraction);
+			const revealed = heroPathFraction + scrollFraction * (1 - heroPathFraction);
 			return totalLength * (1 - revealed);
 		}
 
