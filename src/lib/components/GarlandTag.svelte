@@ -22,13 +22,16 @@
 	let pendulumEl: HTMLElement | undefined = $state();
 	let pushAngle = $state(0);
 	let swayAngle = $state(0);
+	let keySwayAngle = $state(0);
 	let hovered = $state(false);
-	let swayBlend = 1; // 1 = full sway, 0 = no sway (smooth blend)
+	let swayBlend = 1;
 	let sheenPos = $derived(50 + (swayAngle + pushAngle) * 3);
 
 	// Idle sway driven by JS for perfect sheen sync
 	const swayAmplitude = 6;
 	const swaySpeed = (2 * Math.PI) / swayDuration;
+	const keySwaySpeed = (2 * Math.PI) / (swayDuration * 1.3); // slower, out of phase
+	const keySwayAmplitude = 12;
 	let startTime = 0;
 	let swayRunning = false;
 
@@ -43,6 +46,7 @@
 		if (now >= startTime) {
 			const t = (now - startTime) / 1000;
 			swayAngle = Math.sin(t * swaySpeed) * swayAmplitude * swayBlend;
+			keySwayAngle = Math.sin(t * keySwaySpeed + 1.2) * keySwayAmplitude * swayBlend;
 		}
 		requestAnimationFrame(swayTick);
 	}
@@ -137,6 +141,14 @@
 				onkeydown={handleKeydown}
 				class="tag-btn"
 			>
+				<!-- Key dangling from the ring hole, behind everything -->
+				<img
+					src="{base}/images/key-01.png"
+					alt=""
+					class="dangling-key"
+					style="transform: rotate({keySwayAngle - pushAngle * 0.7}deg);"
+					draggable="false"
+				/>
 				<!-- Back half of ring (behind the line) -->
 				<img
 					src="{base}/images/keychain-0{variant}.png"
@@ -167,6 +179,20 @@
 </div>
 
 <style>
+	.dangling-key {
+		position: absolute;
+		/* Key 240px wide, ~289px tall. Hole at 49.1% x, 13.7% y = (118px, 40px) */
+		/* Keychain hole at (197px, 117px), nudged down+left */
+		top: 94px;
+		left: 82px;
+		width: 240px;
+		height: auto;
+		z-index: 0;
+		transform-origin: 49.1% 13.7%;
+		pointer-events: none;
+		user-select: none;
+	}
+
 	.sway-layer {
 		transform-origin: center 47px;
 	}
