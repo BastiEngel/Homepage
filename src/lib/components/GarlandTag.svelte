@@ -149,8 +149,8 @@
 		border-radius: 6px 6px 10px 10px;
 		overflow: hidden;
 		box-shadow:
-			0 3px 10px rgba(0, 0, 0, 0.4),
-			0 1px 3px rgba(0, 0, 0, 0.3);
+			0 3px 10px rgba(0, 0, 0, 0.12),
+			0 1px 3px rgba(0, 0, 0, 0.08);
 	}
 
 	.tag-hole {
@@ -158,7 +158,7 @@
 		height: 10px;
 		border-radius: 50%;
 		background: transparent;
-		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
 		outline: 3px solid #e8d5b5;
 		position: absolute;
 		top: -5px;
@@ -200,8 +200,8 @@
 
 	.tag-body:hover .tag-card {
 		box-shadow:
-			0 6px 20px rgba(0, 0, 0, 0.5),
-			0 2px 6px rgba(0, 0, 0, 0.4);
+			0 6px 20px rgba(0, 0, 0, 0.15),
+			0 2px 6px rgba(0, 0, 0, 0.1);
 	}
 
 	@keyframes sway {
