@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+@theme inline {
+	--color-primary: var(--cfg-primary);
+	--color-primary-hover: var(--cfg-primary-hover);
+	--color-secondary: var(--cfg-secondary);
+	--color-accent: var(--cfg-accent);
+	--color-accent-hover: var(--cfg-accent-hover);
+	--color-bg: var(--cfg-background);
+	--color-surface: var(--cfg-surface);
+	--color-surface-hover: var(--cfg-surface-hover);
+	--color-border: var(--cfg-border);
+	--color-text: var(--cfg-text);
+	--color-text-muted: var(--cfg-text-muted);
+	--color-text-inverse: var(--cfg-text-inverse);
+	--color-line: var(--cfg-line);
+	--color-tag-bg: var(--cfg-tag-bg);
+	--color-tag-border: var(--cfg-tag-border);
+	--color-tag-text: var(--cfg-tag-text);
+	--font-heading: var(--cfg-font-heading);
+	--font-body: var(--cfg-font-body);
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	font-family: var(--font-body);
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
