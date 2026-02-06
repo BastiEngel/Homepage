@@ -12,8 +12,8 @@
 		return () => window.removeEventListener('scroll', onScroll);
 	});
 
-	function scrollToContact() {
-		document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+	function scrollTo(id: string) {
+		document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 	}
 </script>
 
@@ -22,12 +22,11 @@
 	class:scrolled
 >
 	<span class="text-text text-lg font-semibold">{config.meta.name}</span>
-	<button
-		onclick={scrollToContact}
-		class="bg-accent hover:bg-accent-hover text-text-inverse cursor-pointer rounded-lg px-5 py-2 text-sm font-medium transition-colors duration-200"
-	>
-		Contact
-	</button>
+	<div class="flex items-center gap-6">
+		<button onclick={() => scrollTo('brand-refresh')} class="nav-link">Projects</button>
+		<button onclick={() => scrollTo('about')} class="nav-link">About</button>
+		<button onclick={() => scrollTo('contact')} class="nav-link">Contact</button>
+	</div>
 </nav>
 
 <style>
@@ -35,5 +34,20 @@
 		background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
+	}
+
+	.nav-link {
+		color: var(--color-text);
+		font-size: 1.125rem;
+		font-weight: 600;
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0;
+		transition: opacity 0.2s;
+	}
+
+	.nav-link:hover {
+		opacity: 0.6;
 	}
 </style>
