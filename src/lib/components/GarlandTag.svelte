@@ -17,6 +17,37 @@
 	let pendulumEl: HTMLElement | undefined = $state();
 	let pushAngle = $state(0);
 
+	// Spring physics
+	let angle = 0;
+	let velocity = 0;
+	let target = 0;
+	let animating = false;
+	const stiffness = 0.08;
+	const damping = 0.88;
+
+	function springTick() {
+		const force = (target - angle) * stiffness;
+		velocity = (velocity + force) * damping;
+		angle += velocity;
+		pushAngle = angle;
+
+		if (Math.abs(velocity) > 0.05 || Math.abs(target - angle) > 0.05) {
+			requestAnimationFrame(springTick);
+		} else {
+			angle = target;
+			velocity = 0;
+			pushAngle = target;
+			animating = false;
+		}
+	}
+
+	function startSpring() {
+		if (!animating) {
+			animating = true;
+			requestAnimationFrame(springTick);
+		}
+	}
+
 	function scrollToProject() {
 		document.getElementById(project.id)?.scrollIntoView({ behavior: 'smooth' });
 	}
@@ -33,11 +64,15 @@
 		const rect = pendulumEl.getBoundingClientRect();
 		const cx = rect.left + rect.width / 2;
 		const dx = (e.clientX - cx) / (rect.width / 2);
-		pushAngle = dx * 18;
+		target = dx * 22;
+		startSpring();
 	}
 
 	function handleMouseLeave() {
-		pushAngle = 0;
+		// Give a little extra kick in current direction for a natural bounce-back
+		velocity += velocity * 0.5;
+		target = 0;
+		startSpring();
 	}
 </script>
 
@@ -118,7 +153,6 @@
 
 	.push-layer {
 		transform-origin: center 32px;
-		transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 	}
 
 	.ring-back {
