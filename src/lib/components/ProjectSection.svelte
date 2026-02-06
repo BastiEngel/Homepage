@@ -11,33 +11,26 @@
 	let { project, index = 0 }: Props = $props();
 
 	const reversed = index % 2 === 1;
+	const coverSrc = `${base}${project.cover}`;
+	const isGif = project.cover.endsWith('.gif');
 
-	const tiles = [
-		{ src: project.cover, alt: `${project.name} cover` },
-		...(project.images ?? []).map((img) => ({ src: img.src, alt: img.alt }))
-	].slice(0, 4);
+	let imgEl: HTMLImageElement | undefined = $state();
+	let visible = $state(false);
 
-	// Grid placement per tile count — each tile gets column/row spans
-	const layouts: Record<number, { col: string; row: string }[]> = {
-		1: [{ col: '1 / 3', row: '1 / 3' }],
-		2: [
-			{ col: '1 / 2', row: '1 / 3' },
-			{ col: '2 / 3', row: '1 / 3' }
-		],
-		3: [
-			{ col: '1 / 2', row: '1 / 3' },
-			{ col: '2 / 3', row: '1 / 2' },
-			{ col: '2 / 3', row: '2 / 3' }
-		],
-		4: [
-			{ col: '1 / 2', row: '1 / 2' },
-			{ col: '2 / 3', row: '1 / 2' },
-			{ col: '1 / 2', row: '2 / 3' },
-			{ col: '2 / 3', row: '2 / 3' }
-		]
-	};
+	// For GIFs: only set src when in viewport so they play on scroll
+	$effect(() => {
+		if (!imgEl || !isGif) return;
 
-	const placement = layouts[tiles.length] ?? layouts[4];
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				visible = entry.isIntersecting;
+			},
+			{ threshold: 0.1 }
+		);
+
+		observer.observe(imgEl);
+		return () => observer.disconnect();
+	});
 </script>
 
 <section id={project.id} class="relative px-6 py-12 md:px-12 lg:py-20">
@@ -45,21 +38,15 @@
 		class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 lg:gap-16"
 		style="--cols: {reversed ? '2fr 3fr' : '3fr 2fr'};"
 	>
-		<!-- Images container -->
-		<div class="image-grid" class:lg:order-2={reversed}>
-			{#each tiles as image, i}
-				<div
-					class="bg-surface overflow-hidden rounded-lg shadow-sm"
-					style="grid-column: {placement[i].col}; grid-row: {placement[i].row};"
-				>
-					<img
-						src="{base}{image.src}"
-						alt={image.alt}
-						loading={i === 0 ? 'eager' : 'lazy'}
-						class="h-full w-full object-cover"
-					/>
-				</div>
-			{/each}
+		<!-- Image -->
+		<div class="overflow-hidden rounded-xl bg-surface shadow-sm" class:lg:order-2={reversed}>
+			<img
+				bind:this={imgEl}
+				src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
+				alt="{project.name} cover"
+				loading="lazy"
+				class="aspect-4/3 w-full object-cover"
+			/>
 		</div>
 
 		<!-- Text column -->
@@ -79,13 +66,5 @@
 		@media (min-width: 1024px) {
 			grid-template-columns: var(--cols);
 		}
-	}
-
-	.image-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		grid-template-rows: 1fr 1fr;
-		gap: 6px;
-		aspect-ratio: 4 / 3;
 	}
 </style>
