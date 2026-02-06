@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { generateGarlandPath, samplePointsAlongPath, getPathLength } from '$lib/utils/garlandPath';
 	import type { GarlandPoint } from '$lib/types';
 
@@ -9,7 +10,6 @@
 
 	let { onpoints, featuredCount = 3 }: Props = $props();
 
-	let svgElement: SVGSVGElement | undefined = $state();
 	let pathElement: SVGPathElement | undefined = $state();
 	let pathD = $state('');
 	let totalLength = $state(0);
@@ -24,13 +24,11 @@
 		pathD = generateGarlandPath(pageWidth, pageHeight);
 	}
 
+	// Recalculate dimensions on mount, resize, and body size changes
 	$effect(() => {
 		recalculate();
 
-		function onResize() {
-			recalculate();
-		}
-
+		const onResize = () => recalculate();
 		window.addEventListener('resize', onResize);
 
 		// Recalculate after DOM settles (images, layout shifts)
@@ -39,7 +37,6 @@
 			setTimeout(() => recalculate(), 500)
 		];
 
-		// Also watch for body size changes
 		const ro = new ResizeObserver(() => recalculate());
 		ro.observe(document.body);
 
@@ -50,30 +47,37 @@
 		};
 	});
 
-	// Get path length and sample points once path is rendered
+	// Measure path and sample tag points AFTER the DOM has flushed pathD
 	$effect(() => {
-		if (pathElement && pathD) {
-			totalLength = getPathLength(pathElement);
+		if (!pathElement || !pathD) return;
+
+		// tick() waits for Svelte to flush the `d` attribute to the DOM
+		tick().then(() => {
+			if (!pathElement) return;
+			const len = pathElement.getTotalLength();
+			if (len <= 0) return;
+
+			totalLength = len;
+
 			if (onpoints && featuredCount > 0) {
 				const points = samplePointsAlongPath(pathElement, featuredCount);
 				onpoints(points);
 			}
-		}
+		});
 	});
 
 	// Scroll-driven draw animation
-	// The hero area (~first 15% of the line) should be visible on load,
-	// and the rest draws in progressively as you scroll.
+	// The hero area (~first 15% of the line) is visible on load,
+	// the rest draws in progressively as you scroll.
 	$effect(() => {
 		if (!totalLength) return;
 
-		const heroReveal = 0.15; // show first 15% of path immediately
+		const heroReveal = 0.15;
 		let ticking = false;
 
 		function updateDashOffset() {
 			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
 			const scrollFraction = scrollable > 0 ? window.scrollY / scrollable : 0;
-			// Map scroll 0→1 to reveal heroReveal→1 of the path
 			const revealed = heroReveal + scrollFraction * (1 - heroReveal);
 			dashOffset = totalLength * (1 - revealed);
 			ticking = false;
@@ -86,7 +90,6 @@
 			}
 		}
 
-		// Initial
 		updateDashOffset();
 
 		window.addEventListener('scroll', onScroll, { passive: true });
