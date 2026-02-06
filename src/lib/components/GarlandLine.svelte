@@ -13,25 +13,26 @@
 	let pathElement: SVGPathElement | undefined = $state();
 	let pathD = $state('');
 	let totalLength = $state(0);
+	let heroPathFraction = $state(0.15);
 	let dashOffset = $state(0);
 	let pageWidth = $state(0);
 	let pageHeight = $state(0);
+	let heroHeight = $state(0);
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
 		pageWidth = window.innerWidth;
 		pageHeight = document.documentElement.scrollHeight;
-		pathD = generateGarlandPath(pageWidth, pageHeight);
+		heroHeight = window.innerHeight;
+		pathD = generateGarlandPath(pageWidth, pageHeight, heroHeight);
 	}
 
-	// Recalculate dimensions on mount, resize, and body size changes
 	$effect(() => {
 		recalculate();
 
 		const onResize = () => recalculate();
 		window.addEventListener('resize', onResize);
 
-		// Recalculate after DOM settles (images, layout shifts)
 		const timers = [
 			setTimeout(() => recalculate(), 100),
 			setTimeout(() => recalculate(), 500)
@@ -47,11 +48,10 @@
 		};
 	});
 
-	// Measure path and sample tag points AFTER the DOM has flushed pathD
+	// Measure path and sample tag points after DOM flush
 	$effect(() => {
 		if (!pathElement || !pathD) return;
 
-		// tick() waits for Svelte to flush the `d` attribute to the DOM
 		tick().then(() => {
 			if (!pathElement) return;
 			const len = pathElement.getTotalLength();
@@ -59,26 +59,36 @@
 
 			totalLength = len;
 
+			// Figure out what fraction of path length is in the hero
+			// by sampling where the path exits the hero viewport
+			for (let i = 0; i <= 100; i++) {
+				const pt = pathElement.getPointAtLength((i / 100) * len);
+				if (pt.y > heroHeight) {
+					heroPathFraction = i / 100;
+					break;
+				}
+				if (i === 100) heroPathFraction = 1;
+			}
+
 			if (onpoints && featuredCount > 0) {
-				const points = samplePointsAlongPath(pathElement, featuredCount);
+				const points = samplePointsAlongPath(pathElement, featuredCount, heroHeight);
 				onpoints(points);
 			}
 		});
 	});
 
 	// Scroll-driven draw animation
-	// The hero area (~first 15% of the line) is visible on load,
-	// the rest draws in progressively as you scroll.
+	// The hero garland is fully visible on load; the rest draws as you scroll.
 	$effect(() => {
 		if (!totalLength) return;
 
-		const heroReveal = 0.15;
 		let ticking = false;
 
 		function updateDashOffset() {
 			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
 			const scrollFraction = scrollable > 0 ? window.scrollY / scrollable : 0;
-			const revealed = heroReveal + scrollFraction * (1 - heroReveal);
+			// Hero portion always visible, rest draws with scroll
+			const revealed = heroPathFraction + scrollFraction * (1 - heroPathFraction);
 			dashOffset = totalLength * (1 - revealed);
 			ticking = false;
 		}
