@@ -36,19 +36,24 @@
 >
 	<!-- 3D Keyring -->
 	<div class="flex justify-center" style="perspective: 120px;">
-		<div class="ring" style="transform: rotateX({ringTilt}deg);">
-			<svg width="28" height="28" viewBox="0 0 28 28">
-				<defs>
-					<linearGradient id="ring-grad-{index}" x1="0" y1="0" x2="1" y2="1">
-						<stop offset="0%" stop-color="#999" />
-						<stop offset="40%" stop-color="#ddd" />
-						<stop offset="60%" stop-color="#bbb" />
-						<stop offset="100%" stop-color="#888" />
-					</linearGradient>
-				</defs>
-				<circle cx="14" cy="14" r="10" fill="none" stroke="url(#ring-grad-{index})" stroke-width="3" />
-			</svg>
-		</div>
+		<svg
+			class="ring"
+			width="28"
+			height="28"
+			viewBox="0 0 28 28"
+			style="transform: rotateX({ringTilt}deg); overflow: visible; background: none;"
+			fill="none"
+		>
+			<defs>
+				<linearGradient id="ring-grad-{index}" x1="0" y1="0" x2="1" y2="1">
+					<stop offset="0%" stop-color="#999" />
+					<stop offset="40%" stop-color="#ddd" />
+					<stop offset="60%" stop-color="#bbb" />
+					<stop offset="100%" stop-color="#888" />
+				</linearGradient>
+			</defs>
+			<circle cx="14" cy="14" r="10" fill="none" stroke="url(#ring-grad-{index})" stroke-width="3" />
+		</svg>
 	</div>
 
 	<!-- Thread -->
@@ -94,6 +99,9 @@
 
 	.ring {
 		transform-style: preserve-3d;
+		backface-visibility: hidden;
+		background: transparent !important;
+		border: none;
 		filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
 	}
 
