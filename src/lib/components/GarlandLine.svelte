@@ -32,12 +32,21 @@
 		}
 
 		window.addEventListener('resize', onResize);
-		// Recalculate once content has loaded
-		const raf = requestAnimationFrame(() => recalculate());
+
+		// Recalculate after DOM settles (images, layout shifts)
+		const timers = [
+			setTimeout(() => recalculate(), 100),
+			setTimeout(() => recalculate(), 500)
+		];
+
+		// Also watch for body size changes
+		const ro = new ResizeObserver(() => recalculate());
+		ro.observe(document.body);
 
 		return () => {
 			window.removeEventListener('resize', onResize);
-			cancelAnimationFrame(raf);
+			timers.forEach(clearTimeout);
+			ro.disconnect();
 		};
 	});
 
@@ -53,15 +62,20 @@
 	});
 
 	// Scroll-driven draw animation
+	// The hero area (~first 15% of the line) should be visible on load,
+	// and the rest draws in progressively as you scroll.
 	$effect(() => {
 		if (!totalLength) return;
 
+		const heroReveal = 0.15; // show first 15% of path immediately
 		let ticking = false;
 
 		function updateDashOffset() {
-			const scrollFraction =
-				window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-			dashOffset = totalLength * (1 - scrollFraction);
+			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+			const scrollFraction = scrollable > 0 ? window.scrollY / scrollable : 0;
+			// Map scroll 0→1 to reveal heroReveal→1 of the path
+			const revealed = heroReveal + scrollFraction * (1 - heroReveal);
+			dashOffset = totalLength * (1 - revealed);
 			ticking = false;
 		}
 

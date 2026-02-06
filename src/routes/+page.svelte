@@ -35,8 +35,10 @@
 		{/if}
 	{/each}
 
+	<Hero />
+
 	<!-- Mobile garland tags: horizontal scroll strip -->
-	<div class="flex gap-3 overflow-x-auto px-6 py-4 sm:hidden">
+	<div class="flex gap-3 overflow-x-auto px-6 pb-6 sm:hidden">
 		{#each featuredProjects as project}
 			<button
 				onclick={() => document.getElementById(project.id)?.scrollIntoView({ behavior: 'smooth' })}
@@ -46,8 +48,6 @@
 			</button>
 		{/each}
 	</div>
-
-	<Hero />
 
 	{#each projects as project}
 		<ProjectSection {project} />
