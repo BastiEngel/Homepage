@@ -118,7 +118,7 @@
 		d={pathD}
 		fill="none"
 		stroke="var(--color-line)"
-		stroke-width="6"
+		stroke-width="12"
 		stroke-dasharray={totalLength}
 		stroke-dashoffset={dashOffset}
 		style="will-change: stroke-dashoffset;"
