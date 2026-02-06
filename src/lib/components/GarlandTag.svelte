@@ -10,10 +10,12 @@
 
 	let { project, point, index }: Props = $props();
 
-	const threadLength = 12 + Math.random() * 10;
+	const threadLength = 14 + Math.random() * 12;
 	const swayDuration = 3 + Math.random() * 2;
 	const swayDelay = Math.random() * 2;
-	const tilt = -3 + Math.random() * 6; // slight random tilt ±3°
+	const tilt = -3 + Math.random() * 6;
+	// Each ring gets a slightly different 3D tilt angle
+	const ringTilt = 55 + Math.random() * 20;
 
 	function scrollToProject() {
 		document.getElementById(project.id)?.scrollIntoView({ behavior: 'smooth' });
@@ -27,44 +29,54 @@
 	}
 </script>
 
+<!-- Offset top by half the ring size so the ring center sits exactly on the line -->
 <div
 	class="garland-tag absolute z-10 hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {point.y}px; --sway-duration: {swayDuration}s; --sway-delay: {swayDelay}s; --tilt: {tilt}deg;"
+	style="left: {point.x}px; top: {point.y - 14}px; --sway-duration: {swayDuration}s; --sway-delay: {swayDelay}s;"
 >
-	<!-- Keyring: small ring sitting on the line -->
-	<div class="flex justify-center">
-		<svg width="16" height="16" viewBox="0 0 16 16" class="ring">
-			<circle cx="8" cy="8" r="6" fill="none" stroke="var(--color-text-muted)" stroke-width="2" />
-		</svg>
+	<!-- 3D Keyring -->
+	<div class="flex justify-center" style="perspective: 120px;">
+		<div class="ring" style="transform: rotateX({ringTilt}deg);">
+			<svg width="28" height="28" viewBox="0 0 28 28">
+				<defs>
+					<linearGradient id="ring-grad-{index}" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0%" stop-color="#999" />
+						<stop offset="40%" stop-color="#ddd" />
+						<stop offset="60%" stop-color="#bbb" />
+						<stop offset="100%" stop-color="#888" />
+					</linearGradient>
+				</defs>
+				<circle cx="14" cy="14" r="10" fill="none" stroke="url(#ring-grad-{index})" stroke-width="3" />
+			</svg>
+		</div>
 	</div>
 
-	<!-- Short thread from ring to tag -->
-	<div class="mx-auto" style="width: 2px; height: {threadLength}px; background: var(--color-text-muted);"></div>
+	<!-- Thread -->
+	<div class="thread mx-auto" style="height: {threadLength}px;"></div>
 
-	<!-- Tag card — shaped like a physical luggage/gift tag -->
+	<!-- Physical tag -->
 	<button
 		onclick={scrollToProject}
 		onkeydown={handleKeydown}
-		class="tag-body relative block cursor-pointer border-none p-0 transition-transform duration-200"
+		class="tag-body relative block cursor-pointer p-0 transition-transform duration-200"
 		style="transform: rotate({tilt}deg);"
 	>
-		<!-- Tag shape with punched hole -->
-		<div class="tag-card relative overflow-hidden rounded-b-lg rounded-t-sm px-3 pb-3 pt-5">
+		<div class="tag-card relative overflow-hidden px-2.5 pb-2.5 pt-5">
 			<!-- Punched hole -->
-			<div class="absolute top-1.5 left-1/2 -translate-x-1/2">
-				<div class="tag-hole h-2.5 w-2.5 rounded-full"></div>
-			</div>
+			<div class="tag-hole absolute top-1.5 left-1/2 -translate-x-1/2"></div>
 
 			<!-- Thumbnail -->
-			<img
-				src="{base}{project.cover}"
-				alt=""
-				class="mb-2 h-16 w-full rounded object-cover"
-				style="min-width: 80px;"
-				loading="lazy"
-			/>
+			<div class="thumb mb-1.5 overflow-hidden rounded-sm">
+				<img
+					src="{base}{project.cover}"
+					alt=""
+					class="block h-14 w-full object-cover"
+					style="min-width: 76px;"
+					loading="lazy"
+				/>
+			</div>
 
-			<!-- Project name -->
+			<!-- Name -->
 			<span class="tag-name block text-center text-xs font-semibold leading-tight">{project.name}</span>
 		</div>
 	</button>
@@ -80,17 +92,34 @@
 		animation-play-state: paused;
 	}
 
+	.ring {
+		transform-style: preserve-3d;
+		filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+	}
+
+	.thread {
+		width: 1px;
+		background: linear-gradient(to bottom, #aaa, #777);
+	}
+
 	.tag-card {
 		background: var(--color-surface);
-		border: 1px solid var(--color-border);
+		border-radius: 4px 4px 8px 8px;
 		box-shadow:
-			0 2px 8px rgba(0, 0, 0, 0.3),
-			0 1px 2px rgba(0, 0, 0, 0.2);
+			0 3px 10px rgba(0, 0, 0, 0.4),
+			0 1px 3px rgba(0, 0, 0, 0.3);
 	}
 
 	.tag-hole {
-		border: 2px solid var(--color-text-muted);
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
 		background: var(--color-bg);
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+	}
+
+	.thumb {
+		background: var(--color-surface-hover);
 	}
 
 	.tag-name {
@@ -99,10 +128,9 @@
 
 	.tag-body:hover .tag-card {
 		background: var(--color-accent);
-		border-color: var(--color-accent);
 		box-shadow:
-			0 4px 16px rgba(0, 0, 0, 0.4),
-			0 2px 4px rgba(0, 0, 0, 0.3);
+			0 6px 20px rgba(0, 0, 0, 0.5),
+			0 2px 6px rgba(0, 0, 0, 0.4);
 	}
 
 	.tag-body:hover .tag-name {
@@ -110,16 +138,11 @@
 	}
 
 	.tag-body:hover .tag-hole {
-		border-color: var(--color-text-inverse);
-		background: var(--color-accent);
+		background: var(--color-accent-hover);
 	}
 
 	.tag-body:hover {
-		transform: rotate(0deg) scale(1.05) !important;
-	}
-
-	.ring {
-		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+		transform: rotate(0deg) scale(1.08) !important;
 	}
 
 	@keyframes sway {
