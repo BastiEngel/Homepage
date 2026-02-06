@@ -119,6 +119,7 @@
 		fill="none"
 		stroke="var(--color-line)"
 		stroke-width="12"
+		stroke-linecap="round"
 		stroke-dasharray={totalLength}
 		stroke-dashoffset={dashOffset}
 		style="will-change: stroke-dashoffset;"
