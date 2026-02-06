@@ -12,6 +12,7 @@
 
 	const swayDuration = 2.5 + Math.random() * 1.5;
 	const swayDelay = Math.random() * 2;
+	const sheenDelay = 2 + Math.random() * 3;
 
 	let pendulumEl: HTMLElement | undefined = $state();
 	let pushAngle = $state(0);
@@ -42,7 +43,7 @@
 
 <div
 	class="garland-tag absolute z-10 hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {point.y - 20}px; --sway-duration: {swayDuration}s; --sway-delay: {swayDelay}s;"
+	style="left: {point.x}px; top: {point.y - 32}px; --sway-duration: {swayDuration}s; --sway-delay: {swayDelay}s; --sheen-delay: {sheenDelay}s;"
 >
 	<div class="sway-layer">
 		<div
@@ -53,15 +54,15 @@
 			onmouseleave={handleMouseLeave}
 		>
 			<!-- Ring back half -->
-			<svg class="ring-back mx-auto block" width="32" height="32" viewBox="0 0 32 32" fill="none">
+			<svg class="ring-back mx-auto block" width="64" height="64" viewBox="0 0 64 64" fill="none">
 				<defs>
-					<linearGradient id="rb-{index}" x1="0" y1="0" x2="32" y2="32">
+					<linearGradient id="rb-{index}" x1="0" y1="0" x2="64" y2="64">
 						<stop offset="0%" stop-color="#aaa" />
 						<stop offset="50%" stop-color="#d0d0d0" />
 						<stop offset="100%" stop-color="#888" />
 					</linearGradient>
 				</defs>
-				<circle cx="16" cy="16" r="11" stroke="url(#rb-{index})" stroke-width="3" fill="none" />
+				<circle cx="32" cy="32" r="22" stroke="url(#rb-{index})" stroke-width="5" fill="none" />
 			</svg>
 
 			<!-- Acrylic charm -->
@@ -71,10 +72,8 @@
 				class="charm-btn relative mx-auto block cursor-pointer p-0"
 			>
 				<div class="charm">
-					<!-- Hole for ring -->
 					<div class="charm-hole"></div>
 
-					<!-- Printed image -->
 					<img
 						src="{base}{project.cover}"
 						alt=""
@@ -82,26 +81,28 @@
 						loading="lazy"
 					/>
 
-					<!-- Project name overlay -->
 					<div class="charm-label">
 						<span>{project.name}</span>
 					</div>
 
-					<!-- Acrylic gloss highlight -->
+					<!-- Static gloss -->
 					<div class="charm-gloss"></div>
+
+					<!-- Animated sheen sweep -->
+					<div class="charm-sheen"></div>
 				</div>
 			</button>
 
 			<!-- Ring front half -->
-			<svg class="ring-front absolute left-1/2 -translate-x-1/2" width="32" height="32" viewBox="0 0 32 32" fill="none" style="top: 0;">
+			<svg class="ring-front absolute left-1/2 -translate-x-1/2" width="64" height="64" viewBox="0 0 64 64" fill="none" style="top: 0;">
 				<defs>
-					<linearGradient id="rf-{index}" x1="0" y1="0" x2="32" y2="32">
+					<linearGradient id="rf-{index}" x1="0" y1="0" x2="64" y2="64">
 						<stop offset="0%" stop-color="#bbb" />
 						<stop offset="50%" stop-color="#e8e8e8" />
 						<stop offset="100%" stop-color="#999" />
 					</linearGradient>
 				</defs>
-				<path d="M 7 22 A 11 11 0 1 1 25 22" stroke="url(#rf-{index})" stroke-width="3" stroke-linecap="round" fill="none" />
+				<path d="M 14 44 A 22 22 0 1 1 50 44" stroke="url(#rf-{index})" stroke-width="5" stroke-linecap="round" fill="none" />
 			</svg>
 		</div>
 	</div>
@@ -109,7 +110,7 @@
 
 <style>
 	.sway-layer {
-		transform-origin: center 16px;
+		transform-origin: center 32px;
 		animation: sway var(--sway-duration) ease-in-out var(--sway-delay) infinite;
 	}
 
@@ -118,7 +119,7 @@
 	}
 
 	.push-layer {
-		transform-origin: center 16px;
+		transform-origin: center 32px;
 		transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 	}
 
@@ -135,7 +136,7 @@
 	.charm-btn {
 		position: relative;
 		z-index: 10;
-		margin-top: -14px;
+		margin-top: -24px;
 		border: none;
 		background: none;
 		outline: none;
@@ -149,54 +150,53 @@
 	}
 
 	.charm {
-		width: 80px;
-		height: 100px;
+		width: 150px;
+		height: 190px;
 		position: relative;
-		border-radius: 18px;
+		border-radius: 24px;
 		overflow: hidden;
-		/* Acrylic plastic look */
-		background: rgba(255, 255, 255, 0.5);
-		border: 3px solid rgba(255, 255, 255, 0.7);
+		background: rgba(255, 255, 255, 0.45);
+		border: 4px solid rgba(255, 255, 255, 0.65);
 		box-shadow:
-			0 4px 16px rgba(0, 0, 0, 0.1),
-			0 1px 4px rgba(0, 0, 0, 0.06),
-			inset 0 1px 0 rgba(255, 255, 255, 0.8);
+			0 6px 24px rgba(0, 0, 0, 0.1),
+			0 2px 6px rgba(0, 0, 0, 0.06),
+			inset 0 1px 0 rgba(255, 255, 255, 0.9);
 	}
 
 	.charm-hole {
 		position: absolute;
-		top: 4px;
+		top: 6px;
 		left: 50%;
 		transform: translateX(-50%);
-		width: 12px;
-		height: 12px;
+		width: 20px;
+		height: 20px;
 		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.4);
+		background: rgba(255, 255, 255, 0.35);
 		border: 2px solid rgba(255, 255, 255, 0.6);
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 		z-index: 3;
 	}
 
 	.charm-image {
 		position: absolute;
-		inset: 6px;
-		width: calc(100% - 12px);
-		height: calc(100% - 12px);
+		inset: 8px;
+		width: calc(100% - 16px);
+		height: calc(100% - 16px);
 		object-fit: cover;
-		border-radius: 12px;
+		border-radius: 16px;
 	}
 
 	.charm-label {
 		position: absolute;
-		bottom: 6px;
-		left: 6px;
-		right: 6px;
-		padding: 4px 6px;
-		background: rgba(0, 0, 0, 0.55);
-		backdrop-filter: blur(4px);
-		border-radius: 0 0 12px 12px;
+		bottom: 8px;
+		left: 8px;
+		right: 8px;
+		padding: 6px 8px;
+		background: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(6px);
+		border-radius: 0 0 16px 16px;
 		color: #fff;
-		font-size: 10px;
+		font-size: 13px;
 		font-weight: 600;
 		text-align: center;
 		line-height: 1.2;
@@ -209,23 +209,42 @@
 	.charm-gloss {
 		position: absolute;
 		inset: 0;
-		border-radius: 18px;
+		border-radius: 24px;
 		background: linear-gradient(
 			135deg,
-			rgba(255, 255, 255, 0.5) 0%,
-			rgba(255, 255, 255, 0.15) 30%,
+			rgba(255, 255, 255, 0.45) 0%,
+			rgba(255, 255, 255, 0.1) 35%,
 			transparent 55%,
-			rgba(255, 255, 255, 0.05) 100%
+			rgba(255, 255, 255, 0.03) 100%
 		);
 		pointer-events: none;
 		z-index: 4;
 	}
 
+	.charm-sheen {
+		position: absolute;
+		inset: 0;
+		border-radius: 24px;
+		background: linear-gradient(
+			105deg,
+			transparent 35%,
+			rgba(255, 255, 255, 0.35) 43%,
+			rgba(255, 255, 255, 0.55) 50%,
+			rgba(255, 255, 255, 0.35) 57%,
+			transparent 65%
+		);
+		background-size: 250% 100%;
+		background-position: 200% 0;
+		animation: sheen 5s ease-in-out var(--sheen-delay) infinite;
+		pointer-events: none;
+		z-index: 5;
+	}
+
 	.charm-btn:hover .charm {
 		box-shadow:
-			0 8px 24px rgba(0, 0, 0, 0.14),
-			0 2px 8px rgba(0, 0, 0, 0.08),
-			inset 0 1px 0 rgba(255, 255, 255, 0.8);
+			0 10px 32px rgba(0, 0, 0, 0.14),
+			0 3px 10px rgba(0, 0, 0, 0.08),
+			inset 0 1px 0 rgba(255, 255, 255, 0.9);
 	}
 
 	@keyframes sway {
@@ -235,6 +254,17 @@
 		}
 		50% {
 			transform: rotate(6deg);
+		}
+	}
+
+	@keyframes sheen {
+		0%,
+		70%,
+		100% {
+			background-position: 200% 0;
+		}
+		35% {
+			background-position: -100% 0;
 		}
 	}
 </style>
