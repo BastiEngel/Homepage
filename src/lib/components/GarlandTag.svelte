@@ -242,9 +242,9 @@
 		animation: sheen 4s ease-in-out var(--sheen-delay) infinite;
 		pointer-events: none;
 		z-index: 25;
-		/* Mask to ring stroke only: r=22, stroke=5 → 19.5–24.5px from center, 60.9%–76.6% of 32px radius */
-		-webkit-mask-image: radial-gradient(circle at center, transparent 63%, black 64%, black 74%, transparent 75%);
-		mask-image: radial-gradient(circle at center, transparent 63%, black 64%, black 74%, transparent 75%);
+		/* Mask to ring stroke: r=22, stroke-width=5 → inner 19.5px, outer 24.5px from center */
+		-webkit-mask-image: radial-gradient(circle at center, transparent 19px, black 19.5px, black 24.5px, transparent 25px);
+		mask-image: radial-gradient(circle at center, transparent 19px, black 19.5px, black 24.5px, transparent 25px);
 	}
 
 	.charm-btn:hover .charm {
