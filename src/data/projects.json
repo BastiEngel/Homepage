@@ -106,6 +106,18 @@
 				"tileSize": "medium"
 			}
 		],
-		"featured": false
+		"featured": true
+	},
+	{
+		"id": "about",
+		"name": "About Me",
+		"description": "I'm a product designer with a passion for creating intuitive, beautiful digital experiences. With over 5 years of experience spanning UX research, interface design, and brand identity, I help companies turn complex problems into elegant solutions.",
+		"role": "",
+		"year": "",
+		"client": "",
+		"tags": [],
+		"cover": "/images/projects/about/cover.webp",
+		"images": [],
+		"featured": true
 	}
 ]

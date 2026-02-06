@@ -4,7 +4,7 @@
 	import GarlandLine from '$lib/components/GarlandLine.svelte';
 	import GarlandTag from '$lib/components/GarlandTag.svelte';
 	import ProjectSection from '$lib/components/ProjectSection.svelte';
-	import About from '$lib/components/About.svelte';
+
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import type { Project, GarlandPoint } from '$lib/types';
@@ -54,7 +54,6 @@
 		<ProjectSection {project} index={i} />
 	{/each}
 
-	<About />
 	<ContactForm />
 </main>
 
