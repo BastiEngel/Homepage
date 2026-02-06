@@ -64,24 +64,23 @@
 				<circle cx="14" cy="14" r="10" stroke="url(#rb-{index})" stroke-width="2.5" fill="none" />
 			</svg>
 
-			<!-- Tag card — bottom overlaps ring -->
+			<!-- Tag card -->
 			<button
 				onclick={scrollToProject}
 				onkeydown={handleKeydown}
 				class="tag-body relative mx-auto block cursor-pointer p-0"
 			>
-				<div class="tag-card relative overflow-hidden px-2.5 pb-2.5 pt-3.5">
-					<div class="tag-hole absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-					<div class="thumb mb-1.5 overflow-hidden rounded-sm">
+				<div class="tag-card">
+					<div class="tag-hole"></div>
+					<div class="tag-content">
 						<img
 							src="{base}{project.cover}"
 							alt=""
-							class="block h-14 w-full object-cover"
-							style="min-width: 76px;"
+							class="tag-thumb"
 							loading="lazy"
 						/>
+						<span class="tag-name">{project.name}</span>
 					</div>
-					<span class="tag-name block text-center text-xs font-semibold leading-tight">{project.name}</span>
 				</div>
 			</button>
 
@@ -143,8 +142,12 @@
 	}
 
 	.tag-card {
+		width: 38px;
+		height: 100px;
+		position: relative;
 		background: #e8d5b5;
-		border-radius: 4px 4px 8px 8px;
+		border-radius: 6px 6px 10px 10px;
+		overflow: hidden;
 		box-shadow:
 			0 3px 10px rgba(0, 0, 0, 0.4),
 			0 1px 3px rgba(0, 0, 0, 0.3);
@@ -157,14 +160,42 @@
 		background: transparent;
 		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 		outline: 3px solid #e8d5b5;
+		position: absolute;
+		top: -5px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 2;
 	}
 
-	.thumb {
+	.tag-content {
+		position: absolute;
+		top: 54%;
+		left: 50%;
+		transform: translate(-50%, -50%) rotate(90deg);
+		width: 78px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.tag-thumb {
+		width: 32px;
+		height: 32px;
+		object-fit: cover;
+		border-radius: 3px;
+		flex-shrink: 0;
 		background: #d4c4a0;
 	}
 
 	.tag-name {
 		color: #2a2015;
+		font-size: 10px;
+		font-weight: 600;
+		line-height: 1.2;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 38px;
 	}
 
 	.tag-body:hover .tag-card {
