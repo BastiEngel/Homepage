@@ -243,8 +243,8 @@
 		pointer-events: none;
 		z-index: 25;
 		/* Mask to ring stroke only: r=22, stroke=5 → 19.5–24.5px from center, 60.9%–76.6% of 32px radius */
-		-webkit-mask-image: radial-gradient(circle at center, transparent 60%, black 61%, black 76%, transparent 77%);
-		mask-image: radial-gradient(circle at center, transparent 60%, black 61%, black 76%, transparent 77%);
+		-webkit-mask-image: radial-gradient(circle at center, transparent 63%, black 64%, black 74%, transparent 75%);
+		mask-image: radial-gradient(circle at center, transparent 63%, black 64%, black 74%, transparent 75%);
 	}
 
 	.charm-btn:hover .charm {
