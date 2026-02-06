@@ -33,13 +33,13 @@
 	});
 </script>
 
-<section id={project.id} class="relative px-6 py-12 md:px-12 lg:py-20">
+<section id={project.id} class="relative px-6 py-12 md:px-12 lg:py-20" style="z-index: 1;">
 	<div
 		class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 lg:gap-16"
 		style="--cols: {reversed ? '2fr 3fr' : '3fr 2fr'};"
 	>
 		<!-- Image -->
-		<div class="overflow-hidden rounded-xl bg-surface shadow-sm" class:lg:order-2={reversed}>
+		<div class="project-tile overflow-hidden rounded-xl" class:lg:order-2={reversed}>
 			<img
 				bind:this={imgEl}
 				src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
@@ -47,6 +47,7 @@
 				loading="lazy"
 				class="aspect-4/3 w-full object-cover"
 			/>
+			<div class="bevel-edge"></div>
 		</div>
 
 		<!-- Text column -->
@@ -66,5 +67,28 @@
 		@media (min-width: 1024px) {
 			grid-template-columns: var(--cols);
 		}
+	}
+
+	.project-tile {
+		position: relative;
+		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
+	}
+
+	.bevel-edge {
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		border: 2px solid rgba(255, 255, 255, 0.35);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+
+		/* Two mask layers: XOR padding-box vs border-box = only border strip */
+		-webkit-mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000);
+		mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000);
+		-webkit-mask-clip: padding-box, border-box;
+		mask-clip: padding-box, border-box;
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
 	}
 </style>
