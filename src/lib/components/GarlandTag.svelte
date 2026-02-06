@@ -72,8 +72,6 @@
 				class="charm-btn relative mx-auto block cursor-pointer p-0"
 			>
 				<div class="charm">
-					<div class="charm-hole"></div>
-
 					<img
 						src="{base}{project.cover}"
 						alt=""
@@ -163,21 +161,7 @@
 			inset 0 1px 0 rgba(255, 255, 255, 0.9);
 	}
 
-	.charm-hole {
-		position: absolute;
-		top: 6px;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.35);
-		border: 2px solid rgba(255, 255, 255, 0.6);
-		box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-		z-index: 3;
-	}
-
-	.charm-image {
+.charm-image {
 		position: absolute;
 		inset: 8px;
 		width: calc(100% - 16px);
