@@ -42,8 +42,8 @@
 
 <section id={project.id} class="relative px-6 py-12 md:px-12 lg:py-20">
 	<div
-		class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 lg:grid-cols-[3fr_2fr] lg:gap-16"
-		class:lg:grid-cols-[2fr_3fr]={reversed}
+		class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 lg:gap-16"
+		style="--cols: {reversed ? '2fr 3fr' : '3fr 2fr'};"
 	>
 		<!-- Images container -->
 		<div class="image-grid" class:lg:order-2={reversed}>
@@ -75,6 +75,12 @@
 </section>
 
 <style>
+	section > div:first-child {
+		@media (min-width: 1024px) {
+			grid-template-columns: var(--cols);
+		}
+	}
+
 	.image-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
