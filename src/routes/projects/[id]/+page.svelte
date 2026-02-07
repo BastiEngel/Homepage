@@ -53,16 +53,6 @@
 				{/if}
 			</div>
 
-			{#if project.tags.length > 0}
-				<div class="mt-4 flex flex-wrap gap-2">
-					{#each project.tags as tag}
-						<span class="bg-tag-bg border-tag-border text-tag-text rounded-full border px-3 py-1 text-xs">
-							{tag}
-						</span>
-					{/each}
-				</div>
-			{/if}
-
 			<p class="text-text mt-6 max-w-3xl text-base leading-relaxed lg:text-lg">
 				{project.description}
 			</p>
