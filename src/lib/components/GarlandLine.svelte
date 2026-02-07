@@ -7,9 +7,10 @@
 		onpoints?: (points: GarlandPoint[]) => void;
 		featuredCount?: number;
 		pathOverride?: string;
+		pathViewBox?: string;
 	}
 
-	let { onpoints, featuredCount = 3, pathOverride }: Props = $props();
+	let { onpoints, featuredCount = 3, pathOverride, pathViewBox }: Props = $props();
 
 	let pathElement: SVGPathElement | undefined = $state();
 	let pathD = $state('');
@@ -19,6 +20,18 @@
 	let pageWidth = $state(0);
 	let pageHeight = $state(0);
 	let heroHeight = $state(0);
+
+	// Parse viewBox dimensions when provided
+	let vbWidth = $derived.by(() => {
+		if (!pathViewBox) return 0;
+		const parts = pathViewBox.split(/\s+/).map(Number);
+		return parts[2] || 0;
+	});
+	let vbHeight = $derived.by(() => {
+		if (!pathViewBox) return 0;
+		const parts = pathViewBox.split(/\s+/).map(Number);
+		return parts[3] || 0;
+	});
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
@@ -66,11 +79,16 @@
 
 			totalLength = len;
 
+			// When using a viewBox, getPointAtLength returns viewBox coords.
+			// Scale heroHeight into viewBox space for comparison.
+			const effectiveHeroHeight = (pathViewBox && vbHeight && pageHeight)
+				? heroHeight * (vbHeight / pageHeight)
+				: heroHeight;
+
 			// Figure out what fraction of path length is in the hero
-			// by sampling where the path exits the hero viewport
 			for (let i = 0; i <= 100; i++) {
 				const pt = pathElement.getPointAtLength((i / 100) * len);
-				if (pt.y > heroHeight) {
+				if (pt.y > effectiveHeroHeight) {
 					heroPathFraction = i / 100;
 					break;
 				}
@@ -78,15 +96,24 @@
 			}
 
 			if (onpoints && featuredCount > 0) {
-				const points = samplePointsAlongPath(pathElement, featuredCount, heroHeight);
+				const points = samplePointsAlongPath(pathElement, featuredCount, effectiveHeroHeight);
+
+				// Scale sampled points from viewBox coords to pixel coords
+				if (pathViewBox && vbWidth && vbHeight && pageWidth && pageHeight) {
+					const scaleX = pageWidth / vbWidth;
+					const scaleY = pageHeight / vbHeight;
+					for (const pt of points) {
+						pt.x *= scaleX;
+						pt.y *= scaleY;
+					}
+				}
+
 				onpoints(points);
 			}
 		});
 	});
 
 	// Scroll-driven draw animation with smooth interpolation.
-	// The line eases toward the target instead of snapping, and draws
-	// slightly ahead of the scroll so it feels responsive.
 	$effect(() => {
 		if (!totalLength) return;
 
@@ -128,6 +155,8 @@
 	class="pointer-events-none absolute top-0 left-0 z-0 hidden sm:block"
 	width={pageWidth}
 	height={pageHeight}
+	viewBox={pathViewBox || undefined}
+	preserveAspectRatio={pathViewBox ? 'none' : undefined}
 	aria-hidden="true"
 >
 	<path
