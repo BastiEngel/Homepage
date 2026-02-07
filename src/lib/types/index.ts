@@ -43,6 +43,7 @@ export interface SiteConfig {
 	colors: Colors;
 	fonts: Fonts;
 	heroLinePath?: string;
+	heroLineViewBox?: string;
 }
 
 export type TileSize = 'small' | 'medium' | 'large';
