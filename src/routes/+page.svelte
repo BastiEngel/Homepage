@@ -30,6 +30,7 @@
 		onpoints={handleGarlandPoints}
 		featuredCount={featuredProjects.length}
 		pathOverride={config.heroLinePath}
+		pathViewBox={config.heroLineViewBox}
 	/>
 
 	<!-- Garland tags hanging from the line (desktop only) -->
