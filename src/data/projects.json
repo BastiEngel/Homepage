@@ -26,7 +26,26 @@
 			}
 		],
 		"externalUrl": "https://behance.net/gallery/brand-refresh",
-		"featured": true
+		"featured": true,
+		"linePath": "M 500 0 C 200 200, 800 400, 300 600 S 700 1000, 500 1200 C 200 1400, 800 1600, 400 1800 S 600 2200, 500 2400 C 300 2600, 700 2800, 500 3000",
+		"lineColor": "#e8a87c",
+		"detailImages": [
+			{
+				"src": "/images/projects/brand-refresh/detail-01.webp",
+				"alt": "Logo variations and usage guidelines",
+				"tileSize": "large"
+			},
+			{
+				"src": "/images/projects/brand-refresh/detail-02.webp",
+				"alt": "Color palette and typography system",
+				"tileSize": "medium"
+			},
+			{
+				"src": "/images/projects/brand-refresh/detail-03.webp",
+				"alt": "Brand collateral mockups",
+				"tileSize": "medium"
+			}
+		]
 	},
 	{
 		"id": "mobile-banking",
@@ -50,7 +69,21 @@
 			}
 		],
 		"externalUrl": "https://behance.net/gallery/mobile-banking",
-		"featured": true
+		"featured": true,
+		"linePath": "M 500 0 C 700 150, 200 350, 600 500 S 300 800, 500 1000 C 700 1200, 200 1400, 500 1600 S 300 1900, 600 2100 C 400 2300, 700 2500, 500 3000",
+		"lineColor": "#85cdca",
+		"detailImages": [
+			{
+				"src": "/images/projects/mobile-banking/detail-01.webp",
+				"alt": "App home screen with account overview",
+				"tileSize": "large"
+			},
+			{
+				"src": "/images/projects/mobile-banking/detail-02.webp",
+				"alt": "Transaction history and categorization",
+				"tileSize": "medium"
+			}
+		]
 	},
 	{
 		"id": "ecommerce-redesign",
@@ -83,7 +116,31 @@
 				"tileSize": "large"
 			}
 		],
-		"featured": true
+		"featured": true,
+		"linePath": "M 500 0 C 300 250, 700 450, 400 700 S 600 1000, 500 1300 C 300 1500, 700 1700, 500 1900 S 400 2200, 600 2500 C 500 2700, 500 2900, 500 3000",
+		"lineColor": "#d4a5a5",
+		"detailImages": [
+			{
+				"src": "/images/projects/ecommerce-redesign/detail-01.webp",
+				"alt": "Product listing page with filtering",
+				"tileSize": "large"
+			},
+			{
+				"src": "/images/projects/ecommerce-redesign/detail-02.webp",
+				"alt": "Product detail page",
+				"tileSize": "medium"
+			},
+			{
+				"src": "/images/projects/ecommerce-redesign/detail-03.webp",
+				"alt": "Checkout flow redesign",
+				"tileSize": "medium"
+			},
+			{
+				"src": "/images/projects/ecommerce-redesign/detail-04.webp",
+				"alt": "Mobile responsive views",
+				"tileSize": "large"
+			}
+		]
 	},
 	{
 		"id": "health-dashboard",
@@ -106,7 +163,21 @@
 				"tileSize": "medium"
 			}
 		],
-		"featured": true
+		"featured": true,
+		"linePath": "M 500 0 C 600 300, 300 500, 700 800 S 400 1100, 500 1400 C 600 1600, 300 1800, 500 2000 S 600 2400, 400 2600 C 500 2800, 500 2900, 500 3000",
+		"lineColor": "#a8d8ea",
+		"detailImages": [
+			{
+				"src": "/images/projects/health-dashboard/detail-01.webp",
+				"alt": "Main dashboard overview with patient metrics",
+				"tileSize": "large"
+			},
+			{
+				"src": "/images/projects/health-dashboard/detail-02.webp",
+				"alt": "Detailed patient timeline view",
+				"tileSize": "medium"
+			}
+		]
 	},
 	{
 		"id": "about",
