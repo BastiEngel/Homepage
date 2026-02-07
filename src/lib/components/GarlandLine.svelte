@@ -85,23 +85,32 @@
 		};
 	});
 
-	// Transform a point from path-local coords to pixel coords
-	function toPixel(x: number, y: number): { x: number; y: number } {
-		if (hasCustomPath && vbWidth && vbHeight && pageWidth && pageHeight) {
-			const offsetX = vbWidth * (1 - pathScaleX) / 2;
-			const tx = offsetX + x * pathScaleX;
-			const ty = pathOffsetY + y * pathScaleY;
-			return {
-				x: tx * (pageWidth / vbWidth),
-				y: ty * (pageHeight / vbHeight)
-			};
-		}
-		return { x, y };
-	}
-
-	// Measure path and sample tag points after DOM flush
+	// Measure path and sample tag points after DOM flush.
+	// Read reactive dims synchronously so Svelte tracks them as deps;
+	// the async tick callback uses the captured snapshots.
 	$effect(() => {
 		if (!pathElement || !pathD) return;
+
+		const pw = pageWidth;
+		const ph = pageHeight;
+		const hh = heroHeight;
+		const custom = hasCustomPath;
+		const vw = vbWidth;
+		const vh = vbHeight;
+		const sX = pathScaleX;
+		const sY = pathScaleY;
+		const oY = pathOffsetY;
+
+		function toPixelLocal(x: number, y: number) {
+			if (custom && vw && vh && pw && ph) {
+				const ox = vw * (1 - sX) / 2;
+				return {
+					x: (ox + x * sX) * (pw / vw),
+					y: (oY + y * sY) * (ph / vh)
+				};
+			}
+			return { x, y };
+		}
 
 		tick().then(() => {
 			if (!pathElement) return;
@@ -110,12 +119,10 @@
 
 			totalLength = len;
 
-			// Hero height in path-local coords (before group transform)
-			const heroInVB = (hasCustomPath && vbHeight && pageHeight)
-				? (heroHeight * (vbHeight / pageHeight) - pathOffsetY) / pathScaleY
-				: heroHeight;
+			const heroInVB = (custom && vh && ph)
+				? (hh * (vh / ph) - oY) / sY
+				: hh;
 
-			// Figure out what fraction of path length is in the hero
 			for (let i = 0; i <= 100; i++) {
 				const pt = pathElement.getPointAtLength((i / 100) * len);
 				if (pt.y > heroInVB) {
@@ -128,18 +135,15 @@
 			if (onpoints) {
 				let points: GarlandPoint[];
 
-				if (hasCustomPath) {
-					// Detect all nobs along the full path
+				if (custom) {
 					points = sampleNobPoints(pathElement, len);
 
-					// Shift keychains down from nob apex toward the loop base
 					for (const pt of points) {
 						pt.y += 70;
 					}
 
-					// Convert from path-local to pixel coords
 					for (const pt of points) {
-						const px = toPixel(pt.x, pt.y);
+						const px = toPixelLocal(pt.x, pt.y);
 						pt.x = px.x;
 						pt.y = px.y;
 					}
