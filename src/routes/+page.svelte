@@ -37,8 +37,8 @@
 	/>
 
 	<!-- Garland tags hanging from the line at every nob (desktop only) -->
-	{#each garlandPoints as point, i}
-		<GarlandTag project={projects[i % projects.length]} {point} index={i} />
+	{#each garlandPoints.slice(0, projects.length) as point, i}
+		<GarlandTag project={projects[i]} {point} index={i} />
 	{/each}
 
 	<Hero />
