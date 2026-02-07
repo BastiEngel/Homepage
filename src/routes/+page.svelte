@@ -31,6 +31,8 @@
 		featuredCount={featuredProjects.length}
 		pathOverride={config.heroLinePath}
 		pathViewBox={config.heroLineViewBox}
+		pathScaleY={config.heroLineScaleY}
+		pathOffsetY={config.heroLineOffsetY}
 	/>
 
 	<!-- Garland tags hanging from the line (desktop only) -->
