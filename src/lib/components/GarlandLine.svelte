@@ -8,6 +8,7 @@
 		featuredCount?: number;
 		pathOverride?: string;
 		pathViewBox?: string;
+		pathScaleX?: number;
 		pathScaleY?: number;
 		pathOffsetY?: number;
 	}
@@ -17,6 +18,7 @@
 		featuredCount = 3,
 		pathOverride,
 		pathViewBox,
+		pathScaleX = 1,
 		pathScaleY = 1,
 		pathOffsetY = 0
 	}: Props = $props();
@@ -42,9 +44,11 @@
 	});
 
 	let hasCustomPath = $derived(!!pathViewBox && !!pathOverride);
-	let groupTransform = $derived(
-		hasCustomPath ? `translate(0, ${pathOffsetY}) scale(1, ${pathScaleY})` : undefined
-	);
+	let groupTransform = $derived.by(() => {
+		if (!hasCustomPath) return undefined;
+		const offsetX = vbWidth * (1 - pathScaleX) / 2;
+		return `translate(${offsetX}, ${pathOffsetY}) scale(${pathScaleX}, ${pathScaleY})`;
+	});
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
@@ -84,9 +88,11 @@
 	// Transform a point from path-local coords to pixel coords
 	function toPixel(x: number, y: number): { x: number; y: number } {
 		if (hasCustomPath && vbWidth && vbHeight && pageWidth && pageHeight) {
+			const offsetX = vbWidth * (1 - pathScaleX) / 2;
+			const tx = offsetX + x * pathScaleX;
 			const ty = pathOffsetY + y * pathScaleY;
 			return {
-				x: x * (pageWidth / vbWidth),
+				x: tx * (pageWidth / vbWidth),
 				y: ty * (pageHeight / vbHeight)
 			};
 		}

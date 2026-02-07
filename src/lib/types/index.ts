@@ -44,6 +44,7 @@ export interface SiteConfig {
 	fonts: Fonts;
 	heroLinePath?: string;
 	heroLineViewBox?: string;
+	heroLineScaleX?: number;
 	heroLineScaleY?: number;
 	heroLineOffsetY?: number;
 }

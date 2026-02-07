@@ -31,6 +31,7 @@
 		featuredCount={featuredProjects.length}
 		pathOverride={config.heroLinePath}
 		pathViewBox={config.heroLineViewBox}
+		pathScaleX={config.heroLineScaleX}
 		pathScaleY={config.heroLineScaleY}
 		pathOffsetY={config.heroLineOffsetY}
 	/>
