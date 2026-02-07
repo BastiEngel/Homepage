@@ -64,6 +64,10 @@ export interface Project {
 	images?: ProjectImage[];
 	externalUrl?: string;
 	featured?: boolean;
+	linePath?: string;
+	lineColor?: string;
+	lineViewBox?: string;
+	detailImages?: ProjectImage[];
 }
 
 export interface GarlandPoint {
