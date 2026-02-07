@@ -174,6 +174,71 @@ export function samplePointsAlongPath(
 }
 
 /**
+ * Detect nob/loop points along a custom SVG path.
+ * Nobs are local Y minima (upward bumps) where keychains attach.
+ */
+export function sampleNobPoints(
+	pathElement: SVGPathElement,
+	maxLength: number
+): GarlandPoint[] {
+	const totalLength = pathElement.getTotalLength();
+	const sampleLen = Math.min(maxLength, totalLength);
+
+	// Dense sampling
+	const steps = 2000;
+	const samples: { x: number; y: number; dist: number }[] = [];
+	for (let i = 0; i <= steps; i++) {
+		const dist = (i / steps) * sampleLen;
+		const pt = pathElement.getPointAtLength(dist);
+		samples.push({ x: pt.x, y: pt.y, dist });
+	}
+
+	// Find local Y minima (nob apexes — path goes UP then DOWN)
+	const minima: typeof samples = [];
+	const window = 20;
+	for (let i = window; i < samples.length - window; i++) {
+		let isMin = true;
+		for (let j = i - window; j <= i + window; j++) {
+			if (j !== i && samples[j].y < samples[i].y) {
+				isMin = false;
+				break;
+			}
+		}
+		if (!isMin) continue;
+
+		// Check significance: the nob should dip well below surrounding baseline
+		let maxY = samples[i].y;
+		const wide = 60;
+		for (let j = Math.max(0, i - wide); j <= Math.min(samples.length - 1, i + wide); j++) {
+			if (samples[j].y > maxY) maxY = samples[j].y;
+		}
+		if (maxY - samples[i].y > 15) {
+			minima.push(samples[i]);
+		}
+	}
+
+	// Merge nearby minima (keep the one with lowest Y)
+	const merged: typeof samples = [];
+	const minDist = sampleLen * 0.015;
+	for (const m of minima) {
+		if (merged.length === 0 || m.dist - merged[merged.length - 1].dist > minDist) {
+			merged.push(m);
+		} else if (m.y < merged[merged.length - 1].y) {
+			merged[merged.length - 1] = m;
+		}
+	}
+
+	// Convert to GarlandPoints with tangent angles
+	return merged.map((m) => {
+		const delta = sampleLen * 0.002;
+		const ptA = pathElement.getPointAtLength(Math.max(0, m.dist - delta));
+		const ptB = pathElement.getPointAtLength(Math.min(sampleLen, m.dist + delta));
+		const angle = Math.atan2(ptB.y - ptA.y, ptB.x - ptA.x) * (180 / Math.PI);
+		return { x: m.x, y: m.y, angle };
+	});
+}
+
+/**
  * Get total length of an SVG path.
  */
 export function getPathLength(pathElement: SVGPathElement): number {
