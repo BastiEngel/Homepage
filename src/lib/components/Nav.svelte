@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { getConfig } from '$lib/utils/theme';
+	import { page } from '$app/state';
+	import { base } from '$app/paths';
 
 	const config = getConfig();
 	let scrolled = $state(false);
+
+	const isHomepage = $derived(page.url.pathname === `${base}/` || page.url.pathname === base);
 
 	$effect(() => {
 		function onScroll() {
@@ -15,17 +19,25 @@
 	function scrollTo(id: string) {
 		document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 	}
+
+	function navigate(id: string) {
+		if (isHomepage) {
+			scrollTo(id);
+		} else {
+			window.location.href = `${base}/#${id}`;
+		}
+	}
 </script>
 
 <nav
 	class="fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between px-6 transition-all duration-300 md:px-12"
 	class:scrolled
 >
-	<span class="text-text text-lg font-semibold">{config.meta.name}</span>
+	<a href="{base}/" class="text-text text-lg font-semibold no-underline">{config.meta.name}</a>
 	<div class="flex items-center gap-6">
-		<button onclick={() => scrollTo('brand-refresh')} class="nav-link">Projects</button>
-		<button onclick={() => scrollTo('about')} class="nav-link">About</button>
-		<button onclick={() => scrollTo('contact')} class="nav-link">Contact</button>
+		<button onclick={() => navigate('brand-refresh')} class="nav-link">Projects</button>
+		<button onclick={() => navigate('about')} class="nav-link">About</button>
+		<button onclick={() => navigate('contact')} class="nav-link">Contact</button>
 	</div>
 </nav>
 
