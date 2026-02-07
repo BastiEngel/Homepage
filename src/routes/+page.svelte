@@ -56,9 +56,11 @@
 		{/each}
 	</div>
 
-	{#each projects as project, i}
-		<ProjectSection {project} index={i} />
-	{/each}
+	<div class="mt-48">
+		{#each projects as project, i}
+			<ProjectSection {project} index={i} />
+		{/each}
+	</div>
 
 	<ContactForm />
 </main>
