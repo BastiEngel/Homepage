@@ -14,11 +14,6 @@
 	const swayDelay = Math.random() * 2;
 	const variant = (index % 2) + 1;
 
-	// Offset the line segment along the path tangent to thread through one side of the ring
-	const angleRad = ((point.angle ?? 0) * Math.PI) / 180;
-	const lineOffsetX = Math.cos(angleRad) * -31;
-	const lineOffsetY = Math.sin(angleRad) * -31;
-
 	let pendulumEl: HTMLElement | undefined = $state();
 	let pushAngle = $state(0);
 	let swayAngle = $state(0);
@@ -124,9 +119,6 @@
 	class="garland-tag absolute z-10 hidden -translate-x-1/2 sm:block"
 	style="left: {point.x}px; top: {point.y - 47}px;"
 >
-	<!-- Line segment through the ring — stays fixed, aligned to path tangent, offset along tangent -->
-	<div class="ring-line" style="left: calc(50% + {lineOffsetX}px); top: {47 + lineOffsetY}px; transform: translate(-50%, -50%) rotate({point.angle ?? 0}deg);"></div>
-
 	<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
 		<div
 			bind:this={pendulumEl}
@@ -165,7 +157,6 @@
 				/>
 				<div class="tag-sheen" style="background-position: {sheenPos}% 0;"></div>
 				<span class="tag-title" class:visible={hovered}>{project.name}</span>
-				<!-- Line passes through here (ring-line div above) -->
 				<!-- Front half of ring + body (above the line) -->
 				<img
 					src="{base}/images/keychain-0{variant}.png"
@@ -219,17 +210,6 @@
 		outline: 2px solid var(--color-accent);
 		outline-offset: 4px;
 		border-radius: 8px;
-	}
-
-	.ring-line {
-		position: absolute;
-		top: 47px;
-		left: 50%;
-		width: 36px;
-		height: 12px;
-		background: var(--color-line);
-		border-radius: 6px;
-		z-index: 5;
 	}
 
 	.tag-img {
