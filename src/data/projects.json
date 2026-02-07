@@ -27,7 +27,6 @@
 		],
 		"externalUrl": "https://behance.net/gallery/brand-refresh",
 		"featured": true,
-		"linePath": "M 500 0 C 200 200, 800 400, 300 600 S 700 1000, 500 1200 C 200 1400, 800 1600, 400 1800 S 600 2200, 500 2400 C 300 2600, 700 2800, 500 3000",
 		"lineColor": "#e8a87c",
 		"detailImages": [
 			{
@@ -70,7 +69,6 @@
 		],
 		"externalUrl": "https://behance.net/gallery/mobile-banking",
 		"featured": true,
-		"linePath": "M 500 0 C 700 150, 200 350, 600 500 S 300 800, 500 1000 C 700 1200, 200 1400, 500 1600 S 300 1900, 600 2100 C 400 2300, 700 2500, 500 3000",
 		"lineColor": "#85cdca",
 		"detailImages": [
 			{
@@ -117,7 +115,6 @@
 			}
 		],
 		"featured": true,
-		"linePath": "M 500 0 C 300 250, 700 450, 400 700 S 600 1000, 500 1300 C 300 1500, 700 1700, 500 1900 S 400 2200, 600 2500 C 500 2700, 500 2900, 500 3000",
 		"lineColor": "#d4a5a5",
 		"detailImages": [
 			{
@@ -164,7 +161,6 @@
 			}
 		],
 		"featured": true,
-		"linePath": "M 500 0 C 600 300, 300 500, 700 800 S 400 1100, 500 1400 C 600 1600, 300 1800, 500 2000 S 600 2400, 400 2600 C 500 2800, 500 2900, 500 3000",
 		"lineColor": "#a8d8ea",
 		"detailImages": [
 			{

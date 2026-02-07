@@ -42,6 +42,7 @@ export interface SiteConfig {
 	meta: Meta;
 	colors: Colors;
 	fonts: Fonts;
+	heroLinePath?: string;
 }
 
 export type TileSize = 'small' | 'medium' | 'large';
@@ -66,7 +67,6 @@ export interface Project {
 	featured?: boolean;
 	linePath?: string;
 	lineColor?: string;
-	lineViewBox?: string;
 	detailImages?: ProjectImage[];
 }
 

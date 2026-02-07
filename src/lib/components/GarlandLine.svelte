@@ -6,9 +6,10 @@
 	interface Props {
 		onpoints?: (points: GarlandPoint[]) => void;
 		featuredCount?: number;
+		pathOverride?: string;
 	}
 
-	let { onpoints, featuredCount = 3 }: Props = $props();
+	let { onpoints, featuredCount = 3, pathOverride }: Props = $props();
 
 	let pathElement: SVGPathElement | undefined = $state();
 	let pathD = $state('');
@@ -24,8 +25,14 @@
 		pageWidth = window.innerWidth;
 		pageHeight = document.documentElement.scrollHeight;
 		heroHeight = window.innerHeight;
-		pathD = generateGarlandPath(pageWidth, pageHeight, heroHeight);
+		if (!pathOverride) {
+			pathD = generateGarlandPath(pageWidth, pageHeight, heroHeight);
+		}
 	}
+
+	$effect(() => {
+		if (pathOverride) pathD = pathOverride;
+	});
 
 	$effect(() => {
 		recalculate();

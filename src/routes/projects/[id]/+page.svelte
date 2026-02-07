@@ -9,17 +9,17 @@
 	let { data } = $props();
 	const project = data.project;
 	const images = project.detailImages ?? project.images ?? [];
+
+	// Derive a stable numeric seed from the project id
+	let seed = 0;
+	for (let i = 0; i < project.id.length; i++) seed = (seed * 31 + project.id.charCodeAt(i)) | 0;
 </script>
 
 <Nav />
 
 <main class="relative">
-	{#if project.linePath && project.lineColor}
-		<ProjectDetailLine
-			pathD={project.linePath}
-			color={project.lineColor}
-			viewBox={project.lineViewBox}
-		/>
+	{#if project.lineColor}
+		<ProjectDetailLine color={project.lineColor} {seed} pathOverride={project.linePath} />
 	{/if}
 
 	<!-- Hero -->
