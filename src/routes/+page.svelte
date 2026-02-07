@@ -36,11 +36,9 @@
 		pathOffsetY={config.heroLineOffsetY}
 	/>
 
-	<!-- Garland tags hanging from the line (desktop only) -->
-	{#each featuredProjects as project, i}
-		{#if garlandPoints[i]}
-			<GarlandTag {project} point={garlandPoints[i]} index={i} />
-		{/if}
+	<!-- Garland tags hanging from the line at every nob (desktop only) -->
+	{#each garlandPoints as point, i}
+		<GarlandTag project={projects[i % projects.length]} {point} index={i} />
 	{/each}
 
 	<Hero />

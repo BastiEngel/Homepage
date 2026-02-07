@@ -125,24 +125,12 @@
 				if (i === 100) heroPathFraction = 1;
 			}
 
-			if (onpoints && featuredCount > 0) {
+			if (onpoints) {
 				let points: GarlandPoint[];
 
 				if (hasCustomPath) {
-					// Use nob detection for custom paths
-					const heroLength = heroPathFraction * len;
-					const allNobs = sampleNobPoints(pathElement, heroLength);
-
-					// Select evenly-spaced nobs if we have more than needed
-					if (allNobs.length <= featuredCount) {
-						points = allNobs;
-					} else {
-						points = [];
-						for (let i = 0; i < featuredCount; i++) {
-							const idx = Math.round((i / (featuredCount - 1)) * (allNobs.length - 1));
-							points.push(allNobs[idx]);
-						}
-					}
+					// Detect all nobs along the full path
+					points = sampleNobPoints(pathElement, len);
 
 					// Shift keychains down from nob apex toward the loop base
 					for (const pt of points) {
