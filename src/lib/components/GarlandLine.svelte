@@ -138,6 +138,11 @@
 						}
 					}
 
+					// Shift keychains down from nob apex toward the loop base
+					for (const pt of points) {
+						pt.y += 70;
+					}
+
 					// Convert from path-local to pixel coords
 					for (const pt of points) {
 						const px = toPixel(pt.x, pt.y);
