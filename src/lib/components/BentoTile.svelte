@@ -21,7 +21,7 @@
 </script>
 
 <div
-	class="project-tile group overflow-hidden rounded-xl {spanClass[tileSize]} transition-all duration-300 hover:scale-[1.02]"
+	class="project-tile overflow-hidden rounded-xl {spanClass[tileSize]}"
 	use:scrollReveal={{ delay: index * 100 }}
 >
 	<div class="aspect-4/3 w-full overflow-hidden">
@@ -30,7 +30,7 @@
 			{alt}
 			loading={eager ? 'eager' : 'lazy'}
 			fetchpriority={eager ? 'high' : undefined}
-			class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+			class="h-full w-full object-cover"
 		/>
 	</div>
 	<div class="bevel-edge"></div>
