@@ -40,13 +40,25 @@
 	>
 		<!-- Image -->
 		<div class="project-tile overflow-hidden rounded-xl" class:lg:order-2={reversed}>
-			<img
-				bind:this={imgEl}
-				src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
-				alt="{project.name} cover"
-				loading="lazy"
-				class="aspect-4/3 w-full object-cover"
-			/>
+			{#if project.id !== 'about'}
+				<a href="{base}/projects/{project.id}">
+					<img
+						bind:this={imgEl}
+						src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
+						alt="{project.name} cover"
+						loading="lazy"
+						class="aspect-4/3 w-full object-cover"
+					/>
+				</a>
+			{:else}
+				<img
+					bind:this={imgEl}
+					src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
+					alt="{project.name} cover"
+					loading="lazy"
+					class="aspect-4/3 w-full object-cover"
+				/>
+			{/if}
 			<div class="bevel-edge"></div>
 		</div>
 
@@ -58,6 +70,17 @@
 			<p class="text-text mt-6 text-base leading-relaxed lg:text-lg">
 				{project.description}
 			</p>
+			{#if project.id !== 'about'}
+				<a
+					href="{base}/projects/{project.id}"
+					class="text-accent hover:text-accent-hover mt-4 inline-flex items-center gap-1 text-sm font-semibold transition-colors"
+				>
+					View project
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+					</svg>
+				</a>
+			{/if}
 		</div>
 	</div>
 </section>
