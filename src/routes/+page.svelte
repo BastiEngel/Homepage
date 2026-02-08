@@ -8,10 +8,8 @@
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import type { Project, GarlandPoint } from '$lib/types';
-	import { getConfig } from '$lib/utils/theme';
 	import projectsData from '../data/projects.json';
 
-	const config = getConfig();
 	const projects = projectsData as Project[];
 	const featuredProjects = projects.filter((p) => p.featured);
 
@@ -29,7 +27,6 @@
 	<GarlandLine
 		onpoints={handleGarlandPoints}
 		featuredCount={featuredProjects.length}
-		pathOverride={config.heroLinePath}
 	/>
 
 	<!-- Garland tags hanging from the line (desktop only) -->
