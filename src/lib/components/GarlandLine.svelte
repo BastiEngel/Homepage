@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { generateGarlandPath, samplePointsAlongPath, getPathLength } from '$lib/utils/garlandPath';
+	import { generateGarlandPath, sampleFanPoints, getPathLength } from '$lib/utils/garlandPath';
 	import type { GarlandPoint } from '$lib/types';
 
 	interface Props {
 		onpoints?: (points: GarlandPoint[]) => void;
 		featuredCount?: number;
-		pathOverride?: string;
 	}
 
-	let { onpoints, featuredCount = 3, pathOverride }: Props = $props();
+	let { onpoints, featuredCount = 3 }: Props = $props();
 
 	let pathElement: SVGPathElement | undefined = $state();
 	let pathD = $state('');
@@ -25,14 +24,8 @@
 		pageWidth = window.innerWidth;
 		pageHeight = document.documentElement.scrollHeight;
 		heroHeight = window.innerHeight;
-		if (!pathOverride) {
-			pathD = generateGarlandPath(pageWidth, pageHeight, heroHeight);
-		}
+		pathD = generateGarlandPath(pageWidth, pageHeight, heroHeight);
 	}
-
-	$effect(() => {
-		if (pathOverride) pathD = pathOverride;
-	});
 
 	$effect(() => {
 		recalculate();
@@ -78,7 +71,7 @@
 			}
 
 			if (onpoints && featuredCount > 0) {
-				const points = samplePointsAlongPath(pathElement, featuredCount, heroHeight);
+				const points = sampleFanPoints(pathElement, featuredCount, heroHeight);
 				onpoints(points);
 			}
 		});
@@ -125,7 +118,7 @@
 </script>
 
 <svg
-	class="pointer-events-none absolute top-0 left-0 z-0 hidden sm:block"
+	class="pointer-events-none absolute top-0 left-0 z-[5] hidden sm:block"
 	width={pageWidth}
 	height={pageHeight}
 	aria-hidden="true"
