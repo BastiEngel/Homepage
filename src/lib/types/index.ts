@@ -74,4 +74,5 @@ export interface GarlandPoint {
 	x: number;
 	y: number;
 	angle?: number;
+	fanAngle?: number;
 }
