@@ -12,12 +12,7 @@
 
 	const swayDuration = 2.5 + Math.random() * 1.5;
 	const swayDelay = Math.random() * 2;
-	const variant = (index % 2) + 1;
-
-	// Offset the line segment along the path tangent to thread through one side of the ring
-	const angleRad = ((point.angle ?? 0) * Math.PI) / 180;
-	const lineOffsetX = Math.cos(angleRad) * -31;
-	const lineOffsetY = Math.sin(angleRad) * -31;
+	const variant = (index % 4) + 1;
 
 	let pendulumEl: HTMLElement | undefined = $state();
 	let pushAngle = $state(0);
@@ -120,60 +115,73 @@
 	}
 </script>
 
+<!-- Back layer: left half of ring, sits behind the GarlandLine SVG -->
 <div
-	class="garland-tag absolute z-10 hidden -translate-x-1/2 sm:block"
+	class="garland-tag-back absolute z-[2] hidden -translate-x-1/2 sm:block"
 	style="left: {point.x}px; top: {point.y - 47}px;"
 >
-	<!-- Line segment through the ring — stays fixed, aligned to path tangent, offset along tangent -->
-	<div class="ring-line" style="left: calc(50% + {lineOffsetX}px); top: {47 + lineOffsetY}px; transform: translate(-50%, -50%) rotate({point.angle ?? 0}deg);"></div>
+	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
+		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
+			<div class="push-layer" style="transform: rotate({pushAngle}deg);">
+				<div class="tag-shell">
+					<img
+						src="{base}/images/Keyring_{variant}.png"
+						alt=""
+						class="tag-img ring-back"
+						draggable="false"
+					/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 
-	<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
-		<div
-			bind:this={pendulumEl}
-			class="push-layer"
-			style="transform: rotate({pushAngle}deg);"
-			onmouseenter={handleMouseEnter}
-			onmousemove={handleMouseMove}
-			onmouseleave={handleMouseLeave}
-		>
-			<button
-				onclick={scrollToProject}
-				onkeydown={handleKeydown}
-				class="tag-btn"
+<!-- Front layer: right half of ring + body + key + cover + sheen + title, sits in front of the GarlandLine SVG -->
+<div
+	class="garland-tag-front absolute z-[8] hidden -translate-x-1/2 sm:block"
+	style="left: {point.x}px; top: {point.y - 47}px; pointer-events: none;"
+>
+	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
+		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
+			<div
+				class="push-layer"
+				style="transform: rotate({pushAngle}deg);"
 			>
-				<!-- Key dangling from the ring hole, behind everything -->
-				<img
-					src="{base}/images/key-01.png"
-					alt=""
-					class="dangling-key"
-					style="transform: rotate({keySwayAngle - pushAngle * 0.7}deg);"
-					draggable="false"
-				/>
-				<!-- Back half of ring (behind the line) -->
-				<img
-					src="{base}/images/keychain-0{variant}.png"
-					alt=""
-					class="tag-img ring-back"
-					draggable="false"
-				/>
-				<!-- Cover image visible through the transparent label window -->
-				<img
-					src="{base}{project.cover}"
-					alt={project.name}
-					class="tag-cover"
-					draggable="false"
-				/>
-				<div class="tag-sheen" style="background-position: {sheenPos}% 0;"></div>
-				<span class="tag-title" class:visible={hovered}>{project.name}</span>
-				<!-- Line passes through here (ring-line div above) -->
-				<!-- Front half of ring + body (above the line) -->
-				<img
-					src="{base}/images/keychain-0{variant}.png"
-					alt=""
-					class="tag-img ring-front"
-					draggable="false"
-				/>
-			</button>
+				<button
+					bind:this={pendulumEl}
+					onclick={scrollToProject}
+					onkeydown={handleKeydown}
+					onmouseenter={handleMouseEnter}
+					onmousemove={handleMouseMove}
+					onmouseleave={handleMouseLeave}
+					class="tag-btn"
+				>
+					<!-- Key dangling from the ring hole, behind everything -->
+					<img
+						src="{base}/images/key-01.png"
+						alt=""
+						class="dangling-key"
+						style="transform: rotate({keySwayAngle - pushAngle * 0.7}deg);"
+						draggable="false"
+					/>
+					<!-- Right half of ring + full body (in front of the line) -->
+					<img
+						src="{base}/images/Keyring_{variant}.png"
+						alt=""
+						class="tag-img ring-front"
+						draggable="false"
+					/>
+					<!-- Cover image visible through the transparent label window -->
+					<img
+						src="{base}{project.cover}"
+						alt={project.name}
+						class="tag-cover"
+						draggable="false"
+					/>
+					<div class="tag-sheen" style="background-position: {sheenPos}% 0;"></div>
+					<span class="tag-title" class:visible={hovered}>{project.name}</span>
+				</button>
+			</div>
 		</div>
 	</div>
 </div>
@@ -191,6 +199,10 @@
 		transform-origin: 49.1% 13.7%;
 		pointer-events: none;
 		user-select: none;
+	}
+
+	.fan-layer {
+		transform-origin: center 47px;
 	}
 
 	.sway-layer {
@@ -213,23 +225,15 @@
 		-webkit-appearance: none;
 		cursor: pointer;
 		padding: 0;
+		pointer-events: auto;
+		/* T-shape: narrow at ring top, full width at body — excludes empty corners */
+		clip-path: polygon(25% 0%, 75% 0%, 75% 22%, 100% 22%, 100% 100%, 0% 100%, 0% 22%, 25% 22%);
 	}
 
 	.tag-btn:focus-visible {
 		outline: 2px solid var(--color-accent);
 		outline-offset: 4px;
 		border-radius: 8px;
-	}
-
-	.ring-line {
-		position: absolute;
-		top: 47px;
-		left: 50%;
-		width: 36px;
-		height: 12px;
-		background: var(--color-line);
-		border-radius: 6px;
-		z-index: 5;
 	}
 
 	.tag-img {
@@ -240,20 +244,18 @@
 		user-select: none;
 	}
 
-	/* Back half: only the top ring area, behind the line */
+	/* Back layer: left half of ring only (extends past center for overlap) */
 	.ring-back {
 		position: relative;
 		z-index: 1;
-		clip-path: inset(0 0 85% 0);
+		clip-path: polygon(0 0, 55% 0, 55% 20%, 0 20%);
 	}
 
-	/* Front half: ring bottom arc + full body, above the line */
+	/* Front layer: L-shaped — right half of ring + full body below (starts before center for overlap) */
 	.ring-front {
-		position: absolute;
-		top: 0;
-		left: 0;
+		position: relative;
 		z-index: 10;
-		clip-path: inset(8% 0 0 0);
+		clip-path: polygon(51% 0, 100% 0, 100% 100%, 0 100%, 0 20%, 51% 20%);
 	}
 
 	.tag-cover {
@@ -319,5 +321,11 @@
 				rgba(255, 255, 255, 0) 100%
 			);
 		background-size: 300% 100%;
+	}
+
+	.tag-shell {
+		position: relative;
+		width: 416px;
+		height: 416px;
 	}
 </style>

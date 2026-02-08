@@ -25,149 +25,131 @@ function catmullRomToBezier(points: GarlandPoint[], tension: number = 0.5): stri
 	return d;
 }
 
+// Outgoing contour extracted from Path_02.svg (viewBox 0 0 1553.64 1363.88).
+// This is the first half of the filled shape — one edge of the thick ribbon.
+const SVG_PATH_D =
+	'M1.76,18.03c66.2,89.05,143.83,169,232.72,235.56,78.28,58.61,164.93,106.03,257,139.13,' +
+	'81.98,29.47,169.37,48.05,256.63,50.24,90.93,2.29,177.21-25.8,259.53-61.85,' +
+	'69.96-30.63,139.37-69.8,215.51-82.74,33.13-5.63,68.13-4.28,100.79,6.02,' +
+	'36.84,11.62,70,33.82,98.17,59.93,53.3,49.38,85.77,114.94,99.46,185.86,' +
+	'15.1,78.28,7.95,160.45-9.82,237.88-20.8,90.66-56.46,177.54-100.98,259.04,' +
+	'-47.88,87.65-106.25,169.6-173.25,243.65-16.32,18.04-33.17,35.6-50.5,52.67,' +
+	'-11.02,10.86,5.95,27.82,16.97,16.97';
+
+const SVG_VIEWBOX_W = 1553.64;
+
+// Endpoint of the outgoing contour in original SVG coordinates
+const SVG_END_X = 1203.99;
+const SVG_END_Y = 1360.39;
+
 /**
- * Generate a winding-road garland path using a single continuous
- * Catmull-Rom spline. In the hero the line zigzags left→right→left
- * like switchbacks; below the hero it widens into gentle S-curves.
- * Because every waypoint goes through one spline, the transition
- * from hero to page body is perfectly smooth.
+ * Scale every coordinate in an SVG path string by a uniform factor.
+ * Works for M, m, c, C, l, L, h, H, v, V commands since all numbers
+ * are simply multiplied by the same scale.
+ */
+function scalePath(d: string, s: number): string {
+	return d.replace(/-?\d*\.?\d+/g, (match) => {
+		return (parseFloat(match) * s).toFixed(2);
+	});
+}
+
+/**
+ * Generate the garland path by scaling the designer-provided SVG shape
+ * to fit the viewport width, then extending it with S-curves to reach
+ * the bottom of the page.
  */
 export function generateGarlandPath(
 	width: number,
 	height: number,
 	heroHeight: number
 ): string {
-	const margin = width * 0.08;
-	const left = margin;
-	const right = width - margin;
+	const scale = width / SVG_VIEWBOX_W;
+	let path = scalePath(SVG_PATH_D, scale);
 
-	const allPoints: GarlandPoint[] = [];
+	// Extend below the SVG path endpoint with S-curves
+	const endX = SVG_END_X * scale;
+	const endY = SVG_END_Y * scale;
+	const remaining = height - endY;
 
-	// --- Hero: winding road passes ---
-	const passes = width >= 1024 ? 5 : width >= 640 ? 4 : 3;
-	const topY = heroHeight * 0.12;
-	const bottomY = heroHeight * 0.85;
-	const passHeight = (bottomY - topY) / (passes - 1);
+	if (remaining > 200) {
+		const margin = width * 0.08;
+		const left = margin + (width - 2 * margin) * 0.2;
+		const right = margin + (width - 2 * margin) * 0.8;
+		const curves = Math.max(2, Math.round(remaining / 800));
+		const segH = remaining / curves;
 
-	for (let i = 0; i < passes; i++) {
-		const y = topY + i * passHeight;
-		const goRight = i % 2 === 0;
-
-		if (i === 0) {
-			allPoints.push({ x: left, y });
-			allPoints.push({ x: (left + right) / 2, y });
-			allPoints.push({ x: right, y });
-		} else {
-			allPoints.push({ x: goRight ? right : left, y });
-		}
-	}
-
-	// --- Below hero: wider S-curves flowing from the last hero point ---
-	const belowHeight = height - heroHeight;
-	if (belowHeight > 200) {
-		const curves = Math.max(2, Math.round(belowHeight / 800));
-		const segH = belowHeight / curves;
-		const lastHero = allPoints[allPoints.length - 1];
-		const lastWasRight = lastHero.x > width / 2;
+		let currentX = endX;
+		// Endpoint is on the right side, so first curve goes left
+		let goLeft = true;
 
 		for (let i = 0; i < curves; i++) {
-			const y = heroHeight + (i + 1) * segH;
-			const goLeft = (i % 2 === 0) === lastWasRight;
-			const x = goLeft ? left + (right - left) * 0.2 : left + (right - left) * 0.8;
-			allPoints.push({ x, y });
+			const targetX = goLeft ? left : right;
+			const dx = targetX - currentX;
+			const dy = segH;
+			// S-curve: ease out vertically, ease into target x
+			path += ` c 0,${(dy / 3).toFixed(2)} ${dx.toFixed(2)},${((dy * 2) / 3).toFixed(2)} ${dx.toFixed(2)},${dy.toFixed(2)}`;
+			currentX = targetX;
+			goLeft = !goLeft;
 		}
 	}
 
-	return catmullRomToBezier(allPoints, 0.75);
+	return path;
 }
 
 /**
- * Sample evenly-spaced points along the hero portion of the path.
- * Tags sit directly on the line.
+ * Sample points at the first valley (local y-maximum) of the path,
+ * fanned out like keys on a keychain ring.
  */
-export function samplePointsAlongPath(
+export function sampleFanPoints(
 	pathElement: SVGPathElement,
 	count: number,
 	heroHeight: number
 ): GarlandPoint[] {
 	const totalLength = pathElement.getTotalLength();
 
-	// Find where the path exits the hero
-	let heroLength = totalLength;
-	for (let i = 0; i <= 200; i++) {
-		const dist = (i / 200) * totalLength;
+	// Sample densely to find the first local maximum of y (the valley dip)
+	let valleyDist = 0;
+	let prevY = 0;
+	let rising = true;
+
+	for (let i = 1; i <= 500; i++) {
+		const dist = (i / 500) * totalLength;
 		const pt = pathElement.getPointAtLength(dist);
-		if (pt.y > heroHeight) {
-			heroLength = dist;
+
+		if (pt.y > heroHeight) break;
+
+		if (rising && pt.y < prevY && i > 20) {
+			// y just started decreasing → previous sample was the valley
+			valleyDist = ((i - 1) / 500) * totalLength;
 			break;
 		}
+
+		rising = pt.y >= prevY;
+		prevY = pt.y;
 	}
 
-	// Sample path densely
-	const sampleCount = 500;
-	const pathPts: { x: number; y: number; dist: number }[] = [];
-	for (let i = 0; i <= sampleCount; i++) {
-		const dist = (i / sampleCount) * heroLength;
-		const pt = pathElement.getPointAtLength(dist);
-		pathPts.push({ x: pt.x, y: pt.y, dist });
-	}
+	// Spread anchor points along the path around the valley
+	const anchorSpread = totalLength * 0.01; // distance along path between each tag
+	const totalAnchorSpan = anchorSpread * (count - 1);
+	const startDist = valleyDist - totalAnchorSpan / 2;
 
-	// Detect zigzag rows by finding where X direction reverses
-	type Row = typeof pathPts;
-	const rows: Row[] = [[]];
-	for (let i = 0; i < pathPts.length; i++) {
-		rows[rows.length - 1].push(pathPts[i]);
-		if (i >= 2) {
-			const prevDx = pathPts[i - 1].x - pathPts[i - 2].x;
-			const currDx = pathPts[i].x - pathPts[i - 1].x;
-			if (prevDx * currDx < 0 && Math.abs(prevDx) > 0.5) {
-				rows.push([pathPts[i]]);
-			}
-		}
-	}
+	// Fan angles: spread evenly around center
+	const fanStep = count > 1 ? 16 : 0;
+	const totalFanSpread = fanStep * (count - 1);
+	const startAngle = totalFanSpread / 2;
 
-	// X range
-	const allXs = pathPts.map((p) => p.x);
-	const minX = Math.min(...allXs);
-	const maxX = Math.max(...allXs);
-
-	// Pick `count` evenly-spaced columns
-	const cols: number[] = [];
-	for (let i = 0; i < count; i++) {
-		cols.push(minX + ((i + 1) / (count + 1)) * (maxX - minX));
-	}
-
-	// Scatter column assignments: stride of 2 avoids diagonal
-	// e.g. for 5: row 0→col 0, row 1→col 2, row 2→col 4, row 3→col 1, row 4→col 3
-	const colOrder: number[] = [];
-	let ci = 0;
-	while (colOrder.length < count) {
-		if (!colOrder.includes(ci % count)) colOrder.push(ci % count);
-		ci += 2;
-	}
-
-	// One tag per row, at the scattered column X
+	const delta = totalLength * 0.002;
 	const points: GarlandPoint[] = [];
 	for (let i = 0; i < count; i++) {
-		const row = rows[i % rows.length];
-		const targetX = cols[colOrder[i]];
+		const dist = Math.max(0, Math.min(totalLength, startDist + i * anchorSpread));
+		const pt = pathElement.getPointAtLength(dist);
 
-		let best = row[Math.floor(row.length / 2)];
-		let bestDiff = Infinity;
-		for (const s of row) {
-			const diff = Math.abs(s.x - targetX);
-			if (diff < bestDiff) {
-				bestDiff = diff;
-				best = s;
-			}
-		}
-		// Compute tangent angle at this point
-		const delta = heroLength * 0.002;
-		const ptA = pathElement.getPointAtLength(Math.max(0, best.dist - delta));
-		const ptB = pathElement.getPointAtLength(Math.min(heroLength, best.dist + delta));
+		const ptA = pathElement.getPointAtLength(Math.max(0, dist - delta));
+		const ptB = pathElement.getPointAtLength(Math.min(totalLength, dist + delta));
 		const angle = Math.atan2(ptB.y - ptA.y, ptB.x - ptA.x) * (180 / Math.PI);
 
-		points.push({ x: best.x, y: best.y, angle });
+		const fanAngle = startAngle - i * fanStep;
+		points.push({ x: pt.x, y: pt.y, angle, fanAngle });
 	}
 
 	return points;
