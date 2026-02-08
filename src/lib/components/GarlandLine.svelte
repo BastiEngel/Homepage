@@ -125,7 +125,7 @@
 </script>
 
 <svg
-	class="pointer-events-none absolute top-0 left-0 z-0 hidden sm:block"
+	class="pointer-events-none absolute top-0 left-0 z-[5] hidden sm:block"
 	width={pageWidth}
 	height={pageHeight}
 	aria-hidden="true"
