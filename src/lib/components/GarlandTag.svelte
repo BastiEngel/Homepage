@@ -16,17 +16,20 @@
 	const variant = (index % 7) + 1;
 	const variantPad = String(variant).padStart(2, '0');
 
-	// Per-variant ring clip-path split (back right edge / front left edge / split height % / y offset px)
-	const SPLITS: Record<number, [number, number, number, number]> = {
-		1: [60, 56, 24.5, 0], 2: [57, 53, 24.5, 4], 7: [57, 53, 24.5, 0],
-		3: [54, 50, 24.5, 4], 4: [54, 50, 24.5, 4], 5: [57, 53, 25, 0], 6: [57, 53, 24.5, 0],
+	// Per-variant config: [splitBack, splitFront, splitH%, yOffset, labelRotDeg, labelShiftY, labelShiftX]
+	const SPLITS: Record<number, number[]> = {
+		1: [60, 56, 24.5, 0, 3, -4, 0], 2: [57, 53, 24.5, 4, 0, 0, 8], 7: [57, 53, 24.5, 0, 0, 0, 0],
+		3: [54, 50, 24.5, 4, 0, 0, 0], 4: [54, 50, 24.5, 4, 0, 0, 0], 5: [57, 53, 25, 0, 0, 0, 0], 6: [57, 53, 24.5, 0, 0, 0, 0],
 	};
-	const [splitBack, splitFront, splitH, yOff] = SPLITS[variant] ?? [60, 56, 24.5, 0];
+	const s = SPLITS[variant] ?? [60, 56, 24.5, 0, 0, 0, 0];
+	const [splitBack, splitFront, splitH, yOff, labelRot, labelShiftY, labelShiftX] = s;
+	const labelTransform = (labelRot || labelShiftY || labelShiftX) ? `transform: rotate(${labelRot}deg) translate(${labelShiftX}px, ${labelShiftY}px);` : '';
 	let tagScale = $derived(Math.max(0.5, Math.min(1, (viewportWidth || 1440) / 1440)));
 	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale);
 
 	const zBack = 2;
-	const zFront = 8;
+	const zFrontBase = 8;
+	let zFront = $derived(hovered ? 30 : zFrontBase);
 
 	let pendulumEl: HTMLElement | undefined = $state();
 	let pushAngle = $state(0);
@@ -192,10 +195,11 @@
 						src="{base}{project.cover}"
 						alt={project.name}
 						class="tag-cover"
+						style={labelTransform}
 						draggable="false"
 					/>
-					<div class="tag-sheen" style="background-position: {sheenPos}% 0;"></div>
-					<span class="tag-title" class:visible={hovered}>{project.name}</span>
+					<div class="tag-sheen" style="background-position: {sheenPos}% 0; {labelTransform}"></div>
+					<span class="tag-title" class:visible={hovered} style={labelTransform}>{project.name}</span>
 				</button>
 			</div>
 		</div>
@@ -242,8 +246,8 @@
 		cursor: pointer;
 		padding: 0;
 		pointer-events: auto;
-		/* T-shape: narrow at ring top, full width at body — excludes empty corners */
-		clip-path: polygon(25% 0%, 75% 0%, 75% 22%, 100% 22%, 100% 100%, 0% 100%, 0% 22%, 25% 22%);
+		/* Tight shape matching the keytag: ring at top, narrower body below */
+		clip-path: polygon(30% 0%, 70% 0%, 72% 22%, 75% 30%, 75% 90%, 65% 97%, 32% 97%, 22% 90%, 22% 30%, 25% 22%);
 	}
 
 	.tag-btn:focus-visible {
