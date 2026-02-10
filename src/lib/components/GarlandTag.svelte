@@ -25,7 +25,7 @@
 	const [splitBack, splitFront, splitH, yOff, labelRot, labelShiftY, labelShiftX] = s;
 	const labelTransform = (labelRot || labelShiftY || labelShiftX) ? `transform: rotate(${labelRot}deg) translate(${labelShiftX}px, ${labelShiftY}px);` : '';
 	let tagScale = $derived(Math.max(0.5, Math.min(1, (viewportWidth || 1440) / 1440)));
-	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale);
+	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale - 12 * tagScale);
 
 	const zBack = 2;
 	const zFrontBase = 8;
