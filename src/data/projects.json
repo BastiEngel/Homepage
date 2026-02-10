@@ -176,6 +176,32 @@
 		]
 	},
 	{
+		"id": "design-system",
+		"name": "Design System",
+		"description": "Built a comprehensive, token-based design system powering multiple product teams with consistent components, accessibility standards, and detailed documentation.",
+		"role": "Design Systems Lead",
+		"year": "2023",
+		"client": "ScaleUp",
+		"tags": ["Design Systems", "Components", "Documentation"],
+		"cover": "/images/projects/health-dashboard/cover.webp",
+		"images": [],
+		"featured": true,
+		"lineColor": "#c3aed6"
+	},
+	{
+		"id": "travel-platform",
+		"name": "Travel Platform",
+		"description": "Designed an immersive travel booking platform combining AI-powered recommendations with stunning visual storytelling to inspire and simplify trip planning.",
+		"role": "Product Designer",
+		"year": "2022",
+		"client": "Wanderlust",
+		"tags": ["Travel", "AI", "UX Design"],
+		"cover": "/images/projects/mobile-banking/cover.webp",
+		"images": [],
+		"featured": true,
+		"lineColor": "#f6d186"
+	},
+	{
 		"id": "about",
 		"name": "About Me",
 		"description": "I'm a product designer with a passion for creating intuitive, beautiful digital experiences. With over 5 years of experience spanning UX research, interface design, and brand identity, I help companies turn complex problems into elegant solutions.",

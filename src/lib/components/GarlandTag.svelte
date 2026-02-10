@@ -12,7 +12,18 @@
 
 	const swayDuration = 2.5 + Math.random() * 1.5;
 	const swayDelay = Math.random() * 2;
-	const variant = (index % 4) + 1;
+	const variant = (index % 7) + 1;
+	const variantPad = String(variant).padStart(2, '0');
+
+	// Per-variant ring clip-path split (back right edge / front left edge)
+	const SPLITS: Record<number, [number, number]> = {
+		1: [60, 56], 2: [60, 56], 7: [60, 56],
+		3: [57, 53], 4: [57, 53], 5: [57, 53], 6: [57, 53],
+	};
+	const [splitBack, splitFront] = SPLITS[variant] ?? [60, 56];
+
+	const zBack = 2;
+	const zFront = 8;
 
 	let pendulumEl: HTMLElement | undefined = $state();
 	let pushAngle = $state(0);
@@ -115,19 +126,20 @@
 	}
 </script>
 
-<!-- Back layer: left half of ring, sits behind the GarlandLine SVG -->
+<!-- Back layer: left half of ring -->
 <div
-	class="garland-tag-back absolute z-[2] hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {point.y - 47}px;"
+	class="garland-tag-back absolute hidden -translate-x-1/2 sm:block"
+	style="left: {point.x}px; top: {point.y - 41}px; z-index: {zBack};"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
 		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
 			<div class="push-layer" style="transform: rotate({pushAngle}deg);">
 				<div class="tag-shell">
 					<img
-						src="{base}/images/Keyring_{variant}.png"
+						src="{base}/images/keytags/Keytag_{variantPad}.png"
 						alt=""
 						class="tag-img ring-back"
+						style="clip-path: polygon(0 0, {splitBack}% 0, {splitBack}% 22%, 0 26%);"
 						draggable="false"
 					/>
 				</div>
@@ -136,10 +148,10 @@
 	</div>
 </div>
 
-<!-- Front layer: right half of ring + body + key + cover + sheen + title, sits in front of the GarlandLine SVG -->
+<!-- Front layer: right half of ring + body -->
 <div
-	class="garland-tag-front absolute z-[8] hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {point.y - 47}px; pointer-events: none;"
+	class="garland-tag-front absolute hidden -translate-x-1/2 sm:block"
+	style="left: {point.x}px; top: {point.y - 41}px; z-index: {zFront}; pointer-events: none;"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
 		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
@@ -166,9 +178,10 @@
 					/>
 					<!-- Right half of ring + full body (in front of the line) -->
 					<img
-						src="{base}/images/Keyring_{variant}.png"
+						src="{base}/images/keytags/Keytag_{variantPad}.png"
 						alt=""
 						class="tag-img ring-front"
+						style="clip-path: polygon({splitFront}% 0, 100% 0, 100% 100%, 0 100%, 0 26%, {splitFront}% 22%);"
 						draggable="false"
 					/>
 					<!-- Cover image visible through the transparent label window -->
@@ -202,15 +215,15 @@
 	}
 
 	.fan-layer {
-		transform-origin: center 47px;
+		transform-origin: calc(50% + 10px) 25px;
 	}
 
 	.sway-layer {
-		transform-origin: center 47px;
+		transform-origin: calc(50% + 10px) 25px;
 	}
 
 	.push-layer {
-		transform-origin: center 47px;
+		transform-origin: calc(50% + 10px) 25px;
 	}
 
 	.tag-btn {
@@ -244,18 +257,16 @@
 		user-select: none;
 	}
 
-	/* Back layer: left half of ring only (extends past center for overlap) */
+	/* Back layer: left half of ring only */
 	.ring-back {
 		position: relative;
 		z-index: 1;
-		clip-path: polygon(0 0, 55% 0, 55% 20%, 0 20%);
 	}
 
-	/* Front layer: L-shaped — right half of ring + full body below (starts before center for overlap) */
+	/* Front layer: right half of ring + full body below */
 	.ring-front {
 		position: relative;
 		z-index: 10;
-		clip-path: polygon(51% 0, 100% 0, 100% 100%, 0 100%, 0 20%, 51% 20%);
 	}
 
 	.tag-cover {

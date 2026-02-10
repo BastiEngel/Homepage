@@ -25,22 +25,34 @@ function catmullRomToBezier(points: GarlandPoint[], tension: number = 0.5): stri
 	return d;
 }
 
-// Outgoing contour extracted from Path_02.svg (viewBox 0 0 1553.64 1363.88).
-// This is the first half of the filled shape — one edge of the thick ribbon.
-const SVG_PATH_D =
-	'M1.76,18.03c66.2,89.05,143.83,169,232.72,235.56,78.28,58.61,164.93,106.03,257,139.13,' +
+// Start point of the SVG path in original coordinates
+const SVG_START_X = 1.76;
+const SVG_START_Y = 18.03;
+
+// Entry tangent direction (first control point of first bezier)
+const SVG_ENTRY_TANGENT_X = 66.2;
+const SVG_ENTRY_TANGENT_Y = 89.05;
+
+// Bezier commands only (without the M command), extracted from Path_02.svg
+// minus the final decorative curl segment that reverses direction.
+const SVG_BEZIERS =
+	'c66.2,89.05,143.83,169,232.72,235.56,78.28,58.61,164.93,106.03,257,139.13,' +
 	'81.98,29.47,169.37,48.05,256.63,50.24,90.93,2.29,177.21-25.8,259.53-61.85,' +
 	'69.96-30.63,139.37-69.8,215.51-82.74,33.13-5.63,68.13-4.28,100.79,6.02,' +
 	'36.84,11.62,70,33.82,98.17,59.93,53.3,49.38,85.77,114.94,99.46,185.86,' +
 	'15.1,78.28,7.95,160.45-9.82,237.88-20.8,90.66-56.46,177.54-100.98,259.04,' +
-	'-47.88,87.65-106.25,169.6-173.25,243.65-16.32,18.04-33.17,35.6-50.5,52.67,' +
-	'-11.02,10.86,5.95,27.82,16.97,16.97';
+	'-47.88,87.65-106.25,169.6-173.25,243.65-16.32,18.04-33.17,35.6-50.5,52.67';
 
 const SVG_VIEWBOX_W = 1553.64;
 
 // Endpoint of the outgoing contour in original SVG coordinates
-const SVG_END_X = 1203.99;
-const SVG_END_Y = 1360.39;
+const SVG_END_X = 1187.02;
+const SVG_END_Y = 1343.42;
+
+// Exit tangent of the SVG path (last cp2 → last endpoint, relative coords)
+// Last bezier: cp2_rel=(-33.17, 35.6), end_rel=(-50.5, 52.67)
+const SVG_END_TANGENT_X = -50.5 - -33.17; // -17.33 (heading left)
+const SVG_END_TANGENT_Y = 52.67 - 35.6; // 17.07 (heading down)
 
 /**
  * Scale every coordinate in an SVG path string by a uniform factor.
@@ -64,7 +76,18 @@ export function generateGarlandPath(
 	heroHeight: number
 ): string {
 	const scale = width / SVG_VIEWBOX_W;
-	let path = scalePath(SVG_PATH_D, scale);
+
+	// Extend backward along entry tangent so the start is off-screen
+	const startX = SVG_START_X * scale;
+	const startY = SVG_START_Y * scale;
+	const entryLen = Math.sqrt(SVG_ENTRY_TANGENT_X ** 2 + SVG_ENTRY_TANGENT_Y ** 2);
+	const leadIn = 200;
+	const offX = startX - (SVG_ENTRY_TANGENT_X / entryLen) * leadIn;
+	const offY = startY - (SVG_ENTRY_TANGENT_Y / entryLen) * leadIn;
+
+	let path =
+		`M ${offX.toFixed(2)} ${offY.toFixed(2)} L ${startX.toFixed(2)} ${startY.toFixed(2)} ` +
+		scalePath(SVG_BEZIERS, scale);
 
 	// Extend below the SVG path endpoint with S-curves
 	const endX = SVG_END_X * scale;
@@ -82,12 +105,24 @@ export function generateGarlandPath(
 		// Endpoint is on the right side, so first curve goes left
 		let goLeft = true;
 
+		// Normalized exit tangent of the SVG path
+		const tangentMag = Math.sqrt(SVG_END_TANGENT_X ** 2 + SVG_END_TANGENT_Y ** 2);
+		const tnx = SVG_END_TANGENT_X / tangentMag;
+		const tny = SVG_END_TANGENT_Y / tangentMag;
+
 		for (let i = 0; i < curves; i++) {
 			const targetX = goLeft ? left : right;
 			const dx = targetX - currentX;
 			const dy = segH;
-			// S-curve: ease out vertically, ease into target x
-			path += ` c 0,${(dy / 3).toFixed(2)} ${dx.toFixed(2)},${((dy * 2) / 3).toFixed(2)} ${dx.toFixed(2)},${dy.toFixed(2)}`;
+			if (i === 0) {
+				// Smooth join: cp1 follows SVG exit tangent direction, scaled to segment size
+				const cp1x = tnx * (dy / 3);
+				const cp1y = tny * (dy / 3);
+				path += ` c ${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${dx.toFixed(2)},${((dy * 2) / 3).toFixed(2)} ${dx.toFixed(2)},${dy.toFixed(2)}`;
+			} else {
+				// S-curve: ease out vertically, ease into target x
+				path += ` c 0,${(dy / 3).toFixed(2)} ${dx.toFixed(2)},${((dy * 2) / 3).toFixed(2)} ${dx.toFixed(2)},${dy.toFixed(2)}`;
+			}
 			currentX = targetX;
 			goLeft = !goLeft;
 		}
@@ -129,12 +164,12 @@ export function sampleFanPoints(
 	}
 
 	// Spread anchor points along the path around the valley
-	const anchorSpread = totalLength * 0.01; // distance along path between each tag
+	const anchorSpread = totalLength * 0.006; // distance along path between each tag
 	const totalAnchorSpan = anchorSpread * (count - 1);
 	const startDist = valleyDist - totalAnchorSpan / 2;
 
-	// Fan angles: spread evenly around center
-	const fanStep = count > 1 ? 16 : 0;
+	// Fan angles: spread evenly around center, keep ~64° total regardless of count
+	const fanStep = count > 1 ? 64 / (count - 1) : 0;
 	const totalFanSpread = fanStep * (count - 1);
 	const startAngle = totalFanSpread / 2;
 
