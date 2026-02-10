@@ -168,8 +168,8 @@ export function sampleFanPoints(
 	const totalAnchorSpan = anchorSpread * (count - 1);
 	const startDist = valleyDist - totalAnchorSpan / 2;
 
-	// Fan angles: spread evenly around center, keep ~64° total regardless of count
-	const fanStep = count > 1 ? 64 / (count - 1) : 0;
+	// Fan angles: spread evenly around center, keep ~80° total regardless of count
+	const fanStep = count > 1 ? 80 / (count - 1) : 0;
 	const totalFanSpread = fanStep * (count - 1);
 	const startAngle = totalFanSpread / 2;
 

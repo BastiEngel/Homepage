@@ -15,12 +15,13 @@
 	const variant = (index % 7) + 1;
 	const variantPad = String(variant).padStart(2, '0');
 
-	// Per-variant ring clip-path split (back right edge / front left edge / split height %)
-	const SPLITS: Record<number, [number, number, number]> = {
-		1: [60, 56, 24.5], 2: [60, 56, 24.5], 7: [60, 56, 24.5],
-		3: [57, 53, 24.5], 4: [57, 53, 24.5], 5: [57, 53, 25], 6: [57, 53, 24.5],
+	// Per-variant ring clip-path split (back right edge / front left edge / split height % / y offset px)
+	const SPLITS: Record<number, [number, number, number, number]> = {
+		1: [60, 56, 24.5, 0], 2: [57, 53, 24.5, 4], 7: [57, 53, 24.5, 0],
+		3: [54, 50, 24.5, 4], 4: [54, 50, 24.5, 4], 5: [57, 53, 25, 0], 6: [57, 53, 24.5, 0],
 	};
-	const [splitBack, splitFront, splitH] = SPLITS[variant] ?? [60, 56, 24.5];
+	const [splitBack, splitFront, splitH, yOff] = SPLITS[variant] ?? [60, 56, 24.5, 0];
+	const topY = point.y - 41 + yOff;
 
 	const zBack = 2;
 	const zFront = 8;
@@ -129,7 +130,7 @@
 <!-- Back layer: left half of ring -->
 <div
 	class="garland-tag-back absolute hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {point.y - 41}px; z-index: {zBack};"
+	style="left: {point.x}px; top: {topY}px; z-index: {zBack};"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
 		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
@@ -151,7 +152,7 @@
 <!-- Front layer: right half of ring + body -->
 <div
 	class="garland-tag-front absolute hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {point.y - 41}px; z-index: {zFront}; pointer-events: none;"
+	style="left: {point.x}px; top: {topY}px; z-index: {zFront}; pointer-events: none;"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
 		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
@@ -240,7 +241,7 @@
 		padding: 0;
 		pointer-events: auto;
 		/* T-shape: narrow at ring top, full width at body — excludes empty corners */
-		clip-path: polygon(25% 0%, 75% 0%, 75% {splitH}%, 100% {splitH}%, 100% 100%, 0% 100%, 0% {splitH}%, 25% {splitH}%);
+		clip-path: polygon(25% 0%, 75% 0%, 75% 22%, 100% 22%, 100% 100%, 0% 100%, 0% 22%, 25% 22%);
 	}
 
 	.tag-btn:focus-visible {
