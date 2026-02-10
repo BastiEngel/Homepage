@@ -24,7 +24,7 @@
 	}
 </script>
 
-<section id="contact" class="relative px-6 py-16 md:px-12 lg:py-24">
+<section id="contact" class="relative z-[6] px-6 py-16 md:px-12 lg:py-24">
 	<div class="mx-auto max-w-2xl" use:scrollReveal>
 		<h2 class="font-heading text-text text-center text-2xl font-bold sm:text-3xl lg:text-4xl">
 			Get in Touch

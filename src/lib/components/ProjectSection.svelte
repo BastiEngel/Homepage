@@ -33,7 +33,7 @@
 	});
 </script>
 
-<section id={project.id} class="relative px-6 py-12 md:px-12 lg:py-20" style="z-index: 1;">
+<section id={project.id} class="relative z-[6] px-6 py-12 md:px-12 lg:py-20">
 	<div
 		class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 lg:gap-16"
 		style="--cols: {reversed ? '2fr 3fr' : '3fr 2fr'};"
