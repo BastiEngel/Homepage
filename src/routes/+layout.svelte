@@ -7,15 +7,10 @@
 
 	const config = getConfig();
 	const cssVars = generateCssVars();
-	const fontFamily = config.fonts.heading;
-	const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;500;600;700&display=swap`;
 </script>
 
 <svelte:head>
 	{@html `<style>${cssVars}</style>`}
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-	<link rel="stylesheet" href={googleFontsUrl} />
 	<title>{config.meta.name} – {config.meta.title}</title>
 	<meta name="description" content={config.meta.description} />
 	<meta property="og:title" content="{config.meta.name} – {config.meta.title}" />

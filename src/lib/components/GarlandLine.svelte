@@ -21,6 +21,10 @@
 	let yShift = $derived(-80 * vwScale);
 	let yScale = $derived(0.7 + 0.3 * vwScale);
 	let heroHeight = $state(0);
+	let textOffset = $state(0);
+	let textVisible = $state(false);
+	const marqueeText = '\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  ·  ';
+	const repeatedText = marqueeText.repeat(60);
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
@@ -79,11 +83,34 @@
 
 			if (onpoints && featuredCount > 0) {
 				const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth)
-					.map(p => ({ ...p, y: p.y * yScale + yShift }));
+					.map(p => ({ ...p, x: p.x * 0.85 + pageWidth * 0.075, y: p.y * yScale * 0.85 + yShift }));
 				onpoints(points);
 			}
 
 		});
+	});
+
+	// Marquee text animation along path — starts off-screen, flows in
+	$effect(() => {
+		if (!totalLength) return;
+		let running = true;
+		let rafId: number;
+		const startTime = performance.now();
+
+		// Start far off-screen, don't show until animation begins
+		textOffset = -5;
+		textVisible = true;
+
+		function tick(now: number) {
+			if (!running) return;
+			textOffset += 0.005;
+				// Seamless loop: reset before text runs out
+				if (textOffset > 300) textOffset = -5;
+			rafId = requestAnimationFrame(tick);
+		}
+
+		rafId = requestAnimationFrame(tick);
+		return () => { running = false; cancelAnimationFrame(rafId); };
 	});
 
 	// Scroll-driven draw animation with smooth interpolation.
@@ -128,21 +155,52 @@
 
 <svg
 	class="pointer-events-none absolute left-0 z-[5]"
-	style="top: {yShift}px; transform: scaleY({yScale}); transform-origin: top center;"
+	style="top: {yShift}px; transform: scaleX(0.85) scaleY({yScale * 0.85}); transform-origin: top center;"
 	width={pageWidth}
 	height={pageHeight}
 	overflow="visible"
 	aria-hidden="true"
 >
 	<path
+		id="garland-path"
 		bind:this={pathElement}
 		d={pathD}
 		fill="none"
 		stroke="var(--color-line)"
-		stroke-width={Math.max(6, 12 * Math.min(1, pageWidth / 1440))}
+		stroke-width={Math.max(18, 36 * Math.min(1, pageWidth / 1440))}
 		stroke-linecap="round"
 		stroke-dasharray={totalLength}
 		stroke-dashoffset={dashOffset}
 		style="will-change: stroke-dashoffset;"
 	/>
+	{#if totalLength > 0 && textVisible}
+		<defs>
+			<mask id="path-reveal-mask">
+				<path
+					d={pathD}
+					fill="none"
+					stroke="white"
+					stroke-width={Math.max(18, 36 * Math.min(1, pageWidth / 1440)) + 20}
+					stroke-linecap="round"
+					stroke-dasharray={totalLength}
+					stroke-dashoffset={dashOffset + totalLength * 0.001}
+				/>
+			</mask>
+		</defs>
+		<text
+			fill="#ffffff"
+			font-size={Math.max(12, (24 / 0.85) * vwScale)}
+			font-weight="700"
+			font-family="'Sligoil Micro', sans-serif"
+			dominant-baseline="central"
+			mask="url(#path-reveal-mask)"
+		>
+			<textPath
+				href="#garland-path"
+				startOffset="{textOffset}%"
+			>
+				{repeatedText}
+			</textPath>
+		</text>
+	{/if}
 </svg>

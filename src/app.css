@@ -1,5 +1,29 @@
 @import 'tailwindcss';
 
+@font-face {
+	font-family: 'Sligoil Micro';
+	src: url('/fonts/sligoil-main/fonts/web/Sligoil-Micro.woff2') format('woff2'),
+		url('/fonts/sligoil-main/fonts/web/Sligoil-Micro.woff') format('woff');
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Sligoil Micro';
+	src: url('/fonts/sligoil-main/fonts/web/Sligoil-MicroMedium.woff2') format('woff2'),
+		url('/fonts/sligoil-main/fonts/web/Sligoil-MicroMedium.woff') format('woff');
+	font-weight: 500;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Sligoil Micro';
+	src: url('/fonts/sligoil-main/fonts/web/Sligoil-MicroBold.woff2') format('woff2'),
+		url('/fonts/sligoil-main/fonts/web/Sligoil-MicroBold.woff') format('woff');
+	font-weight: 700;
+	font-display: swap;
+}
+
 @theme inline {
 	--color-primary: var(--cfg-primary);
 	--color-primary-hover: var(--cfg-primary-hover);
@@ -27,6 +51,7 @@ html {
 
 body {
 	font-family: var(--font-body);
+	font-weight: 500;
 	background-color: var(--color-bg);
 	color: var(--color-text);
 	-webkit-font-smoothing: antialiased;
