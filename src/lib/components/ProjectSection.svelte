@@ -10,12 +10,25 @@
 
 	let { project, index = 0 }: Props = $props();
 
-	const reversed = index % 2 === 1;
+	const reversed = index % 2 === 0;
 	const coverSrc = `${base}${project.cover}`;
 	const isGif = project.cover.endsWith('.gif');
 
 	let imgEl: HTMLImageElement | undefined = $state();
 	let visible = $state(false);
+	let tileEl: HTMLElement | undefined = $state();
+	let tileVisible = $state(false);
+	const fromRight = index % 2 === 0;
+
+	$effect(() => {
+		if (!tileEl) return;
+		const observer = new IntersectionObserver(
+			([entry]) => { if (entry.isIntersecting) { tileVisible = true; observer.disconnect(); } },
+			{ threshold: 0.05 }
+		);
+		observer.observe(tileEl);
+		return () => observer.disconnect();
+	});
 
 	// For GIFs: only set src when in viewport so they play on scroll
 	$effect(() => {
@@ -39,7 +52,13 @@
 		style="--cols: {reversed ? '2fr 3fr' : '3fr 2fr'};"
 	>
 		<!-- Image -->
-		<div class="project-tile overflow-hidden rounded-xl" class:lg:order-2={reversed}>
+		<div
+			bind:this={tileEl}
+			class="project-tile overflow-hidden rounded-xl"
+			class:lg:order-2={reversed}
+			class:tile-visible={tileVisible}
+			style="--fan-origin: {fromRight ? 'right bottom' : 'left bottom'}; --fan-rotate: {fromRight ? '2deg' : '-2deg'};"
+		>
 			{#if project.id !== 'about'}
 				<a href="{base}/projects/{project.id}">
 					<img
@@ -64,24 +83,13 @@
 
 		<!-- Text column -->
 		<div class="flex flex-col justify-start" class:lg:order-1={reversed} use:scrollReveal>
-			<h2 class="font-heading text-text text-2xl font-bold sm:text-3xl lg:text-5xl">
+			<h2 class="font-heading text-text font-bold leading-relaxed" style="font-size: calc(1em * 1.618); margin-top: -0.55em;">
 				{project.name}
 			</h2>
-			<p class="text-text mt-6 text-base leading-relaxed lg:text-lg">
+			<p class="text-text text-base leading-relaxed lg:text-lg">
 				{project.description}
 			</p>
-			{#if project.id !== 'about'}
-				<a
-					href="{base}/projects/{project.id}"
-					class="text-accent hover:text-accent-hover mt-4 inline-flex items-center gap-1 text-sm font-semibold transition-colors"
-				>
-					View project
-					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-					</svg>
-				</a>
-			{/if}
-		</div>
+			</div>
 	</div>
 </section>
 
@@ -95,6 +103,26 @@
 	.project-tile {
 		position: relative;
 		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
+		transform-origin: var(--fan-origin);
+		transform: rotate(var(--fan-rotate)) scale(0.97);
+		opacity: 0;
+		transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	}
+
+	.project-tile.tile-visible {
+		transform: rotate(0deg) scale(1);
+		opacity: 1;
+	}
+
+	@media (max-width: 1023px) {
+		.project-tile {
+			transform-origin: center center;
+			transform: perspective(800px) rotateY(var(--fan-rotate)) scale(0.98);
+		}
+
+		.project-tile.tile-visible {
+			transform: perspective(800px) rotateY(0deg) scale(1);
+		}
 	}
 
 	.bevel-edge {
