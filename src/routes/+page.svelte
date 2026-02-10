@@ -14,11 +14,14 @@
 	const featuredProjects = projects.filter((p) => p.featured);
 
 	let garlandPoints = $state<GarlandPoint[]>([]);
+	let innerWidth = $state(1440);
 
 	function handleGarlandPoints(points: GarlandPoint[]) {
 		garlandPoints = points;
 	}
 </script>
+
+<svelte:window bind:innerWidth={innerWidth} />
 
 <Nav />
 
@@ -32,7 +35,7 @@
 	<!-- Garland tags hanging from the line (desktop only) -->
 	{#each featuredProjects as project, i}
 		{#if garlandPoints[i]}
-			<GarlandTag {project} point={garlandPoints[i]} index={i} />
+			<GarlandTag {project} point={garlandPoints[i]} index={i} viewportWidth={innerWidth} />
 		{/if}
 	{/each}
 

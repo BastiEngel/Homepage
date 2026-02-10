@@ -15,15 +15,20 @@
 	let totalLength = $state(0);
 	let heroPathFraction = $state(0.15);
 	let dashOffset = $state(0);
-	let pageWidth = $state(0);
+	let pageWidth = $state(1440);
 	let pageHeight = $state(0);
+	let vwScale = $derived(Math.min(1, pageWidth / 1440));
+	let yShift = $derived(-80 * vwScale);
+	let yScale = $derived(0.7 + 0.3 * vwScale);
 	let heroHeight = $state(0);
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
 		pageWidth = window.innerWidth;
 		pageHeight = document.documentElement.scrollHeight;
-		heroHeight = window.innerHeight;
+		// Use actual hero section height instead of viewport height
+		const heroEl = document.querySelector('section.relative[class*="h-"]');
+		heroHeight = heroEl ? heroEl.getBoundingClientRect().height : window.innerHeight;
 		pathD = generateGarlandPath(pageWidth, pageHeight, heroHeight);
 	}
 
@@ -51,6 +56,8 @@
 	// Measure path and sample tag points after DOM flush
 	$effect(() => {
 		if (!pathElement || !pathD) return;
+		// Track heroHeight so re-sampling fires on vertical resize too
+		const hh = heroHeight;
 
 		tick().then(() => {
 			if (!pathElement) return;
@@ -63,7 +70,7 @@
 			// by sampling where the path exits the hero viewport
 			for (let i = 0; i <= 100; i++) {
 				const pt = pathElement.getPointAtLength((i / 100) * len);
-				if (pt.y > heroHeight) {
+				if (pt.y > hh) {
 					heroPathFraction = i / 100;
 					break;
 				}
@@ -71,7 +78,8 @@
 			}
 
 			if (onpoints && featuredCount > 0) {
-				const points = sampleFanPoints(pathElement, featuredCount, heroHeight);
+				const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth)
+					.map(p => ({ ...p, y: p.y * yScale + yShift }));
 				onpoints(points);
 			}
 
@@ -119,7 +127,8 @@
 </script>
 
 <svg
-	class="pointer-events-none absolute top-0 left-0 z-[5] hidden sm:block"
+	class="pointer-events-none absolute left-0 z-[5]"
+	style="top: {yShift}px; transform: scaleY({yScale}); transform-origin: top center;"
 	width={pageWidth}
 	height={pageHeight}
 	overflow="visible"
@@ -130,7 +139,7 @@
 		d={pathD}
 		fill="none"
 		stroke="var(--color-line)"
-		stroke-width="12"
+		stroke-width={Math.max(6, 12 * Math.min(1, pageWidth / 1440))}
 		stroke-linecap="round"
 		stroke-dasharray={totalLength}
 		stroke-dashoffset={dashOffset}
