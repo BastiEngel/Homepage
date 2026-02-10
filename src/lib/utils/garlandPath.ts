@@ -138,7 +138,8 @@ export function generateGarlandPath(
 export function sampleFanPoints(
 	pathElement: SVGPathElement,
 	count: number,
-	heroHeight: number
+	heroHeight: number,
+	viewportWidth: number = 1440
 ): GarlandPoint[] {
 	const totalLength = pathElement.getTotalLength();
 
@@ -163,12 +164,13 @@ export function sampleFanPoints(
 		prevY = pt.y;
 	}
 
-	// Spread anchor points along the path around the valley
-	const anchorSpread = totalLength * 0.006; // distance along path between each tag
+	// Spread anchor points along the path around the valley, scaled with viewport
+	const vwScale = Math.min(1, viewportWidth / 1440);
+	const anchorSpread = totalLength * 0.006 * Math.max(0.5, vwScale);
 	const totalAnchorSpan = anchorSpread * (count - 1);
 	const startDist = valleyDist - totalAnchorSpan / 2;
 
-	// Fan angles: spread evenly around center, keep ~80° total regardless of count
+	// Fan angles: spread evenly around center, fixed regardless of viewport
 	const fanStep = count > 1 ? 80 / (count - 1) : 0;
 	const totalFanSpread = fanStep * (count - 1);
 	const startAngle = totalFanSpread / 2;

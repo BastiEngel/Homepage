@@ -6,9 +6,10 @@
 		project: Project;
 		point: GarlandPoint;
 		index: number;
+		viewportWidth?: number;
 	}
 
-	let { project, point, index }: Props = $props();
+	let { project, point, index, viewportWidth = 1440 }: Props = $props();
 
 	const swayDuration = 2.5 + Math.random() * 1.5;
 	const swayDelay = Math.random() * 2;
@@ -21,7 +22,8 @@
 		3: [54, 50, 24.5, 4], 4: [54, 50, 24.5, 4], 5: [57, 53, 25, 0], 6: [57, 53, 24.5, 0],
 	};
 	const [splitBack, splitFront, splitH, yOff] = SPLITS[variant] ?? [60, 56, 24.5, 0];
-	const topY = point.y - 41 + yOff;
+	let tagScale = $derived(Math.max(0.5, Math.min(1, (viewportWidth || 1440) / 1440)));
+	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale);
 
 	const zBack = 2;
 	const zFront = 8;
@@ -129,8 +131,8 @@
 
 <!-- Back layer: left half of ring -->
 <div
-	class="garland-tag-back absolute hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {topY}px; z-index: {zBack};"
+	class="garland-tag-back absolute"
+	style="left: {point.x}px; top: {topY}px; z-index: {zBack}; transform: translateX(-50%) scale({tagScale}); transform-origin: top center;"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
 		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
@@ -151,8 +153,8 @@
 
 <!-- Front layer: right half of ring + body -->
 <div
-	class="garland-tag-front absolute hidden -translate-x-1/2 sm:block"
-	style="left: {point.x}px; top: {topY}px; z-index: {zFront}; pointer-events: none;"
+	class="garland-tag-front absolute"
+	style="left: {point.x}px; top: {topY}px; z-index: {zFront}; pointer-events: none; transform: translateX(-50%) scale({tagScale}); transform-origin: top center;"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
 		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
