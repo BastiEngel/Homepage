@@ -15,12 +15,12 @@
 	const variant = (index % 7) + 1;
 	const variantPad = String(variant).padStart(2, '0');
 
-	// Per-variant ring clip-path split (back right edge / front left edge)
-	const SPLITS: Record<number, [number, number]> = {
-		1: [60, 56], 2: [60, 56], 7: [60, 56],
-		3: [57, 53], 4: [57, 53], 5: [57, 53], 6: [57, 53],
+	// Per-variant ring clip-path split (back right edge / front left edge / split height %)
+	const SPLITS: Record<number, [number, number, number]> = {
+		1: [60, 56, 24.5], 2: [60, 56, 24.5], 7: [60, 56, 24.5],
+		3: [57, 53, 24.5], 4: [57, 53, 24.5], 5: [57, 53, 25], 6: [57, 53, 24.5],
 	};
-	const [splitBack, splitFront] = SPLITS[variant] ?? [60, 56];
+	const [splitBack, splitFront, splitH] = SPLITS[variant] ?? [60, 56, 24.5];
 
 	const zBack = 2;
 	const zFront = 8;
@@ -139,7 +139,7 @@
 						src="{base}/images/keytags/Keytag_{variantPad}.png"
 						alt=""
 						class="tag-img ring-back"
-						style="clip-path: polygon(0 0, {splitBack}% 0, {splitBack}% 22%, 0 26%);"
+						style="clip-path: polygon(0 0, {splitBack}% 0, {splitBack}% {splitH}%, 0 26%);"
 						draggable="false"
 					/>
 				</div>
@@ -181,7 +181,7 @@
 						src="{base}/images/keytags/Keytag_{variantPad}.png"
 						alt=""
 						class="tag-img ring-front"
-						style="clip-path: polygon({splitFront}% 0, 100% 0, 100% 100%, 0 100%, 0 26%, {splitFront}% 22%);"
+						style="clip-path: polygon({splitFront}% 0, 100% 0, 100% 100%, 0 100%, 0 26%, {splitFront}% {splitH}%);"
 						draggable="false"
 					/>
 					<!-- Cover image visible through the transparent label window -->
@@ -240,7 +240,7 @@
 		padding: 0;
 		pointer-events: auto;
 		/* T-shape: narrow at ring top, full width at body — excludes empty corners */
-		clip-path: polygon(25% 0%, 75% 0%, 75% 22%, 100% 22%, 100% 100%, 0% 100%, 0% 22%, 25% 22%);
+		clip-path: polygon(25% 0%, 75% 0%, 75% {splitH}%, 100% {splitH}%, 100% 100%, 0% 100%, 0% {splitH}%, 25% {splitH}%);
 	}
 
 	.tag-btn:focus-visible {
