@@ -19,12 +19,12 @@
 	// Per-variant config: [splitBack, splitFront, splitH%, yOffset, labelRotDeg, labelShiftY, labelShiftX]
 	const SPLITS: Record<number, number[]> = {
 		1: [60, 56, 24.5, 0, 3, -4, 0], 2: [57, 53, 24.5, 4, 0, 0, 8], 7: [57, 53, 24.5, 0, 0, 0, 0],
-		3: [54, 50, 24.5, 4, 0, 0, 0], 4: [54, 50, 24.5, 4, 0, 0, 0], 5: [57, 53, 25, 0, 0, 0, 0], 6: [57, 53, 24.5, 0, 0, 0, 0],
+		3: [54, 50, 24.5, 4, 0, 0, 0], 4: [54, 50, 24.5, 4, 0, 0, 0], 5: [57, 53, 24, 0, 0, 0, 0], 6: [57, 53, 24.5, 0, 0, 0, 0],
 	};
 	const s = SPLITS[variant] ?? [60, 56, 24.5, 0, 0, 0, 0];
 	const [splitBack, splitFront, splitH, yOff, labelRot, labelShiftY, labelShiftX] = s;
 	const labelTransform = (labelRot || labelShiftY || labelShiftX) ? `transform: rotate(${labelRot}deg) translate(${labelShiftX}px, ${labelShiftY}px);` : '';
-	let tagScale = $derived(Math.max(0.5, Math.min(1, (viewportWidth || 1440) / 1440)));
+	let tagScale = $derived(Math.max(0.4, Math.min(0.9, (viewportWidth || 1440) / 1440 * 0.9)));
 	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale - 12 * tagScale);
 
 	const zBack = 2;

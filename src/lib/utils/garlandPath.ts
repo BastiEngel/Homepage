@@ -1,66 +1,78 @@
 import type { GarlandPoint } from '$lib/types';
 
-/**
- * Convert a Catmull-Rom spline through points into SVG cubic bezier commands.
- */
-function catmullRomToBezier(points: GarlandPoint[], tension: number = 0.5): string {
-	if (points.length < 2) return '';
-
-	let d = `M ${points[0].x} ${points[0].y}`;
-
-	for (let i = 0; i < points.length - 1; i++) {
-		const p0 = points[Math.max(0, i - 1)];
-		const p1 = points[i];
-		const p2 = points[i + 1];
-		const p3 = points[Math.min(points.length - 1, i + 2)];
-
-		const cp1x = p1.x + (p2.x - p0.x) * tension / 3;
-		const cp1y = p1.y + (p2.y - p0.y) * tension / 3;
-		const cp2x = p2.x - (p3.x - p1.x) * tension / 3;
-		const cp2y = p2.y - (p3.y - p1.y) * tension / 3;
-
-		d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-	}
-
-	return d;
-}
-
 // Start point of the SVG path in original coordinates
-const SVG_START_X = 1.76;
-const SVG_START_Y = 18.03;
+const SVG_START_X = 272.04;
+const SVG_START_Y = 18;
 
 // Entry tangent direction (first control point of first bezier)
-const SVG_ENTRY_TANGENT_X = 66.2;
-const SVG_ENTRY_TANGENT_Y = 89.05;
+const SVG_ENTRY_TANGENT_X = 119.74;
+const SVG_ENTRY_TANGENT_Y = 151.96;
 
-// Bezier commands only (without the M command), extracted from Path_02.svg
-// minus the final decorative curl segment that reverses direction.
+// Bezier commands only (without the M command), extracted from Path_03.svg
+// outgoing contour of the first cls-5 path (82 segments).
 const SVG_BEZIERS =
-	'c66.2,89.05,143.83,169,232.72,235.56,78.28,58.61,164.93,106.03,257,139.13,' +
-	'81.98,29.47,169.37,48.05,256.63,50.24,90.93,2.29,177.21-25.8,259.53-61.85,' +
-	'69.96-30.63,139.37-69.8,215.51-82.74,33.13-5.63,68.13-4.28,100.79,6.02,' +
-	'36.84,11.62,70,33.82,98.17,59.93,53.3,49.38,85.77,114.94,99.46,185.86,' +
-	'15.1,78.28,7.95,160.45-9.82,237.88-20.8,90.66-56.46,177.54-100.98,259.04,' +
-	'-47.88,87.65-106.25,169.6-173.25,243.65-16.32,18.04-33.17,35.6-50.5,52.67';
+	'c119.74,151.96,273.6,275.52,452.59,350.48,152.09,63.7,328.63,99.24,490.89,56.41,' +
+	'75.82,-20.01,146.43,-54.09,218.45,-84.34,63.35,-26.61,133.51,-53.29,203.43,-41.95,' +
+	'73.52,11.92,140.25,65.09,184.76,122.84,52.41,67.99,70.88,152.09,63.69,236.71,' +
+	'-14.51,170.7,-114.21,346.72,-265.81,430.76,-146.85,81.4,-320.54,53.43,-480.31,41.48,' +
+	'-86.43,-6.46,-174.1,-2.68,-260,8.41,-83.71,10.81,-161.24,41.73,-243.62,57.27,' +
+	'-88.36,16.66,-193.31,5.98,-272.11,-39.3,-38.98,-22.4,-73.56,-58.17,-70.42,-106.15,' +
+	'2.95,-45.03,33.26,-88.29,78.85,-96.98,69.21,-13.19,172.28,34.12,172.02,113.71,' +
+	'-0.21,64.08,-46.22,125.83,-78.27,178.14,-31.64,51.66,-70.78,109.09,-75,171.45,' +
+	'-4.17,61.69,37.48,103.94,93.27,122,65.43,21.18,178.26,26.01,158.82,125.21,' +
+	'-11.68,59.59,-58.35,120.62,-10.58,177.01,58.42,68.97,186.91,58.94,266.95,56.83,' +
+	'128.93,-3.4,258.07,-19.01,387.13,-12.32,49.29,2.56,103.8,7.24,148.26,30.7,' +
+	'16.33,8.62,31.34,19.95,40.81,36.11,20.43,34.84,4.77,75.36,-3.95,111.26,' +
+	'-19.29,79.46,-2.48,155.65,70.19,201.76,61.21,38.84,150.63,35.37,200.71,91.08,' +
+	'49.35,54.9,48.46,171.75,-12.93,218.32,-33.08,25.1,-80.1,21.53,-118.96,18.05,' +
+	'-70.15,-6.28,-139.62,-20.38,-209.34,-30.11,-100.35,-14.01,-201.19,-23.38,-302.5,-26.35,' +
+	'-195.55,-5.74,-385.74,18.38,-568.86,89.23,-70.55,27.3,-146.75,63.54,-188.15,130.15,' +
+	'-40.8,65.64,-33.82,157.78,11.95,219.24,54.49,73.18,129.78,53.91,207.31,41.78,' +
+	'47.93,-7.5,98.8,1.05,125.56,45.48,21.69,36.01,30.82,78.36,52.53,114.7,' +
+	'77.22,129.21,229.1,187.61,372.1,205.22,71.03,8.75,142.3,4.77,212.52,-8.69,' +
+	'72.6,-13.92,145.82,-41.48,220.75,-34.42,64.43,6.07,143.53,41.08,170.19,104.25,' +
+	'18.01,42.68,19.49,99.83,-9.32,137.98,-27.58,36.51,-74.12,56.35,-103.9,92.22,' +
+	'-25.83,31.11,-42.54,66.13,-51.96,105.33,-8.42,35.05,-12.53,71.32,-45.6,92.52,' +
+	'-28.77,18.45,-64.39,13.18,-96.11,7.18,-37.76,-7.14,-75.12,-16.13,-113.53,-19.28,' +
+	'-77.35,-6.35,-164.75,11.51,-221.68,67.44,-22.94,22.54,-42.09,47.95,-67.53,68.02,' +
+	'-39.99,31.56,-88.27,55.79,-137.19,69.86,-77.28,22.22,-157.63,20.17,-233.74,49.02,' +
+	'-72.34,27.42,-149.35,63.56,-206.94,116.18,-58.51,53.45,-82.31,128.39,-56.91,204.81,' +
+	'22.3,67.08,79.23,135.45,154.94,138.55,60.89,2.49,113.09,-41.67,167.53,-62.29,' +
+	'81.05,-30.69,170.93,-29.65,253.09,-3.33,47.88,15.34,91.55,40.03,124.93,78.05,' +
+	'23.64,26.93,41.04,58.62,62.61,87.13,50.33,66.55,124.29,107.85,207.33,117.26,' +
+	'81.67,9.26,178.51,-26.42,255.23,11.02,58.18,28.39,99.09,96.32,101.35,160.07,' +
+	'1.39,39.23,-7.62,79.92,-28.54,113.36,-29.01,46.36,-72.66,56.07,-118,78.88,' +
+	'-40.33,20.28,-73.69,55.15,-92.18,96.28,-18.16,40.4,-24.91,81.96,-58.53,113.96,' +
+	'-62.67,59.66,-165.26,63.47,-243.53,90.99,-75.44,26.52,-141.95,70.3,-192.75,132.41,' +
+	'-82.63,101.02,-120.56,252.52,-246.66,311.06,-106.84,49.6,-273.65,46.15,-357.13,-43.3,' +
+	'-56.24,-60.27,-74.62,-157.89,-51.4,-235.98,27.3,-91.82,116.27,-121.13,203.98,-104.17,' +
+	'83.34,16.12,162.15,64.92,200.98,142.02,35.07,69.63,36.56,151.2,34.96,227.45,' +
+	'-2.3,109.4,-32.86,283.82,86.06,346.77,55.3,29.27,120.2,18,177.16,0.16,' +
+	'69.89,-21.89,136,-54.5,206.66,-74.17,70.66,-19.67,153.85,-24.43,213.58,28.8,' +
+	'25.74,22.94,39.87,53.89,56.34,83.5,19.84,35.67,43.96,68.17,74.43,95.53,' +
+	'36.26,32.57,77.93,59.13,122.77,78.2,37.1,15.77,76.23,24.22,113.92,38.06,' +
+	'86.49,31.75,108.11,114.33,104.58,198.71,-8,190.91,-59.89,382.69,-146.69,552.33';
 
-const SVG_VIEWBOX_W = 1553.64;
+const SVG_VIEWBOX_W = 2176.29;
 
 // Endpoint of the outgoing contour in original SVG coordinates
-const SVG_END_X = 1187.02;
-const SVG_END_Y = 1343.42;
+const SVG_END_X = 1757.57;
+const SVG_END_Y = 7232.02;
 
 // Exit tangent of the SVG path (last cp2 → last endpoint, relative coords)
-// Last bezier: cp2_rel=(-33.17, 35.6), end_rel=(-50.5, 52.67)
-const SVG_END_TANGENT_X = -50.5 - -33.17; // -17.33 (heading left)
-const SVG_END_TANGENT_Y = 52.67 - 35.6; // 17.07 (heading down)
+// Last bezier: cp2_rel=(-59.89, 382.69), end_rel=(-146.69, 552.33)
+const SVG_END_TANGENT_X = -146.69 - -59.89; // -86.8 (heading left)
+const SVG_END_TANGENT_Y = 552.33 - 382.69; // 169.64 (heading down)
 
 /**
- * Scale every coordinate in an SVG path string by a uniform factor.
- * Works for M, m, c, C, l, L, h, H, v, V commands since all numbers
- * are simply multiplied by the same scale.
+ * Scale coordinates in an SVG relative cubic bezier string (c commands).
+ * Numbers alternate: x,y,x,y,x,y per segment, so even indices get sx, odd get sy.
  */
-function scalePath(d: string, s: number): string {
+function scalePath(d: string, sx: number, sy: number = sx): string {
+	let idx = 0;
 	return d.replace(/-?\d*\.?\d+/g, (match) => {
+		const s = idx % 2 === 0 ? sx : sy;
+		idx++;
 		return (parseFloat(match) * s).toFixed(2);
 	});
 }
@@ -85,13 +97,14 @@ export function generateGarlandPath(
 	const offX = startX - (SVG_ENTRY_TANGENT_X / entryLen) * leadIn;
 	const offY = startY - (SVG_ENTRY_TANGENT_Y / entryLen) * leadIn;
 
+	const yStretch = 1.08;
 	let path =
 		`M ${offX.toFixed(2)} ${offY.toFixed(2)} L ${startX.toFixed(2)} ${startY.toFixed(2)} ` +
-		scalePath(SVG_BEZIERS, scale);
+		scalePath(SVG_BEZIERS, scale, scale * yStretch);
 
 	// Extend below the SVG path endpoint with S-curves
 	const endX = SVG_END_X * scale;
-	const endY = SVG_END_Y * scale;
+	const endY = SVG_END_Y * scale * yStretch;
 	const remaining = height - endY;
 
 	if (remaining > 200) {
@@ -166,7 +179,7 @@ export function sampleFanPoints(
 
 	// Spread anchor points along the path around the valley, scaled with viewport
 	const vwScale = Math.min(1, viewportWidth / 1440);
-	const anchorSpread = totalLength * 0.006 * Math.max(0.5, vwScale);
+	const anchorSpread = totalLength * 0.004 * Math.max(0.5, vwScale);
 	const totalAnchorSpan = anchorSpread * (count - 1);
 	const startDist = valleyDist - totalAnchorSpan / 2;
 

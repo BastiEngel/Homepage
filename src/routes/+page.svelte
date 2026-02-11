@@ -41,17 +41,6 @@
 
 	<Hero />
 
-	<!-- Mobile garland tags: horizontal scroll strip -->
-	<div class="flex gap-3 overflow-x-auto px-6 pb-6 sm:hidden">
-		{#each featuredProjects as project}
-			<button
-				onclick={() => document.getElementById(project.id)?.scrollIntoView({ behavior: 'smooth' })}
-				class="bg-tag-bg border-tag-border text-tag-text flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm"
-			>
-				<span class="font-medium">{project.name}</span>
-			</button>
-		{/each}
-	</div>
 
 	{#each projects as project, i}
 		<ProjectSection {project} index={i} />
