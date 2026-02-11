@@ -9,7 +9,7 @@
 	let narrow = $state(false);
 
 	const isHomepage = $derived(page.url.pathname === `${base}/` || page.url.pathname === base);
-	const showBg = $derived(scrolled || narrow);
+	const showBg = $derived(scrolled);
 
 	$effect(() => {
 		function onScroll() {

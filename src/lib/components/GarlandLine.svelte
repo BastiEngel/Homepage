@@ -18,13 +18,13 @@
 	let pageWidth = $state(1440);
 	let pageHeight = $state(0);
 	let vwScale = $derived(Math.min(1, pageWidth / 1440));
-	let yShift = $derived(-80 * vwScale);
-	let yScale = $derived(0.7 + 0.3 * vwScale);
+	let yShift = $derived(-80 * vwScale * vwScale);
+	let yScale = $derived(0.85 + 0.15 * vwScale);
 	let heroHeight = $state(0);
 	let textOffset = $state(0);
 	let textVisible = $state(false);
 	const marqueeText = '\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  ·  ';
-	const repeatedText = marqueeText.repeat(60);
+	const repeatedText = marqueeText.repeat(200);
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
@@ -83,7 +83,7 @@
 
 			if (onpoints && featuredCount > 0) {
 				const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth)
-					.map(p => ({ ...p, x: p.x * 0.85 + pageWidth * 0.075, y: p.y * yScale * 0.85 + yShift }));
+					.map(p => ({ ...p, x: p.x, y: p.y * yScale + yShift }));
 				onpoints(points);
 			}
 
@@ -105,7 +105,7 @@
 			if (!running) return;
 			textOffset += 0.005;
 				// Seamless loop: reset before text runs out
-				if (textOffset > 300) textOffset = -5;
+				if (textOffset > 900) textOffset = -5;
 			rafId = requestAnimationFrame(tick);
 		}
 
@@ -125,9 +125,14 @@
 		let running = true;
 
 		function getTargetOffset() {
-			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-			const scrollFraction = scrollable > 0 ? window.scrollY / scrollable : 0;
-			const revealed = heroPathFraction + scrollFraction * (1 - heroPathFraction);
+			// Use viewport bottom position relative to page height
+			// so the path drawing stays in view at all viewport sizes
+			const viewBottom = window.scrollY + window.innerHeight;
+			const pageH = document.documentElement.scrollHeight;
+			const scrollFraction = pageH > 0 ? Math.min(1, viewBottom / pageH) : 0;
+			// Map so that heroPathFraction is shown at the top,
+			// and 100% is shown when viewport bottom reaches page bottom
+			const revealed = Math.max(heroPathFraction, Math.min(1, scrollFraction * 1.3));
 			return totalLength * (1 - revealed);
 		}
 
@@ -155,7 +160,7 @@
 
 <svg
 	class="pointer-events-none absolute left-0 z-[5]"
-	style="top: {yShift}px; transform: scaleX(0.85) scaleY({yScale * 0.85}); transform-origin: top center;"
+	style="top: {yShift}px; transform: scaleY({yScale}); transform-origin: top center;"
 	width={pageWidth}
 	height={pageHeight}
 	overflow="visible"
