@@ -88,6 +88,7 @@ export function generateGarlandPath(
 	heroHeight: number
 ): string {
 	const scale = width / SVG_VIEWBOX_W;
+	const vwScale = Math.min(1, width / 1440);
 
 	// Extend backward along entry tangent so the start is off-screen
 	const startX = SVG_START_X * scale;
@@ -97,7 +98,8 @@ export function generateGarlandPath(
 	const offX = startX - (SVG_ENTRY_TANGENT_X / entryLen) * leadIn;
 	const offY = startY - (SVG_ENTRY_TANGENT_Y / entryLen) * leadIn;
 
-	const yStretch = 1.08;
+	// More Y stretch on narrow viewports to keep path reaching bottom
+	const yStretch = 1.08 + (1 - vwScale) * 0.12;
 	let path =
 		`M ${offX.toFixed(2)} ${offY.toFixed(2)} L ${startX.toFixed(2)} ${startY.toFixed(2)} ` +
 		scalePath(SVG_BEZIERS, scale, scale * yStretch);

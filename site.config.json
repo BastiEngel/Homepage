@@ -8,9 +8,10 @@
 		"email": "hello@example.com",
 		"about": "I'm a product designer with a passion for creating intuitive, beautiful digital experiences. With over 5 years of experience spanning UX research, interface design, and brand identity, I help companies turn complex problems into elegant solutions.",
 		"socialLinks": [
-			{ "platform": "LinkedIn", "url": "https://linkedin.com/in/username" },
-			{ "platform": "Behance", "url": "https://behance.net/username" },
-			{ "platform": "Dribbble", "url": "https://dribbble.com/username" }
+			{ "platform": "LinkedIn", "url": "https://www.linkedin.com/in/bastian-engel/" },
+			{ "platform": "Behance", "url": "https://www.behance.net/bastianengel1" },
+			{ "platform": "Instagram", "url": "https://www.instagram.com/bastianengel.studio" },
+			{ "platform": "Folkwang", "url": "https://id.folkwang-uni.de/de/portfolios/bastian-engel/" }
 		]
 	},
 	"colors": {

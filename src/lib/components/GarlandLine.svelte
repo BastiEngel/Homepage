@@ -33,7 +33,10 @@
 		// Use actual hero section height instead of viewport height
 		const heroEl = document.querySelector('section.relative[class*="h-"]');
 		heroHeight = heroEl ? heroEl.getBoundingClientRect().height : window.innerHeight;
-		pathD = generateGarlandPath(pageWidth, pageHeight, heroHeight);
+		// Account for CSS scaleY — the path must extend to pageHeight/yScale in SVG coords
+		// so that after CSS scaling it visually reaches the page bottom
+		const effectiveYScale = 0.85 + 0.15 * Math.min(1, pageWidth / 1440);
+		pathD = generateGarlandPath(pageWidth, pageHeight / effectiveYScale, heroHeight);
 	}
 
 	$effect(() => {
@@ -132,7 +135,9 @@
 			const scrollFraction = pageH > 0 ? Math.min(1, viewBottom / pageH) : 0;
 			// Map so that heroPathFraction is shown at the top,
 			// and 100% is shown when viewport bottom reaches page bottom
-			const revealed = Math.max(heroPathFraction, Math.min(1, scrollFraction * 1.3));
+			// Draw ahead more on narrow viewports, less on wide
+			const ahead = 1.0 + 0.3 * (1 - vwScale);
+			const revealed = Math.max(heroPathFraction, Math.min(1, scrollFraction * ahead));
 			return totalLength * (1 - revealed);
 		}
 
