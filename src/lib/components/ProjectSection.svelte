@@ -131,15 +131,5 @@
 		border-radius: inherit;
 		pointer-events: none;
 		border: 2px solid rgba(255, 255, 255, 0.35);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-
-		/* Two mask layers: XOR padding-box vs border-box = only border strip */
-		-webkit-mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000);
-		mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000);
-		-webkit-mask-clip: padding-box, border-box;
-		mask-clip: padding-box, border-box;
-		-webkit-mask-composite: xor;
-		mask-composite: exclude;
 	}
 </style>

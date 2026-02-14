@@ -16,10 +16,10 @@
 	let pageWidth = $state(0);
 	let pageHeight = $state(0);
 
-	/**
-	 * Simple seeded pseudo-random (mulberry32) so each project
-	 * gets a distinct but deterministic curve.
-	 */
+	// Cache layout values
+	let cachedScrollY = 0;
+	let cachedScrollable = 0;
+
 	function seededRandom(s: number) {
 		let t = s + 0x6d2b79f5;
 		return () => {
@@ -29,9 +29,6 @@
 		};
 	}
 
-	/**
-	 * Catmull-Rom spline to SVG cubic beziers — same as garlandPath.ts
-	 */
 	function catmullRomToBezier(points: { x: number; y: number }[], tension = 0.75): string {
 		if (points.length < 2) return '';
 		let d = `M ${points[0].x} ${points[0].y}`;
@@ -56,17 +53,14 @@
 		const right = width - margin;
 		const points: { x: number; y: number }[] = [];
 
-		// Start near top
 		const startX = left + rand() * (right - left);
 		points.push({ x: startX, y: height * 0.02 });
 
-		// Gentle S-curves down the page, same feel as frontpage below-hero section
 		const curves = Math.max(3, Math.round(height / 600));
 		const segH = height / curves;
 
 		for (let i = 0; i < curves; i++) {
 			const y = (i + 1) * segH;
-			// Alternate sides with some randomness, staying within 20%-80% range
 			const goLeft = i % 2 === (rand() > 0.5 ? 0 : 1);
 			const base = goLeft ? 0.15 + rand() * 0.15 : 0.7 + rand() * 0.15;
 			const x = left + (right - left) * base;
@@ -80,12 +74,13 @@
 		if (typeof document === 'undefined') return;
 		pageWidth = window.innerWidth;
 		pageHeight = document.documentElement.scrollHeight;
+		cachedScrollable = pageHeight - window.innerHeight;
+		cachedScrollY = window.scrollY;
 		if (!pathOverride) {
 			pathD = generatePath(pageWidth, pageHeight);
 		}
 	}
 
-	// If an override path is provided, use it directly
 	$effect(() => {
 		if (pathOverride) pathD = pathOverride;
 	});
@@ -93,20 +88,32 @@
 	$effect(() => {
 		recalculate();
 
-		const onResize = () => recalculate();
+		let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+		const onResize = () => {
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(recalculate, 100);
+		};
+		const onScroll = () => { cachedScrollY = window.scrollY; };
+
 		window.addEventListener('resize', onResize);
+		window.addEventListener('scroll', onScroll, { passive: true });
 
 		const timers = [
 			setTimeout(() => recalculate(), 100),
 			setTimeout(() => recalculate(), 500)
 		];
 
-		const ro = new ResizeObserver(() => recalculate());
+		const ro = new ResizeObserver(() => {
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(recalculate, 100);
+		});
 		ro.observe(document.body);
 
 		return () => {
 			window.removeEventListener('resize', onResize);
+			window.removeEventListener('scroll', onScroll);
 			timers.forEach(clearTimeout);
+			clearTimeout(resizeTimer);
 			ro.disconnect();
 		};
 	});
@@ -125,19 +132,23 @@
 		if (!totalLength) return;
 
 		let currentOffset = totalLength;
-		let targetOffset = totalLength;
 		let rafId: number;
 		let running = true;
+		let lastFrame = 0;
 
-		function getTargetOffset() {
-			const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-			const scrollFraction = scrollable > 0 ? window.scrollY / scrollable : 0;
-			return totalLength * (1 - scrollFraction);
-		}
-
-		function animate() {
+		function animate(now: number) {
 			if (!running) return;
-			targetOffset = getTargetOffset();
+
+			// Throttle to ~40fps
+			if (now - lastFrame < 25) {
+				rafId = requestAnimationFrame(animate);
+				return;
+			}
+			lastFrame = now;
+
+			const scrollFraction = cachedScrollable > 0 ? cachedScrollY / cachedScrollable : 0;
+			const targetOffset = totalLength * (1 - scrollFraction);
+
 			currentOffset += (targetOffset - currentOffset) * 0.12;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) {
 				currentOffset = targetOffset;
@@ -170,6 +181,5 @@
 		stroke-linecap="round"
 		stroke-dasharray={totalLength}
 		stroke-dashoffset={dashOffset}
-		style="will-change: stroke-dashoffset;"
 	/>
 </svg>

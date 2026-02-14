@@ -23,18 +23,23 @@
 	let heroHeight = $state(0);
 	let textOffset = $state(0);
 	let textVisible = $state(false);
-	const marqueeText = '\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  ·  ';
-	const repeatedText = marqueeText.repeat(200);
+	const marqueeText = '\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  \u00B7  ';
+	const repeatedText = marqueeText.repeat(60);
+
+	// Cache layout values to avoid thrashing — updated on scroll/resize via passive listeners
+	let cachedScrollY = 0;
+	let cachedInnerH = 0;
+	let cachedPageH = 0;
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
 		pageWidth = window.innerWidth;
 		pageHeight = document.documentElement.scrollHeight;
-		// Use actual hero section height instead of viewport height
+		cachedInnerH = window.innerHeight;
+		cachedPageH = pageHeight;
+		cachedScrollY = window.scrollY;
 		const heroEl = document.querySelector('section.relative[class*="h-"]');
 		heroHeight = heroEl ? heroEl.getBoundingClientRect().height : window.innerHeight;
-		// Account for CSS scaleY — the path must extend to pageHeight/yScale in SVG coords
-		// so that after CSS scaling it visually reaches the page bottom
 		const effectiveYScale = 0.85 + 0.15 * Math.min(1, pageWidth / 1440);
 		pathD = generateGarlandPath(pageWidth, pageHeight / effectiveYScale, heroHeight);
 	}
@@ -42,20 +47,32 @@
 	$effect(() => {
 		recalculate();
 
-		const onResize = () => recalculate();
+		let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+		const onResize = () => {
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(recalculate, 100);
+		};
+		const onScroll = () => { cachedScrollY = window.scrollY; };
+
 		window.addEventListener('resize', onResize);
+		window.addEventListener('scroll', onScroll, { passive: true });
 
 		const timers = [
 			setTimeout(() => recalculate(), 100),
 			setTimeout(() => recalculate(), 500)
 		];
 
-		const ro = new ResizeObserver(() => recalculate());
+		const ro = new ResizeObserver(() => {
+			clearTimeout(resizeTimer);
+			resizeTimer = setTimeout(recalculate, 100);
+		});
 		ro.observe(document.body);
 
 		return () => {
 			window.removeEventListener('resize', onResize);
+			window.removeEventListener('scroll', onScroll);
 			timers.forEach(clearTimeout);
+			clearTimeout(resizeTimer);
 			ro.disconnect();
 		};
 	});
@@ -63,7 +80,6 @@
 	// Measure path and sample tag points after DOM flush
 	$effect(() => {
 		if (!pathElement || !pathD) return;
-		// Track heroHeight so re-sampling fires on vertical resize too
 		const hh = heroHeight;
 
 		tick().then(() => {
@@ -73,8 +89,6 @@
 
 			totalLength = len;
 
-			// Figure out what fraction of path length is in the hero
-			// by sampling where the path exits the hero viewport
 			for (let i = 0; i <= 100; i++) {
 				const pt = pathElement.getPointAtLength((i / 100) * len);
 				if (pt.y > hh) {
@@ -89,77 +103,56 @@
 					.map(p => ({ ...p, x: p.x, y: p.y * yScale + yShift }));
 				onpoints(points);
 			}
-
 		});
 	});
 
-	// Marquee text animation along path — starts off-screen, flows in
+	// Single unified RAF loop for both marquee text and scroll-driven draw animation
 	$effect(() => {
 		if (!totalLength) return;
 		let running = true;
 		let rafId: number;
-		const startTime = performance.now();
+		let lastTime = 0;
 
-		// Start far off-screen, don't show until animation begins
+		// Scroll animation state
+		let currentOffset = totalLength * (1 - heroPathFraction);
+
+		// Start marquee off-screen
 		textOffset = -5;
 		textVisible = true;
 
-		function tick(now: number) {
+		function loop(now: number) {
 			if (!running) return;
-			textOffset += 0.005;
-				// Seamless loop: reset before text runs out
-				if (textOffset > 900) textOffset = -5;
-			rafId = requestAnimationFrame(tick);
-		}
 
-		rafId = requestAnimationFrame(tick);
-		return () => { running = false; cancelAnimationFrame(rafId); };
-	});
+			const dt = now - lastTime;
+			// Throttle to ~40fps (25ms between frames) for Safari perf
+			if (dt < 25) {
+				rafId = requestAnimationFrame(loop);
+				return;
+			}
+			lastTime = now;
 
-	// Scroll-driven draw animation with smooth interpolation.
-	// The line eases toward the target instead of snapping, and draws
-	// slightly ahead of the scroll so it feels responsive.
-	$effect(() => {
-		if (!totalLength) return;
+			// --- Marquee ---
+			textOffset += 0.005 * (dt / 16.67) * 0.67;
+			if (textOffset > 300) textOffset = -5;
 
-		let currentOffset = totalLength * (1 - heroPathFraction);
-		let targetOffset = currentOffset;
-		let rafId: number;
-		let running = true;
-
-		function getTargetOffset() {
-			// Use viewport bottom position relative to page height
-			// so the path drawing stays in view at all viewport sizes
-			const viewBottom = window.scrollY + window.innerHeight;
-			const pageH = document.documentElement.scrollHeight;
-			const scrollFraction = pageH > 0 ? Math.min(1, viewBottom / pageH) : 0;
-			// Map so that heroPathFraction is shown at the top,
-			// and 100% is shown when viewport bottom reaches page bottom
-			// Draw ahead more on narrow viewports, less on wide
+			// --- Scroll draw ---
+			const viewBottom = cachedScrollY + cachedInnerH;
+			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
 			const ahead = 1.0 + 0.3 * (1 - vwScale);
 			const revealed = Math.max(heroPathFraction, Math.min(1, scrollFraction * ahead));
-			return totalLength * (1 - revealed);
-		}
+			const targetOffset = totalLength * (1 - revealed);
 
-		function animate() {
-			if (!running) return;
-			targetOffset = getTargetOffset();
-			// Smooth lerp — closes 12% of the gap each frame
 			currentOffset += (targetOffset - currentOffset) * 0.12;
-			// Snap when close enough
 			if (Math.abs(currentOffset - targetOffset) < 0.5) {
 				currentOffset = targetOffset;
 			}
 			dashOffset = currentOffset;
-			rafId = requestAnimationFrame(animate);
+
+			rafId = requestAnimationFrame(loop);
 		}
 
-		rafId = requestAnimationFrame(animate);
-
-		return () => {
-			running = false;
-			cancelAnimationFrame(rafId);
-		};
+		rafId = requestAnimationFrame(loop);
+		return () => { running = false; cancelAnimationFrame(rafId); };
 	});
 </script>
 
@@ -181,7 +174,6 @@
 		stroke-linecap="round"
 		stroke-dasharray={totalLength}
 		stroke-dashoffset={dashOffset}
-		style="will-change: stroke-dashoffset;"
 	/>
 	{#if totalLength > 0 && textVisible}
 		<defs>
