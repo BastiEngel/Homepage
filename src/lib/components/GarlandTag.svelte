@@ -39,19 +39,35 @@
 	let swayBlend = 1;
 	let sheenPos = $derived(50 + (swayAngle + pushAngle) * 3);
 
-	// Idle sway driven by JS for perfect sheen sync
+	// Idle sway + spring physics in a single RAF loop
 	const swayAmplitude = 6;
 	const swaySpeed = (2 * Math.PI) / swayDuration;
-	const keySwaySpeed = (2 * Math.PI) / (swayDuration * 1.3); // slower, out of phase
+	const keySwaySpeed = (2 * Math.PI) / (swayDuration * 1.3);
 	const keySwayAmplitude = 12;
 	let startTime = 0;
-	let swayRunning = false;
+	let running = false;
+	let lastFrame = 0;
 
-	function swayTick(now: number) {
-		if (!swayRunning) return;
+	// Spring physics state
+	let angle = 0;
+	let velocity = 0;
+	let target = 0;
+	const stiffness = 0.08;
+	const damping = 0.88;
+
+	function animationLoop(now: number) {
+		if (!running) return;
+
+		// Throttle to ~30fps
+		if (now - lastFrame < 33) {
+			requestAnimationFrame(animationLoop);
+			return;
+		}
+		lastFrame = now;
+
 		if (!startTime) startTime = now + swayDelay * 1000;
 
-		// Smoothly blend sway in/out on hover
+		// Sway
 		const blendTarget = hovered ? 0 : 1;
 		swayBlend += (blendTarget - swayBlend) * 0.04;
 
@@ -60,45 +76,27 @@
 			swayAngle = Math.sin(t * swaySpeed) * swayAmplitude * swayBlend;
 			keySwayAngle = Math.sin(t * keySwaySpeed + 1.2) * keySwayAmplitude * swayBlend;
 		}
-		requestAnimationFrame(swayTick);
-	}
 
-	$effect(() => {
-		swayRunning = true;
-		requestAnimationFrame(swayTick);
-		return () => { swayRunning = false; };
-	});
-
-	// Spring physics for mouse interaction
-	let angle = 0;
-	let velocity = 0;
-	let target = 0;
-	let animating = false;
-	const stiffness = 0.08;
-	const damping = 0.88;
-
-	function springTick() {
+		// Spring
 		const force = (target - angle) * stiffness;
 		velocity = (velocity + force) * damping;
 		angle += velocity;
 		pushAngle = angle;
 
-		if (Math.abs(velocity) > 0.05 || Math.abs(target - angle) > 0.05) {
-			requestAnimationFrame(springTick);
-		} else {
+		if (Math.abs(velocity) < 0.05 && Math.abs(target - angle) < 0.05) {
 			angle = target;
 			velocity = 0;
 			pushAngle = target;
-			animating = false;
 		}
+
+		requestAnimationFrame(animationLoop);
 	}
 
-	function startSpring() {
-		if (!animating) {
-			animating = true;
-			requestAnimationFrame(springTick);
-		}
-	}
+	$effect(() => {
+		running = true;
+		requestAnimationFrame(animationLoop);
+		return () => { running = false; };
+	});
 
 	function scrollToProject() {
 		document.getElementById(project.id)?.scrollIntoView({ behavior: 'smooth' });
@@ -121,14 +119,12 @@
 		const cx = rect.left + rect.width / 2;
 		const dx = (e.clientX - cx) / (rect.width / 2);
 		target = dx * 22;
-		startSpring();
 	}
 
 	function handleMouseLeave() {
 		hovered = false;
 		velocity += velocity * 0.5;
 		target = 0;
-		startSpring();
 	}
 </script>
 
