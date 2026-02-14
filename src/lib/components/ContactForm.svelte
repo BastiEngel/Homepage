@@ -27,16 +27,13 @@
 <section id="contact" class="relative z-[6] px-6 py-16 md:px-12 lg:py-24">
 	<div class="mx-auto max-w-2xl" use:scrollReveal>
 		<h2 class="font-heading text-text text-center text-2xl font-bold sm:text-3xl lg:text-4xl">
-			Get in Touch
+			get in touch
 		</h2>
-		<p class="text-text-muted mt-3 text-center text-base">
-			Have a project in mind? Let's talk.
-		</p>
 
 		<form onsubmit={handleSubmit} class="mt-10 space-y-5">
 			<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 				<div>
-					<label for="name" class="text-text mb-1.5 block text-sm font-medium">Name</label>
+					<label for="name" class="text-text mb-1.5 block text-sm font-medium">name</label>
 					<input
 						id="name"
 						type="text"
@@ -47,7 +44,7 @@
 					/>
 				</div>
 				<div>
-					<label for="email" class="text-text mb-1.5 block text-sm font-medium">Email</label>
+					<label for="email" class="text-text mb-1.5 block text-sm font-medium">email</label>
 					<input
 						id="email"
 						type="email"
@@ -60,14 +57,14 @@
 			</div>
 
 			<div>
-				<label for="message" class="text-text mb-1.5 block text-sm font-medium">Message</label>
+				<label for="message" class="text-text mb-1.5 block text-sm font-medium">message</label>
 				<textarea
 					id="message"
 					bind:value={message}
 					required
 					rows="5"
 					class="form-input resize-none"
-					placeholder="Tell me about your project..."
+					placeholder="Your message..."
 				></textarea>
 			</div>
 
@@ -78,11 +75,11 @@
 					class="btn-submit"
 				>
 					{#if status === 'sent'}
-						Sent!
+						sent!
 					{:else if status === 'sending'}
-						Sending...
+						sending...
 					{:else}
-						Send Message
+						send message
 					{/if}
 				</button>
 			</div>
