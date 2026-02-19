@@ -53,6 +53,12 @@ export interface ProjectImage {
 	tileSize?: TileSize;
 }
 
+export interface ProjectContentBlock {
+	image: string;
+	alt?: string;
+	text?: string;
+}
+
 export interface Project {
 	id: string;
 	name: string;
@@ -62,12 +68,21 @@ export interface Project {
 	client?: string;
 	tags: string[];
 	cover: string;
+	subtitle?: string;
+	coverType?: 'image' | 'video';
 	images?: ProjectImage[];
 	externalUrl?: string;
 	featured?: boolean;
 	linePath?: string;
 	lineColor?: string;
 	detailImages?: ProjectImage[];
+	contentBlocks?: ProjectContentBlock[];
+	gallery?: string[];
+	learnings?: string;
+	learningsImage?: string;
+	credits?: string;
+	tagImage?: string;
+	tileImage?: string;
 }
 
 export interface GarlandPoint {

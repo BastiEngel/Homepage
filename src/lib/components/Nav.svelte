@@ -49,7 +49,7 @@
 
 	<!-- Desktop links -->
 	<div class="desktop-links">
-		<button onclick={() => navigate('brand-refresh')} class="nav-link">projects</button>
+		<button onclick={() => navigate('kick-and-vote')} class="nav-link">projects</button>
 		<button onclick={() => navigate('about')} class="nav-link">about</button>
 		<button onclick={() => navigate('contact')} class="nav-link">contact</button>
 	</div>
@@ -70,7 +70,7 @@
 <!-- Mobile dropdown -->
 {#if menuOpen}
 	<div class="mobile-menu" class:scrolled>
-		<button onclick={() => navigate('brand-refresh')} class="mobile-link">projects</button>
+		<button onclick={() => navigate('kick-and-vote')} class="mobile-link">projects</button>
 		<button onclick={() => navigate('about')} class="mobile-link">about</button>
 		<button onclick={() => navigate('contact')} class="mobile-link">contact</button>
 	</div>

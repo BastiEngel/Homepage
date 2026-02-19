@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, onMount } from 'svelte';
 	import { generateGarlandPath, sampleFanPoints, getPathLength } from '$lib/utils/garlandPath';
 	import type { GarlandPoint } from '$lib/types';
 
@@ -23,6 +23,8 @@
 	let heroHeight = $state(0);
 	let textOffset = $state(0);
 	let textVisible = $state(false);
+	let measureEl: SVGTextElement | undefined = $state();
+	let marqueeTextLengthPct = 0; // length of ONE repeat in path%, set after measurement
 	const marqueeText = '\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  \u00B7  ';
 	const repeatedText = marqueeText.repeat(60);
 
@@ -106,36 +108,27 @@
 		});
 	});
 
-	// Single unified RAF loop for both marquee text and scroll-driven draw animation
+	// --- Scroll draw animation (reacts to totalLength / heroPathFraction) ---
 	$effect(() => {
 		if (!totalLength) return;
+
+		// Measure one marqueeText repeat length in path% (once)
+		if (marqueeTextLengthPct === 0 && measureEl) {
+			const px = measureEl.getComputedTextLength();
+			if (px > 0) marqueeTextLengthPct = (px / totalLength) * 100;
+		}
+
 		let running = true;
 		let rafId: number;
 		let lastTime = 0;
-
-		// Scroll animation state
 		let currentOffset = totalLength * (1 - heroPathFraction);
 
-		// Start marquee off-screen
-		textOffset = -5;
-		textVisible = true;
-
-		function loop(now: number) {
+		function scrollLoop(now: number) {
 			if (!running) return;
-
 			const dt = now - lastTime;
-			// Throttle to ~40fps (25ms between frames) for Safari perf
-			if (dt < 25) {
-				rafId = requestAnimationFrame(loop);
-				return;
-			}
+			if (dt < 25) { rafId = requestAnimationFrame(scrollLoop); return; }
 			lastTime = now;
 
-			// --- Marquee ---
-			textOffset += 0.005 * (dt / 16.67) * 0.67;
-			if (textOffset > 300) textOffset = -5;
-
-			// --- Scroll draw ---
 			const viewBottom = cachedScrollY + cachedInnerH;
 			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
 			const ahead = 1.0 + 0.3 * (1 - vwScale);
@@ -143,15 +136,44 @@
 			const targetOffset = totalLength * (1 - revealed);
 
 			currentOffset += (targetOffset - currentOffset) * 0.12;
-			if (Math.abs(currentOffset - targetOffset) < 0.5) {
-				currentOffset = targetOffset;
-			}
+			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 			dashOffset = currentOffset;
 
-			rafId = requestAnimationFrame(loop);
+			rafId = requestAnimationFrame(scrollLoop);
 		}
 
-		rafId = requestAnimationFrame(loop);
+		rafId = requestAnimationFrame(scrollLoop);
+		return () => { running = false; cancelAnimationFrame(rafId); };
+	});
+
+	// --- Marquee animation (onMount = runs exactly once, never restarted by reactivity) ---
+	onMount(() => {
+		let running = true;
+		let rafId: number;
+		let lastTime = 0;
+		textVisible = true;
+
+		function marqueeLoop(now: number) {
+			if (!running) return;
+			const dt = now - lastTime;
+			if (dt < 25) { rafId = requestAnimationFrame(marqueeLoop); return; }
+			lastTime = now;
+
+			const period = marqueeTextLengthPct > 0 ? marqueeTextLengthPct : 10;
+
+			// Initialise once period is known
+			if (textOffset === 0 && period > 0) textOffset = -period;
+
+			// Move in positive direction (text scrolls right), always ≤ 0 so left side stays filled
+			textOffset += 0.008 * (dt / 16.67) * 0.67;
+
+			// Seamless reset: at 0% content = content at -period% (same repeat)
+			if (textOffset >= 0) textOffset -= period;
+
+			rafId = requestAnimationFrame(marqueeLoop);
+		}
+
+		rafId = requestAnimationFrame(marqueeLoop);
 		return () => { running = false; cancelAnimationFrame(rafId); };
 	});
 </script>
@@ -175,6 +197,15 @@
 		stroke-dasharray={totalLength}
 		stroke-dashoffset={dashOffset}
 	/>
+	<!-- Hidden text to measure one marqueeText repeat length -->
+	<text
+		bind:this={measureEl}
+		visibility="hidden"
+		font-size={Math.max(12, (24 / 0.85) * vwScale)}
+		font-weight="900"
+		font-family="'area-inktrap', sans-serif"
+	>{marqueeText}</text>
+
 	{#if totalLength > 0 && textVisible}
 		<defs>
 			<mask id="path-reveal-mask">
@@ -192,9 +223,10 @@
 		<text
 			fill="#ffffff"
 			font-size={Math.max(12, (24 / 0.85) * vwScale)}
-			font-weight="700"
-			font-family="'Sligoil Micro', sans-serif"
-			dominant-baseline="central"
+			font-weight="900"
+			font-family="'area-inktrap', sans-serif"
+			dy="0.35em"
+			word-spacing="12"
 			mask="url(#path-reveal-mask)"
 		>
 			<textPath

@@ -1,49 +1,78 @@
 [
 	{
-		"id": "brand-refresh",
-		"name": "Brand Refresh",
-		"description": "Complete visual identity overhaul for a fintech startup, including logo redesign, color system, typography, and comprehensive brand guidelines.",
-		"role": "Lead Brand Designer",
-		"year": "2024",
-		"client": "FinFlow",
-		"tags": ["Branding", "Visual Identity", "Design Systems"],
-		"cover": "/images/projects/brand-refresh/cover.webp",
-		"images": [
-			{
-				"src": "/images/projects/brand-refresh/detail-01.webp",
-				"alt": "Logo variations and usage guidelines",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/brand-refresh/detail-02.webp",
-				"alt": "Color palette and typography system",
-				"tileSize": "small"
-			},
-			{
-				"src": "/images/projects/brand-refresh/detail-03.webp",
-				"alt": "Brand collateral mockups",
-				"tileSize": "small"
-			}
-		],
-		"externalUrl": "https://behance.net/gallery/brand-refresh",
+		"id": "kick-and-vote",
+		"name": "Kick & Vote",
+		"description": "How can soccer function as a participatory framework for negotiating and experiencing democratic rule- and decision-making among young people?",
+		"subtitle": "Social Design Project | 2025/26\nKristina Keil · Benjamin Amiel · Markus Feifel Pargas · Bastian Engel\nProject Management | Concept Development | Workshop Design",
+		"role": "",
+		"year": "",
+		"client": "",
+		"tags": [],
+		"cover": "/images/projects/kick-and-vote/20260117_Turnier_Video_1.mp4",
+		"coverType": "video",
+		"tagImage": "/images/projects/kick-and-vote/260115_K&V_Logo_final.svg",
+		"tileImage": "/images/projects/kick-and-vote/kickandvote_26.jpg",
 		"featured": true,
 		"lineColor": "#e8a87c",
-		"detailImages": [
+		"contentBlocks": [
 			{
-				"src": "/images/projects/brand-refresh/detail-01.webp",
-				"alt": "Logo variations and usage guidelines",
-				"tileSize": "large"
+				"image": "/images/projects/kick-and-vote/kickandvote_18.jpg",
+				"text": "Kick & Vote is a participatory youth project initiated by the Cultural Association 1210 in Vienna's 21st district and funded by the European Capital of Democracy. The project focused on young people aged 14 to 21 in an area with low political engagement and limited access to cultural activities.\n\nSoccer offers low-threshold access and immediate participation across backgrounds and languages. Kick & Vote created an open, playful, low-threshold space where young people could take the initiative, explore political participation, actively shape their environment by creating their own rules, make collective decisions, and experience empowerment through interaction, soccer, and joy."
 			},
 			{
-				"src": "/images/projects/brand-refresh/detail-02.webp",
-				"alt": "Color palette and typography system",
-				"tileSize": "medium"
+				"image": "/images/projects/kick-and-vote/kickandvote_08.jpg",
+				"text": "We created and facilitated a series of hands-on workshops combining soccer, creative activities such as graffiti and poster-making, and activities for creating rules and decisions together. Participants were invited to experiment with new rules, negotiate outcomes, and reflect on their experiences in a supportive environment.\n\nOur team worked closely with local youth centers to engage participants, build trust, and ensure accessibility across different backgrounds and languages. The project culminated in two public soccer tournaments, providing participants the opportunity to apply the rules and decisions they created together in practice."
 			},
 			{
-				"src": "/images/projects/brand-refresh/detail-03.webp",
-				"alt": "Brand collateral mockups",
-				"tileSize": "medium"
-			}
+				"image": "/images/projects/kick-and-vote/kickandvote_10.jpg",
+				"text": "The project helped young people form new peer groups and friendships, encouraging collaboration across diverse backgrounds. Participants actively shaped rules, made collective decisions, and learned to respect different perspectives. Workshops and tournaments provided spaces for discussion, co-creation, and inclusive participation, empowering young people to experience their own agency and influence within the group."
+			},
+		{
+			"image": "/images/projects/kick-and-vote/kickandvote_34.jpg",
+			"text": "Key learnings emphasized the importance of flexibility, close collaboration with youth workers, and creating a supportive environment where all voices are heard and valued."
+		}
+		],
+		"credits": "Partner: Cultural Association 1210 Vienna\nFunding: European Capital of Democracy Vienna 2025/26\nSocial Design Project at the University of Applied Arts Vienna",
+		"gallery": [
+			"/images/projects/kick-and-vote/kickandvote_01.jpg",
+			"/images/projects/kick-and-vote/kickandvote_02.jpg",
+			"/images/projects/kick-and-vote/kickandvote_03.jpg",
+			"/images/projects/kick-and-vote/kickandvote_04.jpg",
+			"/images/projects/kick-and-vote/kickandvote_05.jpg",
+			"/images/projects/kick-and-vote/kickandvote_06.jpg",
+			"/images/projects/kick-and-vote/kickandvote_07.jpg",
+			"/images/projects/kick-and-vote/kickandvote_09.jpg",
+			"/images/projects/kick-and-vote/kickandvote_11.jpg",
+			"/images/projects/kick-and-vote/kickandvote_12.jpg",
+			"/images/projects/kick-and-vote/kickandvote_13.jpg",
+			"/images/projects/kick-and-vote/kickandvote_14.jpg",
+			"/images/projects/kick-and-vote/kickandvote_15.jpg",
+			"/images/projects/kick-and-vote/kickandvote_16.jpg",
+			"/images/projects/kick-and-vote/kickandvote_17.jpg",
+			"/images/projects/kick-and-vote/kickandvote_19.jpg",
+			"/images/projects/kick-and-vote/kickandvote_20.jpg",
+			"/images/projects/kick-and-vote/kickandvote_21.jpg",
+			"/images/projects/kick-and-vote/kickandvote_22.jpg",
+			"/images/projects/kick-and-vote/kickandvote_23.jpg",
+			"/images/projects/kick-and-vote/kickandvote_24.jpg",
+			"/images/projects/kick-and-vote/kickandvote_25.jpg",
+			"/images/projects/kick-and-vote/kickandvote_26.jpg",
+			"/images/projects/kick-and-vote/kickandvote_27.jpg",
+			"/images/projects/kick-and-vote/kickandvote_28.jpg",
+			"/images/projects/kick-and-vote/kickandvote_29.jpg",
+			"/images/projects/kick-and-vote/kickandvote_30.jpg",
+			"/images/projects/kick-and-vote/kickandvote_31.jpg",
+			"/images/projects/kick-and-vote/kickandvote_32.jpg",
+			"/images/projects/kick-and-vote/kickandvote_33.jpg",
+			"/images/projects/kick-and-vote/kickandvote_35.jpg",
+			"/images/projects/kick-and-vote/kickandvote_36.jpg",
+			"/images/projects/kick-and-vote/kickandvote_37.jpg",
+			"/images/projects/kick-and-vote/kickandvote_38.jpg",
+			"/images/projects/kick-and-vote/kickandvote_39.jpg",
+			"/images/projects/kick-and-vote/kickandvote_40.jpg",
+			"/images/projects/kick-and-vote/kickandvote_41.jpg",
+			"/images/projects/kick-and-vote/kickandvote_42.jpg",
+			"/images/projects/kick-and-vote/Poster_KickandVote.jpg"
 		]
 	},
 	{

@@ -138,7 +138,7 @@
 			<div class="push-layer" style="transform: rotate({pushAngle}deg);">
 				<div class="tag-shell">
 					<img
-						src="{base}/images/keytags/Keytag_{variantPad}.png"
+						src="{base}/images/keytags/Keytag_{variantPad}.png?v=2"
 						alt=""
 						class="tag-img ring-back"
 						style="clip-path: polygon(0 0, {splitBack}% 0, {splitBack}% {splitH}%, 0 26%);"
@@ -180,20 +180,31 @@
 					/>
 					<!-- Right half of ring + full body (in front of the line) -->
 					<img
-						src="{base}/images/keytags/Keytag_{variantPad}.png"
+						src="{base}/images/keytags/Keytag_{variantPad}.png?v=2"
 						alt=""
 						class="tag-img ring-front"
 						style="clip-path: polygon({splitFront}% 0, 100% 0, 100% 100%, 0 100%, 0 26%, {splitFront}% {splitH}%);"
 						draggable="false"
 					/>
 					<!-- Cover image visible through the transparent label window -->
-					<img
-						src="{base}{project.cover}"
-						alt={project.name}
-						class="tag-cover"
-						style={labelTransform}
-						draggable="false"
-					/>
+					{#if project.tagImage}
+						<div class="tag-cover tag-cover-logo" style={labelTransform}>
+							<img
+								src="{base}{project.tagImage}"
+								alt={project.name}
+								class="tag-logo-img"
+								draggable="false"
+							/>
+						</div>
+					{:else}
+						<img
+							src="{base}{project.cover}"
+							alt={project.name}
+							class="tag-cover"
+							style={labelTransform}
+							draggable="false"
+						/>
+					{/if}
 					<div class="tag-sheen" style="background-position: {sheenPos}% 0; {labelTransform}"></div>
 					<span class="tag-title" class:visible={hovered} style={labelTransform}>{project.name}</span>
 				</button>
@@ -280,6 +291,23 @@
 		height: 44%;
 		object-fit: cover;
 		z-index: 2;
+		pointer-events: none;
+		user-select: none;
+	}
+
+	.tag-cover-logo {
+		object-fit: unset;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: white;
+		padding: 5%;
+	}
+
+	.tag-logo-img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 		pointer-events: none;
 		user-select: none;
 	}

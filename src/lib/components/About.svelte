@@ -19,7 +19,7 @@
 				<h2 class="font-heading text-text text-2xl font-bold sm:text-3xl lg:text-4xl">
 					About
 				</h2>
-				<p class="text-text mt-4 max-w-2xl text-base leading-relaxed lg:text-lg">
+				<p class="text-text mt-4 max-w-2xl text-base lg:text-lg">
 					{config.meta.about}
 				</p>
 			</div>
