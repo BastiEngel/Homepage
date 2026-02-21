@@ -12,6 +12,7 @@
 		"coverType": "video",
 		"tagImage": "/images/projects/kick-and-vote/260115_K&V_Logo_final.svg",
 		"tileImage": "/images/projects/kick-and-vote/kickandvote_26.jpg",
+		"heroPathSrc": "/images/Path_Kich_and_Vote.svg",
 		"featured": true,
 		"lineColor": "#e8a87c",
 		"contentBlocks": [
@@ -76,170 +77,149 @@
 		]
 	},
 	{
-		"id": "mobile-banking",
-		"name": "Mobile Banking App",
-		"description": "End-to-end UX/UI design for a next-generation mobile banking experience, focused on simplifying complex financial tasks for everyday users.",
-		"role": "Senior Product Designer",
-		"year": "2024",
-		"client": "NeoBank",
-		"tags": ["UX Design", "Mobile App", "Fintech"],
-		"cover": "/images/projects/mobile-banking/cover.webp",
-		"images": [
-			{
-				"src": "/images/projects/mobile-banking/detail-01.webp",
-				"alt": "App home screen with account overview",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/mobile-banking/detail-02.webp",
-				"alt": "Transaction history and categorization",
-				"tileSize": "medium"
-			}
-		],
-		"externalUrl": "https://behance.net/gallery/mobile-banking",
+		"id": "binvisible",
+		"name": "Binvisible",
+		"description": "Placeholder — wird mit echtem Content ersetzt.",
+		"subtitle": "Placeholder | Jahr",
+		"cover": "/images/placeholder.svg",
+		"coverType": "image",
+		"tagImage": "/images/placeholder.svg",
+		"tileImage": "/images/placeholder.svg",
 		"featured": true,
-		"lineColor": "#85cdca",
-		"detailImages": [
-			{
-				"src": "/images/projects/mobile-banking/detail-01.webp",
-				"alt": "App home screen with account overview",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/mobile-banking/detail-02.webp",
-				"alt": "Transaction history and categorization",
-				"tileSize": "medium"
-			}
+		"lineColor": "#b8c4d4",
+		"contentBlocks": [
+			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." },
+			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." }
+		],
+		"gallery": [
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg"
 		]
 	},
 	{
-		"id": "ecommerce-redesign",
-		"name": "E-Commerce Redesign",
-		"description": "Redesigned the shopping experience for a luxury fashion retailer, increasing conversion by 34% through streamlined checkout and improved product discovery.",
-		"role": "Product Designer",
-		"year": "2023",
-		"client": "Maison Luxe",
-		"tags": ["E-Commerce", "UX Research", "UI Design"],
-		"cover": "/images/projects/ecommerce-redesign/cover.webp",
-		"images": [
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-01.webp",
-				"alt": "Product listing page with filtering",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-02.webp",
-				"alt": "Product detail page",
-				"tileSize": "small"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-03.webp",
-				"alt": "Checkout flow redesign",
-				"tileSize": "small"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-04.webp",
-				"alt": "Mobile responsive views",
-				"tileSize": "large"
-			}
-		],
+		"id": "myzelfusion",
+		"name": "Myzelfusion",
+		"description": "Placeholder — wird mit echtem Content ersetzt.",
+		"subtitle": "Placeholder | Jahr",
+		"cover": "/images/placeholder.svg",
+		"coverType": "image",
+		"tagImage": "/images/placeholder.svg",
+		"tileImage": "/images/placeholder.svg",
 		"featured": true,
-		"lineColor": "#d4a5a5",
-		"detailImages": [
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-01.webp",
-				"alt": "Product listing page with filtering",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-02.webp",
-				"alt": "Product detail page",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-03.webp",
-				"alt": "Checkout flow redesign",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-04.webp",
-				"alt": "Mobile responsive views",
-				"tileSize": "large"
-			}
+		"lineColor": "#d4b896",
+		"contentBlocks": [
+			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." },
+			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." }
+		],
+		"gallery": [
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg"
 		]
 	},
 	{
-		"id": "health-dashboard",
-		"name": "Health Dashboard",
-		"description": "Data visualization dashboard for healthcare professionals, turning complex patient data into actionable insights with an intuitive interface.",
-		"role": "UX/UI Designer",
-		"year": "2023",
-		"client": "MedViz",
-		"tags": ["Dashboard", "Data Viz", "Healthcare"],
-		"cover": "/images/projects/health-dashboard/cover.webp",
-		"images": [
-			{
-				"src": "/images/projects/health-dashboard/detail-01.webp",
-				"alt": "Main dashboard overview with patient metrics",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/health-dashboard/detail-02.webp",
-				"alt": "Detailed patient timeline view",
-				"tileSize": "medium"
-			}
-		],
+		"id": "peebee",
+		"name": "PeeBee",
+		"description": "Placeholder — wird mit echtem Content ersetzt.",
+		"subtitle": "Placeholder | Jahr",
+		"cover": "/images/placeholder.svg",
+		"coverType": "image",
+		"tagImage": "/images/placeholder.svg",
+		"tileImage": "/images/placeholder.svg",
 		"featured": true,
-		"lineColor": "#a8d8ea",
-		"detailImages": [
-			{
-				"src": "/images/projects/health-dashboard/detail-01.webp",
-				"alt": "Main dashboard overview with patient metrics",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/health-dashboard/detail-02.webp",
-				"alt": "Detailed patient timeline view",
-				"tileSize": "medium"
-			}
+		"lineColor": "#e8d870",
+		"contentBlocks": [
+			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." },
+			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." }
+		],
+		"gallery": [
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg"
 		]
 	},
 	{
-		"id": "design-system",
-		"name": "Design System",
-		"description": "Built a comprehensive, token-based design system powering multiple product teams with consistent components, accessibility standards, and detailed documentation.",
-		"role": "Design Systems Lead",
-		"year": "2023",
-		"client": "ScaleUp",
-		"tags": ["Design Systems", "Components", "Documentation"],
-		"cover": "/images/projects/health-dashboard/cover.webp",
-		"images": [],
+		"id": "pivot",
+		"name": "Pivot",
+		"description": "Placeholder — wird mit echtem Content ersetzt.",
+		"subtitle": "Placeholder | Jahr",
+		"cover": "/images/projects/Pivot/cover.webp",
+		"coverType": "image",
+		"tagImage": "/images/projects/Pivot/cover.webp",
+		"tileImage": "/images/projects/Pivot/cover.webp",
 		"featured": true,
-		"lineColor": "#c3aed6"
+		"lineColor": "#90c4a0",
+		"contentBlocks": [
+			{ "image": "/images/projects/Pivot/detail-01.webp", "text": "Placeholder — wird mit echtem Content ersetzt." },
+			{ "image": "/images/projects/Pivot/detail-02.webp", "text": "Placeholder — wird mit echtem Content ersetzt." }
+		],
+		"gallery": [
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg"
+		]
 	},
 	{
-		"id": "travel-platform",
-		"name": "Travel Platform",
-		"description": "Designed an immersive travel booking platform combining AI-powered recommendations with stunning visual storytelling to inspire and simplify trip planning.",
-		"role": "Product Designer",
-		"year": "2022",
-		"client": "Wanderlust",
-		"tags": ["Travel", "AI", "UX Design"],
-		"cover": "/images/projects/mobile-banking/cover.webp",
-		"images": [],
+		"id": "archive",
+		"name": "Archive",
+		"description": "Placeholder — wird mit echtem Content ersetzt.",
+		"subtitle": "Placeholder | Jahr",
+		"cover": "/images/projects/Archive/cover.webp",
+		"coverType": "image",
+		"tagImage": "/images/projects/Archive/cover.webp",
+		"tileImage": "/images/projects/Archive/cover.webp",
 		"featured": true,
-		"lineColor": "#f6d186"
+		"lineColor": "#a0a8b0",
+		"contentBlocks": [
+			{ "image": "/images/projects/Archive/detail-01.webp", "text": "Placeholder — wird mit echtem Content ersetzt." },
+			{ "image": "/images/projects/Archive/detail-02.webp", "text": "Placeholder — wird mit echtem Content ersetzt." }
+		],
+		"gallery": [
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg"
+		]
 	},
 	{
 		"id": "about",
 		"name": "About Me",
-		"description": "I'm a product designer with a passion for creating intuitive, beautiful digital experiences. With over 5 years of experience spanning UX research, interface design, and brand identity, I help companies turn complex problems into elegant solutions.",
-		"role": "",
-		"year": "",
-		"client": "",
-		"tags": [],
+		"description": "Placeholder — wird mit echtem Content ersetzt.",
+		"subtitle": "",
 		"cover": "/images/projects/about/cover.webp",
-		"images": [],
-		"featured": true
+		"coverType": "image",
+		"tagImage": "/images/projects/about/cover.webp",
+		"tileImage": "/images/projects/about/cover.webp",
+		"featured": true,
+		"lineColor": "#d4b8a0",
+		"contentBlocks": [
+			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." },
+			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." }
+		]
 	}
 ]

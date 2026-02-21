@@ -32,12 +32,16 @@
 	let zFront = $derived(hovered ? 30 : zFrontBase);
 
 	let pendulumEl: HTMLElement | undefined = $state();
-	let pushAngle = $state(0);
-	let swayAngle = $state(0);
-	let keySwayAngle = $state(0);
 	let hovered = $state(false);
 	let swayBlend = 1;
-	let sheenPos = $derived(50 + (swayAngle + pushAngle) * 3);
+
+	// Direct-DOM refs for per-frame animation — bypasses Svelte reactive scheduler entirely
+	let backSwayEl: HTMLElement | undefined = $state();
+	let backPushEl: HTMLElement | undefined = $state();
+	let frontSwayEl: HTMLElement | undefined = $state();
+	let frontPushEl: HTMLElement | undefined = $state();
+	let keyImgEl: HTMLImageElement | undefined = $state();
+	let sheenEl: HTMLElement | undefined = $state();
 
 	// Idle sway + spring physics in a single RAF loop
 	const swayAmplitude = 6;
@@ -71,23 +75,34 @@
 		const blendTarget = hovered ? 0 : 1;
 		swayBlend += (blendTarget - swayBlend) * 0.04;
 
+		let swayA = 0, keySwayA = 0;
 		if (now >= startTime) {
 			const t = (now - startTime) / 1000;
-			swayAngle = Math.sin(t * swaySpeed) * swayAmplitude * swayBlend;
-			keySwayAngle = Math.sin(t * keySwaySpeed + 1.2) * keySwayAmplitude * swayBlend;
+			swayA = Math.sin(t * swaySpeed) * swayAmplitude * swayBlend;
+			keySwayA = Math.sin(t * keySwaySpeed + 1.2) * keySwayAmplitude * swayBlend;
 		}
 
 		// Spring
 		const force = (target - angle) * stiffness;
 		velocity = (velocity + force) * damping;
 		angle += velocity;
-		pushAngle = angle;
+		let pushA = angle;
 
 		if (Math.abs(velocity) < 0.05 && Math.abs(target - angle) < 0.05) {
 			angle = target;
 			velocity = 0;
-			pushAngle = target;
+			pushA = target;
 		}
+
+		// Direct DOM writes — no Svelte reactive overhead per frame
+		const swayT = `rotate(${swayA.toFixed(3)}deg)`;
+		const pushT = `rotate(${pushA.toFixed(3)}deg)`;
+		if (backSwayEl) backSwayEl.style.transform = swayT;
+		if (backPushEl) backPushEl.style.transform = pushT;
+		if (frontSwayEl) frontSwayEl.style.transform = swayT;
+		if (frontPushEl) frontPushEl.style.transform = pushT;
+		if (keyImgEl) keyImgEl.style.transform = `rotate(${(keySwayA - pushA * 0.7).toFixed(3)}deg)`;
+		if (sheenEl) sheenEl.style.backgroundPosition = `${(50 + (swayA + pushA) * 3).toFixed(1)}% 0`;
 
 		requestAnimationFrame(animationLoop);
 	}
@@ -134,8 +149,8 @@
 	style="left: {point.x}px; top: {topY}px; z-index: {zBack}; transform: translateX(-50%) scale({tagScale}); transform-origin: top center;"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
-		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
-			<div class="push-layer" style="transform: rotate({pushAngle}deg);">
+		<div class="sway-layer" bind:this={backSwayEl}>
+			<div class="push-layer" bind:this={backPushEl}>
 				<div class="tag-shell">
 					<img
 						src="{base}/images/keytags/Keytag_{variantPad}.png?v=2"
@@ -156,11 +171,8 @@
 	style="left: {point.x}px; top: {topY}px; z-index: {zFront}; pointer-events: none; transform: translateX(-50%) scale({tagScale}); transform-origin: top center;"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
-		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
-			<div
-				class="push-layer"
-				style="transform: rotate({pushAngle}deg);"
-			>
+		<div class="sway-layer" bind:this={frontSwayEl}>
+			<div class="push-layer" bind:this={frontPushEl}>
 				<button
 					bind:this={pendulumEl}
 					onclick={scrollToProject}
@@ -172,10 +184,10 @@
 				>
 					<!-- Key dangling from the ring hole, behind everything -->
 					<img
+						bind:this={keyImgEl}
 						src="{base}/images/key-01.png"
 						alt=""
 						class="dangling-key"
-						style="transform: rotate({keySwayAngle - pushAngle * 0.7}deg);"
 						draggable="false"
 					/>
 					<!-- Right half of ring + full body (in front of the line) -->
@@ -205,7 +217,7 @@
 							draggable="false"
 						/>
 					{/if}
-					<div class="tag-sheen" style="background-position: {sheenPos}% 0; {labelTransform}"></div>
+					<div class="tag-sheen" bind:this={sheenEl} style={labelTransform}></div>
 					<span class="tag-title" class:visible={hovered} style={labelTransform}>{project.name}</span>
 				</button>
 			</div>
@@ -226,6 +238,7 @@
 		transform-origin: 49.1% 13.7%;
 		pointer-events: none;
 		user-select: none;
+		will-change: transform;
 	}
 
 	.fan-layer {
@@ -234,10 +247,12 @@
 
 	.sway-layer {
 		transform-origin: calc(50% + 10px) 25px;
+		will-change: transform;
 	}
 
 	.push-layer {
 		transform-origin: calc(50% + 10px) 25px;
+		will-change: transform;
 	}
 
 	.tag-btn {

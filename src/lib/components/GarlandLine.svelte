@@ -17,16 +17,14 @@
 	let dashOffset = $state(0);
 	let pageWidth = $state(1440);
 	let pageHeight = $state(0);
+	let textPathEl: SVGTextPathElement | undefined = $state();
 	let vwScale = $derived(Math.min(1, pageWidth / 1440));
 	let yShift = $derived(-80 * vwScale * vwScale);
 	let yScale = $derived(0.85 + 0.15 * vwScale);
 	let heroHeight = $state(0);
-	let textOffset = $state(0);
-	let textVisible = $state(false);
-	let measureEl: SVGTextElement | undefined = $state();
-	let marqueeTextLengthPct = 0; // length of ONE repeat in path%, set after measurement
 	const marqueeText = '\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  \u00B7  ';
-	const repeatedText = marqueeText.repeat(60);
+	// Static text — no per-frame startOffset animation (SVG textPath glyph layout is CPU-only, not GPU-composited)
+	const pathText = marqueeText.repeat(8);
 
 	// Cache layout values to avoid thrashing — updated on scroll/resize via passive listeners
 	let cachedScrollY = 0;
@@ -108,72 +106,54 @@
 		});
 	});
 
-	// --- Scroll draw animation (reacts to totalLength / heroPathFraction) ---
-	$effect(() => {
-		if (!totalLength) return;
-
-		// Measure one marqueeText repeat length in path% (once)
-		if (marqueeTextLengthPct === 0 && measureEl) {
-			const px = measureEl.getComputedTextLength();
-			if (px > 0) marqueeTextLengthPct = (px / totalLength) * 100;
-		}
-
-		let running = true;
-		let rafId: number;
-		let lastTime = 0;
-		let currentOffset = totalLength * (1 - heroPathFraction);
-
-		function scrollLoop(now: number) {
-			if (!running) return;
-			const dt = now - lastTime;
-			if (dt < 25) { rafId = requestAnimationFrame(scrollLoop); return; }
-			lastTime = now;
-
-			const viewBottom = cachedScrollY + cachedInnerH;
-			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
-			const ahead = 1.0 + 0.3 * (1 - vwScale);
-			const revealed = Math.max(heroPathFraction, Math.min(1, scrollFraction * ahead));
-			const targetOffset = totalLength * (1 - revealed);
-
-			currentOffset += (targetOffset - currentOffset) * 0.12;
-			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
-			dashOffset = currentOffset;
-
-			rafId = requestAnimationFrame(scrollLoop);
-		}
-
-		rafId = requestAnimationFrame(scrollLoop);
-		return () => { running = false; cancelAnimationFrame(rafId); };
-	});
-
-	// --- Marquee animation (onMount = runs exactly once, never restarted by reactivity) ---
+	// --- Unified animation loop: marquee + scroll-draw in one RAF (onMount = runs once) ---
 	onMount(() => {
 		let running = true;
 		let rafId: number;
 		let lastTime = 0;
-		textVisible = true;
+		let currentOffset = -1; // -1 = uninitialized until totalLength is known
+		let prevTotalLength = 0;
+		let lastScrollForText = -1;
 
-		function marqueeLoop(now: number) {
+		function loop(now: number) {
 			if (!running) return;
 			const dt = now - lastTime;
-			if (dt < 25) { rafId = requestAnimationFrame(marqueeLoop); return; }
+			if (dt < 25) { rafId = requestAnimationFrame(loop); return; }
 			lastTime = now;
 
-			const period = marqueeTextLengthPct > 0 ? marqueeTextLengthPct : 10;
+			const tl = totalLength;
+			if (tl <= 0) { rafId = requestAnimationFrame(loop); return; }
 
-			// Initialise once period is known
-			if (textOffset === 0 && period > 0) textOffset = -period;
+			// Reinitialize proportionally on resize
+			if (tl !== prevTotalLength) {
+				currentOffset = prevTotalLength > 0
+					? currentOffset * (tl / prevTotalLength)
+					: tl * (1 - heroPathFraction);
+				prevTotalLength = tl;
+			}
 
-			// Move in positive direction (text scrolls right), always ≤ 0 so left side stays filled
-			textOffset += 0.008 * (dt / 16.67) * 0.67;
+			// Scroll-draw only — no marquee animation (SVG textPath is CPU-only, not GPU)
+			const viewBottom = cachedScrollY + cachedInnerH;
+			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
+			const ahead = 1.0 + 0.3 * (1 - vwScale);
+			const revealed = Math.max(heroPathFraction, Math.min(1, scrollFraction * ahead));
+			const targetOffset = tl * (1 - revealed);
+			currentOffset += (targetOffset - currentOffset) * 0.12;
+			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
+			dashOffset = currentOffset;
 
-			// Seamless reset: at 0% content = content at -period% (same repeat)
-			if (textOffset >= 0) textOffset -= period;
+			// Shift text along path on scroll — direct setAttribute bypasses Svelte scheduler.
+			// Only recalculates SVG glyph layout when scrollY actually changes (not every frame).
+			if (textPathEl && cachedScrollY !== lastScrollForText) {
+				lastScrollForText = cachedScrollY;
+				const offset = cachedPageH > 0 ? ((cachedScrollY / cachedPageH) * 35) % 100 : 0;
+				textPathEl.setAttribute('startOffset', `${offset.toFixed(1)}%`);
+			}
 
-			rafId = requestAnimationFrame(marqueeLoop);
+			rafId = requestAnimationFrame(loop);
 		}
 
-		rafId = requestAnimationFrame(marqueeLoop);
+		rafId = requestAnimationFrame(loop);
 		return () => { running = false; cancelAnimationFrame(rafId); };
 	});
 </script>
@@ -197,16 +177,7 @@
 		stroke-dasharray={totalLength}
 		stroke-dashoffset={dashOffset}
 	/>
-	<!-- Hidden text to measure one marqueeText repeat length -->
-	<text
-		bind:this={measureEl}
-		visibility="hidden"
-		font-size={Math.max(12, (24 / 0.85) * vwScale)}
-		font-weight="900"
-		font-family="'area-inktrap', sans-serif"
-	>{marqueeText}</text>
-
-	{#if totalLength > 0 && textVisible}
+	{#if totalLength > 0}
 		<defs>
 			<mask id="path-reveal-mask">
 				<path
@@ -229,11 +200,8 @@
 			word-spacing="12"
 			mask="url(#path-reveal-mask)"
 		>
-			<textPath
-				href="#garland-path"
-				startOffset="{textOffset}%"
-			>
-				{repeatedText}
+			<textPath href="#garland-path" startOffset="0%" bind:this={textPathEl}>
+				{pathText}
 			</textPath>
 		</text>
 	{/if}

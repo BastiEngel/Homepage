@@ -83,6 +83,7 @@ export interface Project {
 	credits?: string;
 	tagImage?: string;
 	tileImage?: string;
+	heroPathSrc?: string;
 }
 
 export interface GarlandPoint {
