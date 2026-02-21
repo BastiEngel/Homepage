@@ -2,3 +2,8 @@ node_modules
 .svelte-kit
 build
 .DS_Store
+
+# Large files — too big for GitHub
+static/images/Path_03.svg
+static/images/projects/**/*.mp4
+static/images/projects/**/*.mov
