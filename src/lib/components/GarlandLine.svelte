@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick, onMount } from 'svelte';
-	import { generateGarlandPath, sampleFanPoints, getPathLength } from '$lib/utils/garlandPath';
+	import { generateGarlandPath, sampleFanPoints } from '$lib/utils/garlandPath';
 	import type { GarlandPoint } from '$lib/types';
 
 	interface Props {
@@ -11,10 +11,10 @@
 	let { onpoints, featuredCount = 3 }: Props = $props();
 
 	let pathElement: SVGPathElement | undefined = $state();
+	let maskPathEl: SVGPathElement | undefined = $state();
 	let pathD = $state('');
 	let totalLength = $state(0);
 	let heroPathFraction = $state(0.15);
-	let dashOffset = $state(0);
 	let pageWidth = $state(1440);
 	let pageHeight = $state(0);
 	let textPathEl: SVGTextPathElement | undefined = $state();
@@ -22,20 +22,17 @@
 	let yShift = $derived(-80 * vwScale * vwScale);
 	let yScale = $derived(0.85 + 0.15 * vwScale);
 	let heroHeight = $state(0);
-	const marqueeText = '\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  \u00B7  ';
-	// Static text — no per-frame startOffset animation (SVG textPath glyph layout is CPU-only, not GPU-composited)
+	const marqueeText =
+		'\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  \u00B7  ';
 	const pathText = marqueeText.repeat(8);
 
-	// Cache layout values to avoid thrashing — updated on scroll/resize via passive listeners
 	let cachedScrollY = 0;
-	let cachedInnerH = 0;
 	let cachedPageH = 0;
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
 		pageWidth = window.innerWidth;
 		pageHeight = document.documentElement.scrollHeight;
-		cachedInnerH = window.innerHeight;
 		cachedPageH = pageHeight;
 		cachedScrollY = window.scrollY;
 		const heroEl = document.querySelector('section.relative[class*="h-"]');
@@ -52,15 +49,10 @@
 			clearTimeout(resizeTimer);
 			resizeTimer = setTimeout(recalculate, 100);
 		};
-		const onScroll = () => { cachedScrollY = window.scrollY; };
 
 		window.addEventListener('resize', onResize);
-		window.addEventListener('scroll', onScroll, { passive: true });
 
-		const timers = [
-			setTimeout(() => recalculate(), 100),
-			setTimeout(() => recalculate(), 500)
-		];
+		const timers = [setTimeout(() => recalculate(), 100), setTimeout(() => recalculate(), 500)];
 
 		const ro = new ResizeObserver(() => {
 			clearTimeout(resizeTimer);
@@ -70,7 +62,6 @@
 
 		return () => {
 			window.removeEventListener('resize', onResize);
-			window.removeEventListener('scroll', onScroll);
 			timers.forEach(clearTimeout);
 			clearTimeout(resizeTimer);
 			ro.disconnect();
@@ -99,62 +90,43 @@
 			}
 
 			if (onpoints && featuredCount > 0) {
-				const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth)
-					.map(p => ({ ...p, x: p.x, y: p.y * yScale + yShift }));
+				const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth).map((p) => ({
+					...p,
+					x: p.x,
+					y: p.y * yScale + yShift
+				}));
 				onpoints(points);
 			}
 		});
 	});
 
-	// --- Unified animation loop: marquee + scroll-draw in one RAF (onMount = runs once) ---
+	// Set initial stroke-dashoffset for CSS scroll-driven animation.
+	// The CSS animation animates this value → 0 as the user scrolls.
+	// Re-runs on resize (totalLength / heroPathFraction change).
+	$effect(() => {
+		if (!pathElement || !totalLength) return;
+		const startOff = totalLength * (1 - heroPathFraction);
+		pathElement.style.strokeDashoffset = String(startOff);
+	});
+
+	$effect(() => {
+		if (!maskPathEl || !totalLength) return;
+		// Mask lags the visible path by a tiny amount so text appears just behind the draw front
+		const startOff = totalLength * (1 - heroPathFraction);
+		maskPathEl.style.strokeDashoffset = String(startOff + totalLength * 0.001);
+	});
+
+	// Scroll listener for textPath startOffset — no RAF needed, runs only when scroll changes
 	onMount(() => {
-		let running = true;
-		let rafId: number;
-		let lastTime = 0;
-		let currentOffset = -1; // -1 = uninitialized until totalLength is known
-		let prevTotalLength = 0;
-		let lastScrollForText = -1;
-
-		function loop(now: number) {
-			if (!running) return;
-			const dt = now - lastTime;
-			if (dt < 25) { rafId = requestAnimationFrame(loop); return; }
-			lastTime = now;
-
-			const tl = totalLength;
-			if (tl <= 0) { rafId = requestAnimationFrame(loop); return; }
-
-			// Reinitialize proportionally on resize
-			if (tl !== prevTotalLength) {
-				currentOffset = prevTotalLength > 0
-					? currentOffset * (tl / prevTotalLength)
-					: tl * (1 - heroPathFraction);
-				prevTotalLength = tl;
-			}
-
-			// Scroll-draw only — no marquee animation (SVG textPath is CPU-only, not GPU)
-			const viewBottom = cachedScrollY + cachedInnerH;
-			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
-			const ahead = 1.0 + 0.3 * (1 - vwScale);
-			const revealed = Math.max(heroPathFraction, Math.min(1, scrollFraction * ahead));
-			const targetOffset = tl * (1 - revealed);
-			currentOffset += (targetOffset - currentOffset) * 0.12;
-			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
-			dashOffset = currentOffset;
-
-			// Shift text along path on scroll — direct setAttribute bypasses Svelte scheduler.
-			// Only recalculates SVG glyph layout when scrollY actually changes (not every frame).
-			if (textPathEl && cachedScrollY !== lastScrollForText) {
-				lastScrollForText = cachedScrollY;
-				const offset = cachedPageH > 0 ? ((cachedScrollY / cachedPageH) * 35) % 100 : 0;
+		const onScroll = () => {
+			cachedScrollY = window.scrollY;
+			if (textPathEl && cachedPageH > 0) {
+				const offset = (cachedScrollY / cachedPageH * 35) % 100;
 				textPathEl.setAttribute('startOffset', `${offset.toFixed(1)}%`);
 			}
-
-			rafId = requestAnimationFrame(loop);
-		}
-
-		rafId = requestAnimationFrame(loop);
-		return () => { running = false; cancelAnimationFrame(rafId); };
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => window.removeEventListener('scroll', onScroll);
 	});
 </script>
 
@@ -174,20 +146,21 @@
 		stroke="var(--color-line)"
 		stroke-width={Math.max(18, 36 * Math.min(1, pageWidth / 1440))}
 		stroke-linecap="round"
-		stroke-dasharray={totalLength}
-		stroke-dashoffset={dashOffset}
+		stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
+		class="garland-path-anim"
 	/>
 	{#if totalLength > 0}
 		<defs>
 			<mask id="path-reveal-mask">
 				<path
+					bind:this={maskPathEl}
 					d={pathD}
 					fill="none"
 					stroke="white"
 					stroke-width={Math.max(18, 36 * Math.min(1, pageWidth / 1440)) + 20}
 					stroke-linecap="round"
 					stroke-dasharray={totalLength}
-					stroke-dashoffset={dashOffset + totalLength * 0.001}
+					class="garland-path-anim"
 				/>
 			</mask>
 		</defs>
@@ -206,3 +179,25 @@
 		</text>
 	{/if}
 </svg>
+
+<style>
+	/* CSS scroll-driven animation for stroke-dashoffset.
+	   The initial value (from) is set via inline style by JS.
+	   No JavaScript runs per frame — the browser handles interpolation.
+	   Fallback (no @supports): path is fully drawn (always visible). */
+	@keyframes garland-reveal {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	@supports (animation-timeline: scroll()) {
+		.garland-path-anim {
+			animation-name: garland-reveal;
+			animation-timing-function: linear;
+			animation-fill-mode: both;
+			animation-duration: auto;
+			animation-timeline: scroll(root block);
+		}
+	}
+</style>

@@ -16,11 +16,9 @@
 
 	const marqueeText =
 		'\u26BD\uFE0F How can soccer function as a participatory framework for negotiating and experiencing democratic rule- and decision-making among young people?  \u00B7  ';
-	// Static text — no per-frame startOffset animation (SVG textPath glyph layout is CPU-only, not GPU-composited)
 	const pathText = marqueeText.repeat(10);
 
 	// Scale all coordinates in a path d string independently per axis.
-	// Works for M x,y followed by relative c commands (alternating x/y numbers).
 	function scalePath(d: string, sx: number, sy: number): string {
 		let idx = 0;
 		return d.replace(/-?\d*\.?\d+/g, (m) => {
@@ -31,34 +29,27 @@
 	}
 
 	let pathEl: SVGPathElement | undefined = $state();
+	let maskPathEl: SVGPathElement | undefined = $state();
 	let textPathEl: SVGTextPathElement | undefined = $state();
-	let rawPathD = $state(''); // original coordinates from SVG file
+	let rawPathD = $state('');
 	let totalLength = $state(0);
-	let dashOffset = $state(0);
 	let pageWidth = $state(1920);
 	let pageHeight = $state(0);
 
 	let vwScale = $derived(Math.min(1, pageWidth / 1440));
 	let yShift = $derived(-78 * vwScale * vwScale);
 	let svgTop = $derived(SVG_TOP_OFFSET + yShift);
-	// Natural proportional SVG height (used for element size — avoids page-height feedback loop)
 	let svgHeight = $derived(SVG_H * (pageWidth / SVG_W));
 
-	// Rubber-band path scaling:
-	// sx always uniform with viewport width.
-	// sy = sx at 1920px (reference unchanged); at narrower widths, stretches only as much as
-	// needed to reach the page bottom — never compresses below the reference appearance.
 	let pathD = $derived.by(() => {
 		if (!rawPathD || !pageWidth || !pageHeight) return '';
 		const sx = pageWidth / SVG_W;
 		const syFixed = sx * 1.002;
-		const syFill = (pageHeight - svgTop) / SVG_H; // fills page to bottom
-		// Mobile (<768px): rubber-band to fill page; desktop: use fixed proportion
+		const syFill = (pageHeight - svgTop) / SVG_H;
 		const sy = pageWidth < 768 ? Math.max(syFixed, syFill) : syFixed;
 		return scalePath(rawPathD, sx, sy);
 	});
 
-	// Stroke and font directly in viewport px — no viewBox conversion needed
 	let strokeWidth = $derived(Math.max(18, 36 * Math.min(1, pageWidth / 1440)));
 	let fontSize = $derived(Math.max(12, (24 / 0.85) * vwScale));
 
@@ -67,76 +58,48 @@
 		pageHeight = document.documentElement.scrollHeight;
 	}
 
-	onMount(async () => {
-		// Fetch and parse the SVG path
-		try {
-			const res = await fetch(`${base}${src}`);
-			const text = await res.text();
-			const parser = new DOMParser();
-			const doc = parser.parseFromString(text, 'image/svg+xml');
-			const path = doc.querySelector('path');
-			if (path) rawPathD = path.getAttribute('d') ?? '';
-		} catch {
-			// silently fail
-		}
+	// Set initial stroke-dashoffset for CSS scroll-driven animation.
+	// Starts fully hidden at scroll=0, reveals to fully drawn at scroll=100%.
+	$effect(() => {
+		if (!pathEl || !totalLength) return;
+		pathEl.style.strokeDashoffset = String(totalLength);
+	});
 
-		recalc();
-		// Re-measure after images may have changed page height
-		const timers = [setTimeout(recalc, 300), setTimeout(recalc, 1000)];
-		window.addEventListener('resize', recalc, { passive: true });
+	$effect(() => {
+		if (!maskPathEl || !totalLength) return;
+		// Mask lags slightly so text appears just behind the draw front
+		maskPathEl.style.strokeDashoffset = String(totalLength * 1.001);
+	});
 
-		// --- Unified animation loop: marquee + scroll-draw in one RAF ---
-		let running = true;
-		let rafId: number;
-		let lastTime = 0;
-		let currentOffset = -1; // -1 = uninitialized
-		let prevTotalLength = 0;
-		let lastScrollForText = -1;
-
-		function loop(now: number) {
-			if (!running) return;
-			const dt = now - lastTime;
-			if (dt < 25) { rafId = requestAnimationFrame(loop); return; }
-			lastTime = now;
-
-			const tl = totalLength;
-			if (tl <= 0) { rafId = requestAnimationFrame(loop); return; }
-
-			// Reinitialize proportionally on resize
-			if (tl !== prevTotalLength) {
-				currentOffset = prevTotalLength > 0 ? currentOffset * (tl / prevTotalLength) : tl;
-				prevTotalLength = tl;
-			}
-
-			// Scroll-draw only — no marquee animation (SVG textPath is CPU-only, not GPU)
-			const pageH = pageHeight;
-			const ahead = 0.45 + 4.0 * (1 - vwScale);
-			const scrollFraction =
-				pageH > 0 ? Math.min(1, (window.scrollY + window.innerHeight * ahead) / pageH) : 0;
-			const targetOffset = tl * (1 - scrollFraction);
-			currentOffset += (targetOffset - currentOffset) * 0.12;
-			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
-			dashOffset = currentOffset;
-
-			// Shift text along path on scroll — direct setAttribute bypasses Svelte scheduler.
-			// Only recalculates SVG glyph layout when scrollY actually changes (not every frame).
-			const curScrollY = window.scrollY;
-			if (textPathEl && curScrollY !== lastScrollForText) {
-				lastScrollForText = curScrollY;
-				const offset = pageHeight > 0 ? ((curScrollY / pageHeight) * 35) % 100 : 0;
+	onMount(() => {
+		const onScroll = () => {
+			if (textPathEl && pageHeight > 0) {
+				const offset = ((window.scrollY / pageHeight) * 35) % 100;
 				textPathEl.setAttribute('startOffset', `${offset.toFixed(1)}%`);
 			}
+		};
 
-			rafId = requestAnimationFrame(loop);
-		}
+		let timers: ReturnType<typeof setTimeout>[] = [];
 
-		rafId = requestAnimationFrame(loop);
+		// Fetch path async, but register cleanup synchronously
+		fetch(`${base}${src}`)
+			.then((res) => res.text())
+			.then((text) => {
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(text, 'image/svg+xml');
+				const path = doc.querySelector('path');
+				if (path) rawPathD = path.getAttribute('d') ?? '';
+				recalc();
+				timers = [setTimeout(recalc, 300), setTimeout(recalc, 1000)];
+				window.addEventListener('resize', recalc, { passive: true });
+				window.addEventListener('scroll', onScroll, { passive: true });
+			})
+			.catch(() => {});
 
 		return () => {
-			running = false;
-			cancelAnimationFrame(rafId);
 			timers.forEach(clearTimeout);
 			window.removeEventListener('resize', recalc);
+			window.removeEventListener('scroll', onScroll);
 		};
 	});
 
@@ -169,21 +132,22 @@
 			stroke="var(--color-line)"
 			stroke-width={strokeWidth}
 			stroke-linecap="round"
-			stroke-dasharray={totalLength}
-			stroke-dashoffset={dashOffset}
+			stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
+			class="project-path-anim"
 		/>
 
 		{#if totalLength > 0}
 			<defs>
 				<mask id="project-path-reveal-mask">
 					<path
+						bind:this={maskPathEl}
 						d={pathD}
 						fill="none"
 						stroke="white"
 						stroke-width={strokeWidth + 20}
 						stroke-linecap="round"
 						stroke-dasharray={totalLength}
-						stroke-dashoffset={dashOffset + totalLength * 0.001}
+						class="project-path-anim"
 					/>
 				</mask>
 			</defs>
@@ -203,3 +167,21 @@
 		{/if}
 	{/if}
 </svg>
+
+<style>
+	@keyframes project-path-reveal {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	@supports (animation-timeline: scroll()) {
+		.project-path-anim {
+			animation-name: project-path-reveal;
+			animation-timing-function: linear;
+			animation-fill-mode: both;
+			animation-duration: auto;
+			animation-timeline: scroll(root block);
+		}
+	}
+</style>
