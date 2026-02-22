@@ -9,16 +9,14 @@
 
 	let { src }: Props = $props();
 
-	// Original SVG coordinate space (from viewBox)
 	const SVG_W = 1920;
 	const SVG_H = 7737.26;
-	const SVG_TOP_OFFSET = 140; // base vertical offset in px
+	const SVG_TOP_OFFSET = 140;
 
 	const marqueeText =
 		'\u26BD\uFE0F How can soccer function as a participatory framework for negotiating and experiencing democratic rule- and decision-making among young people?  \u00B7  ';
 	const pathText = marqueeText.repeat(10);
 
-	// Scale all coordinates in a path d string independently per axis.
 	function scalePath(d: string, sx: number, sy: number): string {
 		let idx = 0;
 		return d.replace(/-?\d*\.?\d+/g, (m) => {
@@ -58,30 +56,60 @@
 		pageHeight = document.documentElement.scrollHeight;
 	}
 
-	// Set initial stroke-dashoffset for CSS scroll-driven animation.
-	// Starts fully hidden at scroll=0, reveals to fully drawn at scroll=100%.
-	$effect(() => {
-		if (!pathEl || !totalLength) return;
-		pathEl.style.strokeDashoffset = String(totalLength);
-	});
-
-	$effect(() => {
-		if (!maskPathEl || !totalLength) return;
-		// Mask lags slightly so text appears just behind the draw front
-		maskPathEl.style.strokeDashoffset = String(totalLength * 1.001);
-	});
-
 	onMount(() => {
-		const onScroll = () => {
-			if (textPathEl && pageHeight > 0) {
-				const offset = ((window.scrollY / pageHeight) * 35) % 100;
+		let running = true;
+		let rafId: number;
+		let lastTime = 0;
+		let currentOffset = -1;
+		let prevTotalLength = 0;
+		let lastScrollForText = -1;
+
+		function loop(now: number) {
+			if (!running) return;
+
+			const dt = lastTime === 0 ? 16.667 : Math.min(now - lastTime, 50);
+			lastTime = now;
+
+			const tl = totalLength;
+			if (tl <= 0) {
+				rafId = requestAnimationFrame(loop);
+				return;
+			}
+
+			if (tl !== prevTotalLength) {
+				currentOffset = prevTotalLength > 0 ? currentOffset * (tl / prevTotalLength) : tl;
+				prevTotalLength = tl;
+			}
+
+			// Time-based lerp: consistent at any refresh rate
+			const lerpT = 1 - Math.pow(0.88, dt / 16.667);
+
+			const pageH = pageHeight;
+			const ahead = 0.45 + 4.0 * (1 - vwScale);
+			const scrollFraction =
+				pageH > 0 ? Math.min(1, (window.scrollY + window.innerHeight * ahead) / pageH) : 0;
+			const targetOffset = tl * (1 - scrollFraction);
+			currentOffset += (targetOffset - currentOffset) * lerpT;
+			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
+
+			// Direct DOM writes — no Svelte state touched per frame
+			if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
+			if (maskPathEl)
+				maskPathEl.setAttribute('stroke-dashoffset', (currentOffset + tl * 0.001).toFixed(1));
+
+			// Text: only recompute when scroll changed
+			const curScrollY = window.scrollY;
+			if (textPathEl && curScrollY !== lastScrollForText) {
+				lastScrollForText = curScrollY;
+				const offset = pageHeight > 0 ? ((curScrollY / pageHeight) * 35) % 100 : 0;
 				textPathEl.setAttribute('startOffset', `${offset.toFixed(1)}%`);
 			}
-		};
+
+			rafId = requestAnimationFrame(loop);
+		}
 
 		let timers: ReturnType<typeof setTimeout>[] = [];
 
-		// Fetch path async, but register cleanup synchronously
 		fetch(`${base}${src}`)
 			.then((res) => res.text())
 			.then((text) => {
@@ -92,14 +120,16 @@
 				recalc();
 				timers = [setTimeout(recalc, 300), setTimeout(recalc, 1000)];
 				window.addEventListener('resize', recalc, { passive: true });
-				window.addEventListener('scroll', onScroll, { passive: true });
 			})
 			.catch(() => {});
 
+		rafId = requestAnimationFrame(loop);
+
 		return () => {
+			running = false;
+			cancelAnimationFrame(rafId);
 			timers.forEach(clearTimeout);
 			window.removeEventListener('resize', recalc);
-			window.removeEventListener('scroll', onScroll);
 		};
 	});
 
@@ -114,7 +144,6 @@
 	});
 </script>
 
-<!-- No viewBox: coordinates are in viewport px, stroke-width is in viewport px -->
 <svg
 	class="pointer-events-none absolute left-0 z-0"
 	style="top: {svgTop}px;"
@@ -133,7 +162,6 @@
 			stroke-width={strokeWidth}
 			stroke-linecap="round"
 			stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
-			class="project-path-anim"
 		/>
 
 		{#if totalLength > 0}
@@ -147,7 +175,6 @@
 						stroke-width={strokeWidth + 20}
 						stroke-linecap="round"
 						stroke-dasharray={totalLength}
-						class="project-path-anim"
 					/>
 				</mask>
 			</defs>
@@ -167,21 +194,3 @@
 		{/if}
 	{/if}
 </svg>
-
-<style>
-	@keyframes project-path-reveal {
-		to {
-			stroke-dashoffset: 0;
-		}
-	}
-
-	@supports (animation-timeline: scroll()) {
-		.project-path-anim {
-			animation-name: project-path-reveal;
-			animation-timing-function: linear;
-			animation-fill-mode: both;
-			animation-duration: auto;
-			animation-timeline: scroll(root block);
-		}
-	}
-</style>
