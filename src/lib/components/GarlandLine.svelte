@@ -52,12 +52,7 @@
 			clearTimeout(resizeTimer);
 			resizeTimer = setTimeout(recalculate, 100);
 		};
-		const onScroll = () => {
-			cachedScrollY = window.scrollY;
-		};
-
 		window.addEventListener('resize', onResize);
-		window.addEventListener('scroll', onScroll, { passive: true });
 
 		const timers = [setTimeout(() => recalculate(), 100), setTimeout(() => recalculate(), 500)];
 
@@ -69,7 +64,6 @@
 
 		return () => {
 			window.removeEventListener('resize', onResize);
-			window.removeEventListener('scroll', onScroll);
 			timers.forEach(clearTimeout);
 			clearTimeout(resizeTimer);
 			ro.disconnect();
@@ -115,7 +109,9 @@
 		let lastTime = 0;
 		let currentOffset = -1;
 		let prevTotalLength = 0;
-		let lastScrollForText = -1;
+		let textOffset = 0;
+		let isScrolling = false;
+		let scrollEndTimer: ReturnType<typeof setTimeout> | undefined;
 
 		function loop(now: number) {
 			if (!running) return;
@@ -159,20 +155,36 @@
 					(currentOffset + tl * 0.001).toFixed(1)
 				);
 
-			// Text: only recompute glyph layout when scroll actually changed
-			if (textPathEl && cachedScrollY !== lastScrollForText) {
-				lastScrollForText = cachedScrollY;
-				const offset = cachedPageH > 0 ? ((cachedScrollY / cachedPageH) * 35) % 100 : 0;
-				textPathEl.setAttribute('startOffset', `${offset.toFixed(1)}%`);
+			// Text: idle marquee only — glyph layout never runs during scroll
+			if (textPathEl && !isScrolling) {
+				textOffset = (textOffset + 0.04) % 100;
+				// setAttribute only when rounded value changes (~every 2-3 frames)
+				const rounded = textOffset.toFixed(1);
+				if (textPathEl.getAttribute('startOffset') !== rounded + '%') {
+					textPathEl.setAttribute('startOffset', rounded + '%');
+				}
 			}
 
 			rafId = requestAnimationFrame(loop);
 		}
 
+		// Detect scroll start/end to pause text animation during scroll
+		const onScroll = () => {
+			cachedScrollY = window.scrollY;
+			isScrolling = true;
+			clearTimeout(scrollEndTimer);
+			scrollEndTimer = setTimeout(() => {
+				isScrolling = false;
+			}, 150);
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+
 		rafId = requestAnimationFrame(loop);
 		return () => {
 			running = false;
 			cancelAnimationFrame(rafId);
+			clearTimeout(scrollEndTimer);
+			window.removeEventListener('scroll', onScroll);
 		};
 	});
 </script>

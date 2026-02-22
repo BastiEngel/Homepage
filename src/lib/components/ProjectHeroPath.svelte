@@ -62,7 +62,9 @@
 		let lastTime = 0;
 		let currentOffset = -1;
 		let prevTotalLength = 0;
-		let lastScrollForText = -1;
+		let textOffset = 0;
+		let isScrolling = false;
+		let scrollEndTimer: ReturnType<typeof setTimeout> | undefined;
 
 		function loop(now: number) {
 			if (!running) return;
@@ -97,16 +99,26 @@
 			if (maskPathEl)
 				maskPathEl.setAttribute('stroke-dashoffset', (currentOffset + tl * 0.001).toFixed(1));
 
-			// Text: only recompute when scroll changed
-			const curScrollY = window.scrollY;
-			if (textPathEl && curScrollY !== lastScrollForText) {
-				lastScrollForText = curScrollY;
-				const offset = pageHeight > 0 ? ((curScrollY / pageHeight) * 35) % 100 : 0;
-				textPathEl.setAttribute('startOffset', `${offset.toFixed(1)}%`);
+			// Text: idle marquee only — no glyph layout during scroll
+			if (textPathEl && !isScrolling) {
+				textOffset = (textOffset + 0.04) % 100;
+				const rounded = textOffset.toFixed(1);
+				if (textPathEl.getAttribute('startOffset') !== rounded + '%') {
+					textPathEl.setAttribute('startOffset', rounded + '%');
+				}
 			}
 
 			rafId = requestAnimationFrame(loop);
 		}
+
+		const onScroll = () => {
+			isScrolling = true;
+			clearTimeout(scrollEndTimer);
+			scrollEndTimer = setTimeout(() => {
+				isScrolling = false;
+			}, 150);
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
 
 		let timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -128,8 +140,10 @@
 		return () => {
 			running = false;
 			cancelAnimationFrame(rafId);
+			clearTimeout(scrollEndTimer);
 			timers.forEach(clearTimeout);
 			window.removeEventListener('resize', recalc);
+			window.removeEventListener('scroll', onScroll);
 		};
 	});
 
