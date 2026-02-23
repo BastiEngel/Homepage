@@ -104,7 +104,7 @@
 			// Text: idle marquee only — no glyph layout during scroll
 			if (textPathEl && !isScrolling) {
 				const mod = textLoopModulo > 0.1 ? textLoopModulo : 15;
-				textOffset = (textOffset + 0.02) % mod;
+				textOffset = (textOffset + 0.005) % mod;
 				const rounded = textOffset.toFixed(1);
 				if (textPathEl.getAttribute('startOffset') !== rounded + '%') {
 					textPathEl.setAttribute('startOffset', rounded + '%');
