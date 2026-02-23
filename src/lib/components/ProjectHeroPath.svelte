@@ -15,7 +15,9 @@
 
 	const marqueeText =
 		'\u26BD\uFE0F How can soccer function as a participatory framework for negotiating and experiencing democratic rule- and decision-making among young people?  \u00B7  ';
-	const pathText = marqueeText.repeat(10);
+	const repeatCount = 30;
+	const pathText = marqueeText.repeat(repeatCount);
+	let textLoopModulo = 15;
 
 	function scalePath(d: string, sx: number, sy: number): string {
 		let idx = 0;
@@ -101,7 +103,8 @@
 
 			// Text: idle marquee only — no glyph layout during scroll
 			if (textPathEl && !isScrolling) {
-				textOffset = (textOffset + 0.04) % 100;
+				const mod = textLoopModulo > 0.1 ? textLoopModulo : 15;
+				textOffset = (textOffset + 0.02) % mod;
 				const rounded = textOffset.toFixed(1);
 				if (textPathEl.getAttribute('startOffset') !== rounded + '%') {
 					textPathEl.setAttribute('startOffset', rounded + '%');
@@ -155,6 +158,15 @@
 			const len = pathEl.getTotalLength();
 			if (len > 0) totalLength = len;
 		});
+	});
+
+	// Compute seamless loop modulo after text and path are both rendered
+	$effect(() => {
+		if (!textPathEl || !totalLength) return;
+		const textLen = textPathEl.getComputedTextLength();
+		if (textLen > 0) {
+			textLoopModulo = (textLen / repeatCount / totalLength) * 100;
+		}
 	});
 </script>
 

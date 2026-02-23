@@ -24,7 +24,11 @@
 	let heroHeight = $state(0);
 	const marqueeText =
 		'\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  \u00B7  ';
-	const pathText = marqueeText.repeat(8);
+	// Large repeat count so text always fills the full path length — prevents gaps
+	const repeatCount = 40;
+	const pathText = marqueeText.repeat(repeatCount);
+	// Loop modulo = length of one repeat as % of path — computed after render, ensures seamless loop
+	let textLoopModulo = 15; // safe default, recalculated in $effect below
 
 	// Cached layout values — updated via passive scroll/resize listeners
 	let cachedScrollY = 0;
@@ -102,6 +106,16 @@
 		});
 	});
 
+	// Compute seamless loop modulo: length of one text repeat as % of path.
+	// Fires when textPathEl mounts (inside {#if totalLength > 0}) and when path resizes.
+	$effect(() => {
+		if (!textPathEl || !totalLength) return;
+		const textLen = textPathEl.getComputedTextLength();
+		if (textLen > 0) {
+			textLoopModulo = (textLen / repeatCount / totalLength) * 100;
+		}
+	});
+
 	// Unified animation loop — direct DOM writes, no Svelte state touched per frame
 	onMount(() => {
 		let running = true;
@@ -157,8 +171,8 @@
 
 			// Text: idle marquee only — glyph layout never runs during scroll
 			if (textPathEl && !isScrolling) {
-				textOffset = (textOffset + 0.04) % 100;
-				// setAttribute only when rounded value changes (~every 2-3 frames)
+				const mod = textLoopModulo > 0.1 ? textLoopModulo : 15;
+				textOffset = (textOffset + 0.02) % mod;
 				const rounded = textOffset.toFixed(1);
 				if (textPathEl.getAttribute('startOffset') !== rounded + '%') {
 					textPathEl.setAttribute('startOffset', rounded + '%');
