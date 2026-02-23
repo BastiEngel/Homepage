@@ -173,9 +173,9 @@
 			if (textPathEl && !isScrolling) {
 				const mod = textLoopModulo > 0.1 ? textLoopModulo : 15;
 				textOffset += 0.005;
-				// Reset only when path beginning is above the viewport — gap stays off-screen
-				if (textOffset >= mod && (cachedScrollY > cachedInnerH || textOffset > mod * 2)) {
-					textOffset = textOffset % mod; // full modulo, not just -mod
+				// Reset only when hero section is fully above the viewport — gap stays off-screen
+				if (textOffset >= mod && (cachedScrollY > heroHeight + cachedInnerH || textOffset > mod * 3)) {
+					textOffset = textOffset % mod;
 				}
 				const rounded = textOffset.toFixed(2);
 				if (textPathEl.getAttribute('startOffset') !== rounded + '%') {
