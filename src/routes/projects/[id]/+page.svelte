@@ -96,7 +96,7 @@
 				const dist = Math.max(-1, Math.min(1, (screenCenter - vc) / maxDist));
 				const lift = (1 - dist * dist) * ARC_HEIGHT;
 				const scale = 1 + (1 - dist * dist) * 0.08;
-				cachedTiles[i].style.transform = `translateY(-${lift}px) scale(${scale})`;
+				cachedTiles[i].style.transform = `translate3d(0, -${lift}px, 0) scale(${scale})`;
 			}
 		}
 
@@ -113,8 +113,9 @@
 			if (halfWidth <= 0) { rafId = requestAnimationFrame(frame); return; }
 
 			if (snapTarget !== -99999) {
-				// Lerp smoothly into snap position
-				smooth += (snapTarget - smooth) * LERP;
+				// Time-based lerp — consistent at any refresh rate
+				const lerpT = 1 - Math.pow(1 - LERP, dt / 16.667);
+				smooth += (snapTarget - smooth) * lerpT;
 				if (Math.abs(snapTarget - smooth) < 0.3) smooth = snapTarget;
 			} else if (!dragging && !paused) {
 				// Direct auto-scroll — no lerp lag
@@ -134,7 +135,7 @@
 			if (smooth < 0) smooth += halfWidth;
 			if (smooth >= halfWidth) smooth -= halfWidth;
 
-			if (trackEl) trackEl.style.transform = `translateX(-${smooth}px)`;
+			if (trackEl) trackEl.style.transform = `translate3d(-${smooth}px, 0, 0)`;
 			// Only recompute arc transforms when position actually changed
 			if (Math.abs(smooth - prevSmooth) > 0.05) {
 				applyArc();
@@ -240,6 +241,7 @@
 	{#if project.heroPathSrc}
 		<ProjectHeroPath src={project.heroPathSrc} />
 	{/if}
+	<div class="relative z-[2]">
 	<!-- Hero media — full width -->
 	<section class="hero-media relative">
 		{#if isVideo}
@@ -409,6 +411,7 @@
 			</svg>
 		</a>
 	</div>
+	</div><!-- /z-[2] content wrapper -->
 </main>
 
 <Footer />
@@ -552,6 +555,7 @@
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
 		aspect-ratio: 3 / 2;
 		height: 220px;
+		will-change: transform;
 	}
 
 	.gallery-tile.portrait {

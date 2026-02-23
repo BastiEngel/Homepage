@@ -16,8 +16,8 @@
 	const marqueeText =
 		'\u26BD\uFE0F How can soccer function as a participatory framework for negotiating and experiencing democratic rule- and decision-making among young people?  \u00B7  ';
 	const repeatCount = 30;
-	const pathText = marqueeText.repeat(repeatCount);
-	let textLoopModulo = 15;
+	const fullText = marqueeText.repeat(repeatCount);
+	const chars = [...fullText]; // Unicode-aware split
 
 	function scalePath(d: string, sx: number, sy: number): string {
 		let idx = 0;
@@ -29,8 +29,7 @@
 	}
 
 	let pathEl: SVGPathElement | undefined = $state();
-	let maskPathEl: SVGPathElement | undefined = $state();
-	let textPathEl: SVGTextPathElement | undefined = $state();
+	let canvasEl: HTMLCanvasElement | undefined = $state();
 	let rawPathD = $state('');
 	let totalLength = $state(0);
 	let pageWidth = $state(1920);
@@ -40,6 +39,8 @@
 	let yShift = $derived(-78 * vwScale * vwScale);
 	let svgTop = $derived(SVG_TOP_OFFSET + yShift);
 	let svgHeight = $derived(SVG_H * (pageWidth / SVG_W));
+	let fontSize = $derived(Math.max(12, (24 / 0.85) * vwScale));
+	let strokeWidth = $derived(Math.max(18, 36 * Math.min(1, pageWidth / 1440)));
 
 	let pathD = $derived.by(() => {
 		if (!rawPathD || !pageWidth || !pageHeight) return '';
@@ -50,13 +51,92 @@
 		return scalePath(rawPathD, sx, sy);
 	});
 
-	let strokeWidth = $derived(Math.max(18, 36 * Math.min(1, pageWidth / 1440)));
-	let fontSize = $derived(Math.max(12, (24 / 0.85) * vwScale));
+	// Path lookup table — built once per path change, interpolated per-frame
+	let pathLUT: { x: number; y: number; cos: number; sin: number }[] = [];
+	let pathLUTStep = 2;
+	let pathLUTTotal = 0;
+
+	// Character layout in CSS pixels
+	let charCumWidths: number[] = [];
+	let oneRepeatPx = 0;
+
+	function buildPathLUT(el: SVGPathElement) {
+		const total = el.getTotalLength();
+		if (total <= 0) return;
+		const step = Math.max(1, Math.round(total / 4000));
+		const lut: typeof pathLUT = [];
+		for (let d = 0; d < total; d += step) {
+			const p1 = el.getPointAtLength(d);
+			const p2 = el.getPointAtLength(Math.min(d + step, total));
+			const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+			lut.push({ x: p1.x, y: p1.y, cos: Math.cos(angle), sin: Math.sin(angle) });
+		}
+		pathLUT = lut;
+		pathLUTStep = step;
+		pathLUTTotal = total;
+	}
+
+	function buildCharWidths(ctx: CanvasRenderingContext2D) {
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
+		const cumWidths: number[] = [];
+		let cum = 0;
+		for (const ch of chars) {
+			cumWidths.push(cum);
+			cum += ctx.measureText(ch).width + (ch === ' ' ? 12 : 0); // word-spacing: 12
+		}
+		charCumWidths = cumWidths;
+		oneRepeatPx = cum / repeatCount;
+	}
+
+	function lutPoint(dist: number) {
+		if (pathLUT.length === 0) return { x: 0, y: 0, cos: 1, sin: 0 };
+		const t = dist / pathLUTStep;
+		const i = Math.min(Math.floor(t), pathLUT.length - 2);
+		const frac = t - i;
+		const a = pathLUT[i];
+		const b = pathLUT[i + 1];
+		return {
+			x: a.x + (b.x - a.x) * frac,
+			y: a.y + (b.y - a.y) * frac,
+			cos: a.cos + (b.cos - a.cos) * frac,
+			sin: a.sin + (b.sin - a.sin) * frac
+		};
+	}
 
 	function recalc() {
 		pageWidth = window.innerWidth;
 		pageHeight = document.documentElement.scrollHeight;
 	}
+
+	// Resize canvas when dimensions change — also rebuilds char widths on font-size change
+	$effect(() => {
+		if (!canvasEl || !pageWidth || !svgHeight) return;
+		const dpr = window.devicePixelRatio || 1;
+		canvasEl.width = Math.round(pageWidth * dpr);
+		canvasEl.height = Math.round(svgHeight * dpr);
+		canvasEl.style.width = pageWidth + 'px';
+		canvasEl.style.height = svgHeight + 'px';
+		const ctx = canvasEl.getContext('2d');
+		if (ctx) buildCharWidths(ctx);
+	});
+
+	// Re-measure path length and rebuild LUT whenever scaled path changes
+	$effect(() => {
+		if (!pathEl || !pathD) return;
+		tick().then(() => {
+			if (!pathEl) return;
+			const len = pathEl.getTotalLength();
+			if (len > 0) {
+				totalLength = len;
+				buildPathLUT(pathEl);
+				if (canvasEl) {
+					const ctx = canvasEl.getContext('2d');
+					if (ctx) buildCharWidths(ctx);
+				}
+			}
+		});
+	});
 
 	onMount(() => {
 		let running = true;
@@ -64,9 +144,9 @@
 		let lastTime = 0;
 		let currentOffset = -1;
 		let prevTotalLength = 0;
-		let textOffset = 0;
-		let isScrolling = false;
-		let scrollEndTimer: ReturnType<typeof setTimeout> | undefined;
+		let textStart = 0;
+		let cachedScrollY = window.scrollY;
+		let cachedInnerH = window.innerHeight;
 
 		function loop(now: number) {
 			if (!running) return;
@@ -91,41 +171,47 @@
 			const pageH = pageHeight;
 			const ahead = 0.45 + 4.0 * (1 - vwScale);
 			const scrollFraction =
-				pageH > 0 ? Math.min(1, (window.scrollY + window.innerHeight * ahead) / pageH) : 0;
+				pageH > 0 ? Math.min(1, (cachedScrollY + cachedInnerH * ahead) / pageH) : 0;
 			const targetOffset = tl * (1 - scrollFraction);
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 
-			// Direct DOM writes — no Svelte state touched per frame
+			// Path draw — direct setAttribute
 			if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
-			if (maskPathEl)
-				maskPathEl.setAttribute('stroke-dashoffset', (currentOffset + tl * 0.001).toFixed(1));
 
-			// Text: idle marquee only — no glyph layout during scroll
-			if (textPathEl && !isScrolling) {
-				const mod = textLoopModulo > 0.1 ? textLoopModulo : 15;
-				textOffset += 0.005;
-				// Reset only when hero is fully above the viewport — gap stays off-screen
-				if (textOffset >= mod && (window.scrollY > window.innerHeight * 2 || textOffset > mod * 3)) {
-					textOffset = textOffset % mod;
-				}
-				const rounded = textOffset.toFixed(2);
-				if (textPathEl.getAttribute('startOffset') !== rounded + '%') {
-					textPathEl.setAttribute('startOffset', rounded + '%');
+			// Canvas text draw
+			if (canvasEl && pathLUTTotal > 0 && oneRepeatPx > 0 && charCumWidths.length > 0) {
+				const speedPx = pathLUTTotal * 0.00005 * (dt / 16.667);
+				textStart = ((textStart - speedPx) % oneRepeatPx + oneRepeatPx) % oneRepeatPx;
+
+				const revealedLength = tl - currentOffset;
+				const dpr = window.devicePixelRatio || 1;
+				const ctx = canvasEl.getContext('2d')!;
+
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+
+				ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
+				ctx.fillStyle = '#ffffff';
+				ctx.textBaseline = 'middle';
+
+				const charsPerRepeat = Math.round(chars.length / repeatCount);
+				const repeatsNeeded = Math.ceil((revealedLength + textStart) / oneRepeatPx) + 1;
+				outerLoop: for (let r = 0; r < repeatsNeeded; r++) {
+					const repOffset = r * oneRepeatPx - textStart;
+					for (let j = 0; j < charsPerRepeat; j++) {
+						const pathDist = repOffset + charCumWidths[j];
+						if (pathDist < 0) continue;
+						if (pathDist > revealedLength || pathDist >= pathLUTTotal) break outerLoop;
+						const { x, y, cos, sin } = lutPoint(pathDist);
+						ctx.setTransform(dpr * cos, dpr * sin, -dpr * sin, dpr * cos, x * dpr, y * dpr);
+						ctx.fillText(chars[j], 0, 4);
+					}
 				}
 			}
 
 			rafId = requestAnimationFrame(loop);
 		}
-
-		const onScroll = () => {
-			isScrolling = true;
-			clearTimeout(scrollEndTimer);
-			scrollEndTimer = setTimeout(() => {
-				isScrolling = false;
-			}, 150);
-		};
-		window.addEventListener('scroll', onScroll, { passive: true });
 
 		let timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -142,37 +228,27 @@
 			})
 			.catch(() => {});
 
+		const onScroll = () => { cachedScrollY = window.scrollY; };
+		window.addEventListener('scroll', onScroll, { passive: true });
+
 		rafId = requestAnimationFrame(loop);
 
 		return () => {
 			running = false;
 			cancelAnimationFrame(rafId);
-			clearTimeout(scrollEndTimer);
 			timers.forEach(clearTimeout);
 			window.removeEventListener('resize', recalc);
 			window.removeEventListener('scroll', onScroll);
 		};
 	});
-
-	// Re-measure path length whenever scaled path changes
-	$effect(() => {
-		if (!pathEl || !pathD) return;
-		tick().then(() => {
-			if (!pathEl) return;
-			const len = pathEl.getTotalLength();
-			if (len > 0) totalLength = len;
-		});
-	});
-
-	// Compute seamless loop modulo after text and path are both rendered
-	$effect(() => {
-		if (!textPathEl || !totalLength) return;
-		const textLen = textPathEl.getComputedTextLength();
-		if (textLen > 0) {
-			textLoopModulo = (textLen / repeatCount / totalLength) * 100;
-		}
-	});
 </script>
+
+<canvas
+	bind:this={canvasEl}
+	class="pointer-events-none absolute left-0 z-[1]"
+	style="top: {svgTop}px; mask-image: linear-gradient(to bottom, transparent 0px, black 400px); -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 400px);"
+	aria-hidden="true"
+></canvas>
 
 <svg
 	class="pointer-events-none absolute left-0 z-0"
@@ -193,34 +269,5 @@
 			stroke-linecap="round"
 			stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
 		/>
-
-		{#if totalLength > 0}
-			<defs>
-				<mask id="project-path-reveal-mask">
-					<path
-						bind:this={maskPathEl}
-						d={pathD}
-						fill="none"
-						stroke="white"
-						stroke-width={strokeWidth + 20}
-						stroke-linecap="round"
-						stroke-dasharray={totalLength}
-					/>
-				</mask>
-			</defs>
-			<text
-				fill="#ffffff"
-				font-size={fontSize}
-				font-weight="900"
-				font-family="'area-inktrap', sans-serif"
-				dy="0.35em"
-				word-spacing="12"
-				mask="url(#project-path-reveal-mask)"
-			>
-				<textPath href="#project-hero-path" startOffset="0%" bind:this={textPathEl}>
-					{pathText}
-				</textPath>
-			</text>
-		{/if}
 	{/if}
 </svg>

@@ -11,24 +11,78 @@
 	let { onpoints, featuredCount = 3 }: Props = $props();
 
 	let pathElement: SVGPathElement | undefined = $state();
-	let maskPathEl: SVGPathElement | undefined = $state();
+	let canvasEl: HTMLCanvasElement | undefined = $state();
 	let pathD = $state('');
 	let totalLength = $state(0);
 	let heroPathFraction = $state(0.15);
 	let pageWidth = $state(1440);
 	let pageHeight = $state(0);
-	let textPathEl: SVGTextPathElement | undefined = $state();
+	let heroHeight = $state(0);
+
 	let vwScale = $derived(Math.min(1, pageWidth / 1440));
 	let yShift = $derived(-80 * vwScale * vwScale);
 	let yScale = $derived(0.85 + 0.15 * vwScale);
-	let heroHeight = $state(0);
-	const marqueeText =
-		'\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  \u00B7  ';
-	// Large repeat count so text always fills the full path length — prevents gaps
+	let strokeWidth = $derived(Math.max(18, 36 * Math.min(1, pageWidth / 1440)));
+	let fontSize = $derived(Math.max(12, (24 / 0.85) * vwScale));
+
+	const marqueeText = '  \u{1F44B} HEY I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :) ';
 	const repeatCount = 40;
-	const pathText = marqueeText.repeat(repeatCount);
-	// Loop modulo = length of one repeat as % of path — computed after render, ensures seamless loop
-	let textLoopModulo = 15; // safe default, recalculated in $effect below
+	const fullText = marqueeText.repeat(repeatCount);
+	const chars = [...fullText]; // Unicode-aware split — emoji = 1 element
+
+	// Path lookup table — built once per path change, interpolated per-frame
+	let pathLUT: { x: number; y: number; cos: number; sin: number }[] = [];
+	let pathLUTStep = 2;
+	let pathLUTTotal = 0;
+
+	// Character layout in CSS pixels
+	let charCumWidths: number[] = [];
+	let oneRepeatPx = 0;
+
+	function buildPathLUT(el: SVGPathElement) {
+		const total = el.getTotalLength();
+		if (total <= 0) return;
+		const step = Math.max(1, Math.round(total / 4000));
+		const lut: typeof pathLUT = [];
+		for (let d = 0; d < total; d += step) {
+			const p1 = el.getPointAtLength(d);
+			const p2 = el.getPointAtLength(Math.min(d + step, total));
+			const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+			lut.push({ x: p1.x, y: p1.y, cos: Math.cos(angle), sin: Math.sin(angle) });
+		}
+		pathLUT = lut;
+		pathLUTStep = step;
+		pathLUTTotal = total;
+	}
+
+	function buildCharWidths(ctx: CanvasRenderingContext2D) {
+		// Measure in CSS pixel space (identity transform) for consistency with path LUT coords
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
+		const cumWidths: number[] = [];
+		let cum = 0;
+		for (const ch of chars) {
+			cumWidths.push(cum);
+			cum += ctx.measureText(ch).width + (ch === ' ' ? 12 : 0); // word-spacing: 12
+		}
+		charCumWidths = cumWidths;
+		oneRepeatPx = cum / repeatCount;
+	}
+
+	function lutPoint(dist: number) {
+		if (pathLUT.length === 0) return { x: 0, y: 0, cos: 1, sin: 0 };
+		const t = dist / pathLUTStep;
+		const i = Math.min(Math.floor(t), pathLUT.length - 2);
+		const frac = t - i;
+		const a = pathLUT[i];
+		const b = pathLUT[i + 1];
+		return {
+			x: a.x + (b.x - a.x) * frac,
+			y: a.y + (b.y - a.y) * frac,
+			cos: a.cos + (b.cos - a.cos) * frac,
+			sin: a.sin + (b.sin - a.sin) * frac
+		};
+	}
 
 	// Cached layout values — updated via passive scroll/resize listeners
 	let cachedScrollY = 0;
@@ -74,7 +128,20 @@
 		};
 	});
 
-	// Measure path and sample tag points after DOM flush
+	// Resize canvas to match layout — also rebuilds char widths on font-size change
+	$effect(() => {
+		if (!canvasEl || !pageWidth || !pageHeight) return;
+		const dpr = window.devicePixelRatio || 1;
+		const logicalH = Math.ceil(pageHeight / yScale);
+		canvasEl.width = Math.round(pageWidth * dpr);
+		canvasEl.height = Math.round(logicalH * dpr);
+		canvasEl.style.width = pageWidth + 'px';
+		canvasEl.style.height = logicalH + 'px';
+		const ctx = canvasEl.getContext('2d');
+		if (ctx) buildCharWidths(ctx);
+	});
+
+	// Measure path, build LUT, compute fan points after DOM flush
 	$effect(() => {
 		if (!pathElement || !pathD) return;
 		const hh = heroHeight;
@@ -95,6 +162,13 @@
 				if (i === 100) heroPathFraction = 1;
 			}
 
+			buildPathLUT(pathElement);
+
+			if (canvasEl) {
+				const ctx = canvasEl.getContext('2d');
+				if (ctx) buildCharWidths(ctx);
+			}
+
 			if (onpoints && featuredCount > 0) {
 				const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth).map((p) => ({
 					...p,
@@ -106,31 +180,18 @@
 		});
 	});
 
-	// Compute seamless loop modulo: length of one text repeat as % of path.
-	// Fires when textPathEl mounts (inside {#if totalLength > 0}) and when path resizes.
-	$effect(() => {
-		if (!textPathEl || !totalLength) return;
-		const textLen = textPathEl.getComputedTextLength();
-		if (textLen > 0) {
-			textLoopModulo = (textLen / repeatCount / totalLength) * 100;
-		}
-	});
-
-	// Unified animation loop — direct DOM writes, no Svelte state touched per frame
+	// Unified animation loop — direct DOM + Canvas writes, no Svelte state touched per frame
 	onMount(() => {
 		let running = true;
 		let rafId: number;
 		let lastTime = 0;
 		let currentOffset = -1;
 		let prevTotalLength = 0;
-		let textOffset = 0;
-		let isScrolling = false;
-		let scrollEndTimer: ReturnType<typeof setTimeout> | undefined;
+		let textStart = 0;
 
 		function loop(now: number) {
 			if (!running) return;
 
-			// dt capped at 50ms to avoid large jumps after tab visibility changes
 			const dt = lastTime === 0 ? 16.667 : Math.min(now - lastTime, 50);
 			lastTime = now;
 
@@ -149,7 +210,7 @@
 				prevTotalLength = tl;
 			}
 
-			// Time-based lerp: consistent feel at any refresh rate (60 / 120 / 144 Hz)
+			// Time-based lerp — consistent at any refresh rate
 			const lerpT = 1 - Math.pow(0.88, dt / 16.667);
 
 			const viewBottom = cachedScrollY + cachedInnerH;
@@ -160,40 +221,45 @@
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 
-			// Direct setAttribute — bypasses Svelte scheduler, no reconciliation per frame
-			if (pathElement)
-				pathElement.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
-			if (maskPathEl)
-				maskPathEl.setAttribute(
-					'stroke-dashoffset',
-					(currentOffset + tl * 0.001).toFixed(1)
-				);
+			// Path draw — direct setAttribute, bypasses Svelte scheduler
+			if (pathElement) pathElement.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
 
-			// Text: idle marquee only — glyph layout never runs during scroll
-			if (textPathEl && !isScrolling) {
-				const mod = textLoopModulo > 0.1 ? textLoopModulo : 15;
-				textOffset += 0.005;
-				// Reset only when hero section is fully above the viewport — gap stays off-screen
-				if (textOffset >= mod && (cachedScrollY > heroHeight + cachedInnerH || textOffset > mod * 3)) {
-					textOffset = textOffset % mod;
-				}
-				const rounded = textOffset.toFixed(2);
-				if (textPathEl.getAttribute('startOffset') !== rounded + '%') {
-					textPathEl.setAttribute('startOffset', rounded + '%');
+			// Canvas text draw
+			if (canvasEl && pathLUTTotal > 0 && oneRepeatPx > 0 && charCumWidths.length > 0) {
+				const speedPx = pathLUTTotal * 0.00005 * (dt / 16.667);
+				textStart = ((textStart - speedPx) % oneRepeatPx + oneRepeatPx) % oneRepeatPx;
+
+				const revealedLength = tl - currentOffset;
+				const dpr = window.devicePixelRatio || 1;
+				const ctx = canvasEl.getContext('2d')!;
+
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+
+				ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
+				ctx.fillStyle = '#ffffff';
+				ctx.textBaseline = 'middle';
+
+				const charsPerRepeat = Math.round(chars.length / repeatCount);
+				const repeatsNeeded = Math.ceil((revealedLength + textStart) / oneRepeatPx) + 1;
+				outerLoop: for (let r = 0; r < repeatsNeeded; r++) {
+					const repOffset = r * oneRepeatPx - textStart;
+					for (let j = 0; j < charsPerRepeat; j++) {
+						const pathDist = repOffset + charCumWidths[j];
+						if (pathDist < 0) continue;
+						if (pathDist > revealedLength || pathDist >= pathLUTTotal) break outerLoop;
+						const { x, y, cos, sin } = lutPoint(pathDist);
+						ctx.setTransform(dpr * cos, dpr * sin, -dpr * sin, dpr * cos, x * dpr, y * dpr);
+						ctx.fillText(chars[j], 0, 4);
+					}
 				}
 			}
 
 			rafId = requestAnimationFrame(loop);
 		}
 
-		// Detect scroll start/end to pause text animation during scroll
 		const onScroll = () => {
 			cachedScrollY = window.scrollY;
-			isScrolling = true;
-			clearTimeout(scrollEndTimer);
-			scrollEndTimer = setTimeout(() => {
-				isScrolling = false;
-			}, 150);
 		};
 		window.addEventListener('scroll', onScroll, { passive: true });
 
@@ -201,11 +267,17 @@
 		return () => {
 			running = false;
 			cancelAnimationFrame(rafId);
-			clearTimeout(scrollEndTimer);
 			window.removeEventListener('scroll', onScroll);
 		};
 	});
 </script>
+
+<canvas
+	bind:this={canvasEl}
+	class="pointer-events-none absolute left-0 z-[6]"
+	style="top: {yShift}px; transform: scaleY({yScale}); transform-origin: top center;"
+	aria-hidden="true"
+></canvas>
 
 <svg
 	class="pointer-events-none absolute left-0 z-[5]"
@@ -221,36 +293,8 @@
 		d={pathD}
 		fill="none"
 		stroke="var(--color-line)"
-		stroke-width={Math.max(18, 36 * Math.min(1, pageWidth / 1440))}
+		stroke-width={strokeWidth}
 		stroke-linecap="round"
 		stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
 	/>
-	{#if totalLength > 0}
-		<defs>
-			<mask id="path-reveal-mask">
-				<path
-					bind:this={maskPathEl}
-					d={pathD}
-					fill="none"
-					stroke="white"
-					stroke-width={Math.max(18, 36 * Math.min(1, pageWidth / 1440)) + 20}
-					stroke-linecap="round"
-					stroke-dasharray={totalLength}
-				/>
-			</mask>
-		</defs>
-		<text
-			fill="#ffffff"
-			font-size={Math.max(12, (24 / 0.85) * vwScale)}
-			font-weight="900"
-			font-family="'area-inktrap', sans-serif"
-			dy="0.35em"
-			word-spacing="12"
-			mask="url(#path-reveal-mask)"
-		>
-			<textPath href="#garland-path" startOffset="0%" bind:this={textPathEl}>
-				{pathText}
-			</textPath>
-		</text>
-	{/if}
 </svg>
