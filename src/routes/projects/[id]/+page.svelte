@@ -14,6 +14,8 @@
 
 	const contentBlocks = project.contentBlocks ?? [];
 	const gallery = project.gallery ?? [];
+	const hasFullWidthBg = contentBlocks.some(b => b.fullWidthBg);
+	const firstContentBlockIndex = contentBlocks.findIndex(b => !b.fullWidthBg);
 
 	// --- Gallery carousel state ---
 	let trackEl: HTMLElement | undefined = $state();
@@ -241,47 +243,63 @@
 	{#if project.heroPathSrc}
 		<ProjectHeroPath src={project.heroPathSrc} />
 	{/if}
-	<div class="relative z-[2]">
-	<!-- Hero media — full width -->
-	<section class="hero-media relative">
-		{#if isVideo}
-			<video
-				src={coverSrc}
-				autoplay
-				loop
-				muted
-				playsinline
-				class="hero-cover"
-			></video>
-		{:else}
-			<img
-				src={coverSrc}
-				alt="{project.name} cover"
-				class="hero-cover"
-			/>
-		{/if}
-	</section>
+	<!-- Hero + GIF: outside z-[2] so mix-blend-mode blends with body background -->
+	<div class="hero-gif-wrapper">
+		<section class="hero-media hero-z">
+			{#if isVideo}
+				<video
+					src={coverSrc}
+					autoplay
+					loop
+					muted
+					playsinline
+					class="hero-cover"
+				></video>
+			{:else}
+				<img
+					src={coverSrc}
+					alt="{project.name} cover"
+					class="hero-cover"
+				/>
+			{/if}
+		</section>
 
+		{#each contentBlocks.filter(b => b.fullWidthBg) as block}
+			<div class="fullwidth-bg-section">
+				<img
+					src="{base}{block.image}"
+					alt={block.alt || ''}
+					loading="lazy"
+					class="fullwidth-bg-img"
+				/>
+			</div>
+		{/each}
+	</div>
+
+	<!-- Content: z-[2] renders above GIF -->
+	<div class="relative z-[2]">
 	<!-- Project info -->
-	<section class="relative px-6 pt-12 pb-8 md:px-12 lg:pt-20 lg:pb-8">
+	<section class="relative px-6 pt-12 pb-16 md:px-12 lg:pt-20 lg:pb-24">
 		<div class="mx-auto max-w-4xl" use:scrollReveal>
 			<h1 class="text-text project-heading">
 				{project.name}
 			</h1>
 
+			{#if project.description}
+				<p class="text-text mt-8 max-w-3xl text-base lg:text-lg">
+					{project.description}
+				</p>
+			{/if}
+
 			{#if project.subtitle}
-				<p class="text-text-muted mt-4 whitespace-pre-line text-sm project-light">{project.subtitle}</p>
+				<p class="text-text-muted mt-6 whitespace-pre-line text-sm project-light">{project.subtitle}</p>
 			{:else}
-				<div class="text-text-muted mt-4 flex flex-wrap items-center gap-4 text-sm">
+				<div class="text-text-muted mt-6 flex flex-wrap items-center gap-4 text-sm">
 					{#if project.role}<span>{project.role}</span>{/if}
 					{#if project.year}<span class="opacity-40">|</span><span>{project.year}</span>{/if}
 					{#if project.client}<span class="opacity-40">|</span><span>{project.client}</span>{/if}
 				</div>
 			{/if}
-
-			<p class="text-text mt-16 max-w-3xl text-base lg:text-lg lg:mt-24">
-				{project.description}
-			</p>
 
 			{#if project.externalUrl}
 				<a
@@ -301,26 +319,28 @@
 
 	<!-- Content blocks — image + text -->
 	{#each contentBlocks as block, i}
-		<section class="relative px-6 md:px-12">
-			<div class="mx-auto max-w-4xl">
-				<div class="content-tile" use:revealCard>
-					<img
-						src="{base}{block.image}"
-						alt={block.alt || `${project.name} detail ${i + 1}`}
-						loading="lazy"
-						class="content-img"
-					/>
-					<div class="bevel-edge"></div>
+		{#if !block.fullWidthBg}
+			<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+				<div class="mx-auto max-w-4xl">
+					<div class="content-tile" use:revealCard>
+						<img
+							src="{base}{block.image}"
+							alt={block.alt || `${project.name} detail ${i + 1}`}
+							loading="lazy"
+							class="content-img"
+						/>
+						<div class="bevel-edge"></div>
+					</div>
+					{#if block.text}
+						<p class="text-text mx-auto mt-8 mb-8 max-w-4xl whitespace-pre-line text-base lg:text-lg" use:scrollReveal={{ delay: 180 }}>
+							{block.text}
+						</p>
+					{:else}
+						<div class="mb-8"></div>
+					{/if}
 				</div>
-				{#if block.text}
-					<p class="text-text mx-auto mt-8 mb-8 max-w-4xl whitespace-pre-line text-base lg:text-lg" use:scrollReveal={{ delay: 180 }}>
-						{block.text}
-					</p>
-				{:else}
-					<div class="mb-8"></div>
-				{/if}
-			</div>
-		</section>
+			</section>
+		{/if}
 	{/each}
 
 	<!-- Learnings -->
@@ -393,14 +413,14 @@
 
 	<!-- Credits -->
 	{#if project.credits}
-		<section class="relative px-6 mt-4 md:px-12">
+		<section class="relative px-6 mt-28 md:px-12">
 			<div class="mx-auto max-w-4xl" use:scrollReveal>
 				<p class="text-text whitespace-pre-line text-center text-base lg:text-lg project-light">{project.credits}</p>
 			</div>
 		</section>
 	{/if}
 
-	<div class="flex justify-center py-12">
+	<div class="flex justify-center py-24">
 		<a
 			href="{base}/"
 			class="back-pill"
@@ -411,7 +431,7 @@
 			</svg>
 		</a>
 	</div>
-	</div><!-- /z-[2] content wrapper -->
+	</div><!-- /z-[2] over GIF -->
 </main>
 
 <Footer />
@@ -605,6 +625,36 @@
 		border-radius: inherit;
 		pointer-events: none;
 		border: 2px solid rgba(255, 255, 255, 0.35);
+	}
+
+	.hero-gif-wrapper {
+		position: relative;
+	}
+
+	/* hero-media gets its own z-index so it stays above HeroPath on projects that use it */
+	.hero-z {
+		position: relative;
+		z-index: 2;
+	}
+
+	.first-content-block {
+		margin-top: 14rem;
+	}
+
+	.fullwidth-bg-section {
+		position: absolute;
+		top: 82%;
+		left: 0;
+		width: 100%;
+		pointer-events: none;
+	}
+
+	.fullwidth-bg-img {
+		width: 85%;
+		height: auto;
+		display: block;
+		margin: 0 auto;
+		mix-blend-mode: multiply;
 	}
 
 	.project-heading {

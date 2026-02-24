@@ -57,6 +57,7 @@ export interface ProjectContentBlock {
 	image: string;
 	alt?: string;
 	text?: string;
+	fullWidthBg?: boolean;
 }
 
 export interface Project {
