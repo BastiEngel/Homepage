@@ -56,8 +56,14 @@ export interface ProjectImage {
 export interface ProjectContentBlock {
 	image: string;
 	alt?: string;
+	heading?: string;
+	textBefore?: string;
 	text?: string;
+	postHeading?: string;
+	layout?: 'default' | 'image-left' | 'gallery';
+	galleryImages?: string[];
 	fullWidthBg?: boolean;
+	imageFit?: 'cover' | 'contain';
 }
 
 export interface Project {

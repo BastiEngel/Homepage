@@ -2,6 +2,7 @@
 	import Nav from '$lib/components/Nav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import ProjectHeroPath from '$lib/components/ProjectHeroPath.svelte';
+	import GalleryCarousel from '$lib/components/GalleryCarousel.svelte';
 	import { scrollReveal, revealCard } from '$lib/utils/scrollAnimation';
 	import { base } from '$app/paths';
 
@@ -17,224 +18,6 @@
 	const hasFullWidthBg = contentBlocks.some(b => b.fullWidthBg);
 	const firstContentBlockIndex = contentBlocks.findIndex(b => !b.fullWidthBg);
 
-	// --- Gallery carousel state ---
-	let trackEl: HTMLElement | undefined = $state();
-	let portraitSrcs: Set<string> = $state(new Set());
-	let needsRebuild = false;
-	let navigateFn: ((dir: 1 | -1) => void) | undefined = $state();
-
-	function markPortrait(src: string, img: HTMLImageElement) {
-		if (img.naturalHeight > img.naturalWidth) {
-			portraitSrcs = new Set([...portraitSrcs, src]);
-			needsRebuild = true;
-		}
-	}
-
-	$effect(() => {
-		if (!trackEl || gallery.length === 0) return;
-
-		const GAP = 40; // 2.5rem
-		const ARC_HEIGHT = 55; // px lift at center
-		const AUTO_SPEED = 0.65; // px per ms
-		const PAUSE_MS = 3500;
-		const SNAP_RADIUS = 160; // px — snap when within this distance
-		const LERP = 0.12;
-
-		let running = true;
-		let rafId: number;
-		let smooth = 0;
-		let target = 0;
-		let lastTime = 0;
-		let paused = false;
-		let pauseTimer: ReturnType<typeof setTimeout>;
-		let lastSnapPos = -99999;
-
-		let dragging = false;
-		let dragStartX = 0;
-		let dragStartTarget = 0;
-
-		let tileData: { center: number }[] = [];
-		let cachedTiles: HTMLElement[] = []; // cached once — no DOM query per frame
-		let halfWidth = 0;
-		let snapTarget = -99999; // active snap target, -99999 = not snapping
-		let vw = window.innerWidth; // cached — updated only on resize
-		let prevSmooth = -1; // skip applyArc when position unchanged
-
-		function buildTileData() {
-			if (!trackEl) return;
-			const tiles = trackEl.querySelectorAll('.gallery-tile') as NodeListOf<HTMLElement>;
-			cachedTiles = Array.from(tiles);
-			tileData = [];
-			for (let i = 0; i < cachedTiles.length; i++) {
-				tileData.push({ center: cachedTiles[i].offsetLeft + cachedTiles[i].offsetWidth / 2 });
-			}
-			let hw = 0;
-			for (let i = 0; i < gallery.length && i < cachedTiles.length; i++) {
-				hw += cachedTiles[i].offsetWidth + GAP;
-			}
-			halfWidth = hw;
-		}
-
-		function findNearestSnap(pos: number): number {
-			const vc = vw / 2;
-			let best = -99999;
-			let bestDist = Infinity;
-			for (const { center } of tileData) {
-				const snapPos = center - vc;
-				if (snapPos < 0) continue;
-				const dist = Math.abs(pos - snapPos);
-				if (dist < bestDist) { bestDist = dist; best = snapPos; }
-			}
-			return bestDist <= SNAP_RADIUS ? best : -99999;
-		}
-
-		function applyArc() {
-			if (cachedTiles.length === 0 || tileData.length === 0) return;
-			const vc = vw / 2;
-			const maxDist = vw * 0.7;
-			for (let i = 0; i < cachedTiles.length; i++) {
-				if (!tileData[i]) continue;
-				const screenCenter = tileData[i].center - smooth;
-				const dist = Math.max(-1, Math.min(1, (screenCenter - vc) / maxDist));
-				const lift = (1 - dist * dist) * ARC_HEIGHT;
-				const scale = 1 + (1 - dist * dist) * 0.08;
-				cachedTiles[i].style.transform = `translate3d(0, -${lift}px, 0) scale(${scale})`;
-			}
-		}
-
-		function frame(now: number) {
-			if (!running) return;
-			const dt = Math.min(now - lastTime, 50);
-			lastTime = now;
-
-			if (needsRebuild || tileData.length === 0) {
-				buildTileData();
-				needsRebuild = false;
-				prevSmooth = -1;
-			}
-			if (halfWidth <= 0) { rafId = requestAnimationFrame(frame); return; }
-
-			if (snapTarget !== -99999) {
-				// Time-based lerp — consistent at any refresh rate
-				const lerpT = 1 - Math.pow(1 - LERP, dt / 16.667);
-				smooth += (snapTarget - smooth) * lerpT;
-				if (Math.abs(snapTarget - smooth) < 0.3) smooth = snapTarget;
-			} else if (!dragging && !paused) {
-				// Direct auto-scroll — no lerp lag
-				smooth += AUTO_SPEED * dt;
-				if (smooth >= halfWidth) { smooth -= halfWidth; lastSnapPos -= halfWidth; }
-
-				const snap = findNearestSnap(smooth);
-				if (snap !== -99999 && Math.abs(snap - lastSnapPos) > 50) {
-					snapTarget = snap;
-					lastSnapPos = snap;
-					paused = true;
-					clearTimeout(pauseTimer);
-					pauseTimer = setTimeout(() => { paused = false; snapTarget = -99999; }, PAUSE_MS);
-				}
-			}
-
-			if (smooth < 0) smooth += halfWidth;
-			if (smooth >= halfWidth) smooth -= halfWidth;
-
-			if (trackEl) trackEl.style.transform = `translate3d(-${smooth}px, 0, 0)`;
-			// Only recompute arc transforms when position actually changed
-			if (Math.abs(smooth - prevSmooth) > 0.05) {
-				applyArc();
-				prevSmooth = smooth;
-			}
-			rafId = requestAnimationFrame(frame);
-		}
-
-		function onPointerDown(e: PointerEvent) {
-			dragging = true;
-			paused = false;
-			snapTarget = -99999;
-			clearTimeout(pauseTimer);
-			dragStartX = e.clientX;
-			dragStartTarget = smooth;
-			trackEl?.setPointerCapture(e.pointerId);
-		}
-
-		function onPointerMove(e: PointerEvent) {
-			if (!dragging || halfWidth <= 0) return;
-			const dx = dragStartX - e.clientX;
-			smooth = ((dragStartTarget + dx) % halfWidth + halfWidth) % halfWidth;
-		}
-
-		function onPointerUp() {
-			if (!dragging) return;
-			dragging = false;
-			const vc = vw / 2;
-			let best = -99999, bestDist = Infinity;
-			for (const { center } of tileData) {
-				const snapPos = center - vc;
-				if (snapPos < 0) continue;
-				const dist = Math.abs(smooth - snapPos);
-				if (dist < bestDist) { bestDist = dist; best = snapPos; }
-			}
-			if (best !== -99999) {
-				snapTarget = best;
-				lastSnapPos = best;
-				paused = true;
-				clearTimeout(pauseTimer);
-				pauseTimer = setTimeout(() => { paused = false; snapTarget = -99999; }, PAUSE_MS);
-			}
-		}
-
-		function onResize() {
-			vw = window.innerWidth;
-			buildTileData();
-			if (halfWidth > 0) {
-				smooth = ((smooth % halfWidth) + halfWidth) % halfWidth;
-				snapTarget = -99999;
-				lastSnapPos = -99999;
-			}
-		}
-
-		trackEl.addEventListener('pointerdown', onPointerDown);
-		window.addEventListener('pointermove', onPointerMove);
-		window.addEventListener('pointerup', onPointerUp);
-		window.addEventListener('resize', onResize, { passive: true });
-
-		rafId = requestAnimationFrame(frame);
-
-		navigateFn = (dir: 1 | -1) => {
-			if (halfWidth <= 0 || tileData.length === 0) return;
-			const vc = window.innerWidth / 2;
-			// Collect unique snap positions in [0, halfWidth), sorted
-			const snaps: number[] = [];
-			for (const { center } of tileData) {
-				const sp = center - vc;
-				if (sp >= 0 && sp < halfWidth) snaps.push(sp);
-			}
-			snaps.sort((a, b) => a - b);
-			if (snaps.length === 0) return;
-			// Find currently centered snap index
-			let bestIdx = 0, bestDist = Infinity;
-			for (let i = 0; i < snaps.length; i++) {
-				const dist = Math.abs(smooth - snaps[i]);
-				if (dist < bestDist) { bestDist = dist; bestIdx = i; }
-			}
-			const nextIdx = (bestIdx + dir + snaps.length) % snaps.length;
-			snapTarget = snaps[nextIdx];
-			lastSnapPos = snaps[nextIdx];
-			paused = true;
-			clearTimeout(pauseTimer);
-			pauseTimer = setTimeout(() => { paused = false; snapTarget = -99999; }, PAUSE_MS);
-		};
-
-		return () => {
-			running = false;
-			navigateFn = undefined;
-			cancelAnimationFrame(rafId);
-			clearTimeout(pauseTimer);
-			trackEl!.removeEventListener('pointerdown', onPointerDown);
-			window.removeEventListener('pointermove', onPointerMove);
-			window.removeEventListener('pointerup', onPointerUp);
-			window.removeEventListener('resize', onResize);
-		};
-	});
 </script>
 
 <Nav />
@@ -286,13 +69,13 @@
 			</h1>
 
 			{#if project.description}
-				<p class="text-text mt-8 max-w-3xl text-base lg:text-lg">
+				<p class="text-text mt-2 max-w-3xl text-base lg:text-lg">
 					{project.description}
 				</p>
 			{/if}
 
 			{#if project.subtitle}
-				<p class="text-text-muted mt-6 whitespace-pre-line text-sm project-light">{project.subtitle}</p>
+				<p class="text-text-muted mt-2 whitespace-pre-line text-sm project-light">{project.subtitle}</p>
 			{:else}
 				<div class="text-text-muted mt-6 flex flex-wrap items-center gap-4 text-sm">
 					{#if project.role}<span>{project.role}</span>{/if}
@@ -320,26 +103,83 @@
 	<!-- Content blocks — image + text -->
 	{#each contentBlocks as block, i}
 		{#if !block.fullWidthBg}
-			<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
-				<div class="mx-auto max-w-4xl">
-					<div class="content-tile" use:revealCard>
-						<img
-							src="{base}{block.image}"
-							alt={block.alt || `${project.name} detail ${i + 1}`}
-							loading="lazy"
-							class="content-img"
-						/>
-						<div class="bevel-edge"></div>
+			{#if block.layout === 'image-left'}
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+					<div class="mx-auto max-w-4xl">
+						<div class="image-left-grid mb-8">
+							<div class="content-tile" use:revealCard>
+								<img
+									src="{base}{block.image}"
+									alt={block.alt || `${project.name} detail ${i + 1}`}
+									loading="lazy"
+									class="content-img"
+									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
+								/>
+								<div class="bevel-edge"></div>
+							</div>
+							<div class="image-left-text" use:scrollReveal={{ delay: 180 }}>
+								{#if block.postHeading}
+									<p class="text-text text-base lg:text-lg" style="font-weight: 900;">{block.postHeading}</p>
+								{/if}
+								{#if block.text}
+									<p class="text-text whitespace-pre-line text-base lg:text-lg">{block.text}</p>
+								{/if}
+							</div>
+						</div>
 					</div>
-					{#if block.text}
-						<p class="text-text mx-auto mt-8 mb-8 max-w-4xl whitespace-pre-line text-base lg:text-lg" use:scrollReveal={{ delay: 180 }}>
-							{block.text}
-						</p>
-					{:else}
-						<div class="mb-8"></div>
+				</section>
+			{:else if block.layout === 'gallery'}
+				<section class="content-block-section relative" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+					{#if block.heading || block.textBefore}
+						<div class="mx-auto mb-8 max-w-4xl px-6 md:px-12" use:scrollReveal={{ delay: 180 }}>
+							{#if block.heading}
+								<p class="text-text text-base lg:text-lg" style="font-weight: 900;">{block.heading}</p>
+							{/if}
+							{#if block.textBefore}
+								<p class="text-text whitespace-pre-line text-base lg:text-lg">{block.textBefore}</p>
+							{/if}
+						</div>
 					{/if}
-				</div>
-			</section>
+					<GalleryCarousel images={block.galleryImages ?? []} projectName={project.name} />
+				</section>
+		{:else}
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+					<div class="mx-auto max-w-4xl">
+						{#if block.heading || block.textBefore}
+							<div class="mx-auto mb-8 max-w-4xl" use:scrollReveal={{ delay: 180 }}>
+								{#if block.heading}
+									<p class="text-text text-base lg:text-lg" style="font-weight: 900;">{block.heading}</p>
+								{/if}
+								{#if block.textBefore}
+									<p class="text-text whitespace-pre-line text-base lg:text-lg">{block.textBefore}</p>
+								{/if}
+							</div>
+						{/if}
+						<div class="content-tile" use:revealCard>
+							<img
+								src="{base}{block.image}"
+								alt={block.alt || `${project.name} detail ${i + 1}`}
+								loading="lazy"
+								class="content-img"
+								style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
+							/>
+							<div class="bevel-edge"></div>
+						</div>
+						{#if block.postHeading || block.text}
+							<div class="mx-auto mt-8 mb-8 max-w-4xl" use:scrollReveal={{ delay: 180 }}>
+								{#if block.postHeading}
+									<p class="text-text text-base lg:text-lg" style="font-weight: 900;">{block.postHeading}</p>
+								{/if}
+								{#if block.text}
+									<p class="text-text whitespace-pre-line text-base lg:text-lg">{block.text}</p>
+								{/if}
+							</div>
+						{:else}
+							<div class="mb-8"></div>
+						{/if}
+					</div>
+				</section>
+			{/if}
 		{/if}
 	{/each}
 
@@ -366,48 +206,7 @@
 	<!-- Scrolling gallery -->
 	{#if gallery.length > 0}
 		<section class="relative pt-12 pb-0 lg:pt-20">
-			<div class="gallery-section">
-				<div class="gallery-scroll">
-					<div class="gallery-track" bind:this={trackEl}>
-						{#each gallery as src}
-							<div class="gallery-tile" class:portrait={portraitSrcs.has(src)}>
-								<img
-									src="{base}{src}"
-									alt="{project.name} gallery"
-									loading="lazy"
-									class="gallery-img"
-									draggable="false"
-									onload={(e) => markPortrait(src, e.currentTarget as HTMLImageElement)}
-								/>
-								<div class="bevel-edge"></div>
-							</div>
-						{/each}
-						<!-- Duplicate for seamless loop -->
-						{#each gallery as src}
-							<div class="gallery-tile" class:portrait={portraitSrcs.has(src)} aria-hidden="true">
-								<img
-									src="{base}{src}"
-									alt=""
-									loading="lazy"
-									class="gallery-img"
-									draggable="false"
-								/>
-								<div class="bevel-edge"></div>
-							</div>
-						{/each}
-					</div>
-				</div>
-				<button class="gallery-nav gallery-nav-left" onclick={() => navigateFn?.(-1)} aria-label="Previous">
-					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-					</svg>
-				</button>
-				<button class="gallery-nav gallery-nav-right" onclick={() => navigateFn?.(1)} aria-label="Next">
-					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-					</svg>
-				</button>
-			</div>
+			<GalleryCarousel images={gallery} projectName={project.name} />
 		</section>
 	{/if}
 
@@ -505,102 +304,6 @@
 		to   { transform: translateY(-10%); }
 	}
 
-	.gallery-section {
-		position: relative;
-	}
-
-	.gallery-section:hover .gallery-nav {
-		opacity: 1;
-	}
-
-	.gallery-nav {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 10;
-		width: 3rem;
-		height: 3rem;
-		border-radius: 9999px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		background: rgba(255, 255, 255, 0.08);
-		border: 2px solid rgba(255, 255, 255, 0.35);
-		color: var(--color-text);
-		cursor: pointer;
-		opacity: 0;
-		transition: opacity 0.25s, background 0.2s;
-	}
-
-	.gallery-nav:hover {
-		background: rgba(255, 255, 255, 0.18);
-	}
-
-	.gallery-nav-left {
-		left: 1.5rem;
-	}
-
-	.gallery-nav-right {
-		right: 1.5rem;
-	}
-
-	.gallery-scroll {
-		width: 100%;
-		overflow: hidden;
-		contain: layout;
-	}
-
-	.gallery-track {
-		display: flex;
-		gap: 2.5rem;
-		width: max-content;
-		padding: 6rem 0 4rem;
-		cursor: grab;
-		user-select: none;
-		will-change: transform;
-		touch-action: none;
-	}
-
-	.gallery-track:active {
-		cursor: grabbing;
-	}
-
-	.gallery-tile {
-		position: relative;
-		flex-shrink: 0;
-		border-radius: 0.75rem;
-		overflow: hidden;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
-		aspect-ratio: 3 / 2;
-		height: 220px;
-		will-change: transform;
-	}
-
-	.gallery-tile.portrait {
-		aspect-ratio: 2 / 3;
-	}
-
-	.gallery-img {
-		width: 100%;
-		height: 100%;
-		display: block;
-		object-fit: cover;
-	}
-
-	@media (min-width: 768px) {
-		.gallery-tile {
-			height: 300px;
-		}
-	}
-
-	@media (min-width: 1024px) {
-		.gallery-tile {
-			height: 380px;
-		}
-	}
-
 	.back-pill {
 		display: inline-flex;
 		align-items: center;
@@ -638,12 +341,12 @@
 	}
 
 	.first-content-block {
-		margin-top: 14rem;
+		margin-top: 18rem;
 	}
 
 	.fullwidth-bg-section {
 		position: absolute;
-		top: 82%;
+		top: 92%;
 		left: 0;
 		width: 100%;
 		pointer-events: none;
@@ -655,6 +358,26 @@
 		display: block;
 		margin: 0 auto;
 		mix-blend-mode: multiply;
+	}
+
+	.image-left-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2rem;
+		align-items: start;
+	}
+
+	.image-left-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		margin-top: -0.55rem;
+	}
+
+	@media (max-width: 767px) {
+		.image-left-grid {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	.project-heading {
