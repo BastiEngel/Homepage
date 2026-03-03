@@ -79,6 +79,10 @@
 	{
 		"id": "binvisible",
 		"name": "Binvisible",
+		"heroPathSrc": "/images/Path_binvisible.svg",
+		"heroPathTopOffset": -450,
+		"heroPathScale": 0.99,
+		"heroPathText": "\u201cMultidisciplinary concept for promoting responsible\u00a0public behaviour regarding environmental pollution and resource cycles through participatory methods\u201d  ",
 		"description": "\"Multidisciplinary concept for promoting responsible public behaviour regarding environmental pollution and resource cycles through participatory methods\"",
 		"subtitle": "Bachelor Thesis | Product Design | 2024\nSupervisors: Prof. Dr. Bianca Herlo, Kristin Dolz\nSocial Design | Urban Hacking | Eco Design",
 		"cover": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-26.jpg",

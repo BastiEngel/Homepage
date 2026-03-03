@@ -91,6 +91,9 @@ export interface Project {
 	tagImage?: string;
 	tileImage?: string;
 	heroPathSrc?: string;
+	heroPathTopOffset?: number;
+	heroPathScale?: number;
+	heroPathText?: string;
 }
 
 export interface GarlandPoint {

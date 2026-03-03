@@ -24,7 +24,7 @@
 
 <main class="relative pt-16">
 	{#if project.heroPathSrc}
-		<ProjectHeroPath src={project.heroPathSrc} />
+		<ProjectHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} marqueeText={project.heroPathText} />
 	{/if}
 	<!-- Hero + GIF: outside z-[2] so mix-blend-mode blends with body background -->
 	<div class="hero-gif-wrapper">
