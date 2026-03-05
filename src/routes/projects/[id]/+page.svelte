@@ -49,12 +49,23 @@
 
 		{#each contentBlocks.filter(b => b.fullWidthBg) as block}
 			<div class="fullwidth-bg-section">
-				<img
-					src="{base}{block.image}"
-					alt={block.alt || ''}
-					loading="lazy"
-					class="fullwidth-bg-img"
-				/>
+				{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm')}
+					<video
+						src="{base}{block.image}"
+						autoplay
+						loop
+						muted
+						playsinline
+						class="fullwidth-bg-img"
+					></video>
+				{:else}
+					<img
+						src="{base}{block.image}"
+						alt={block.alt || ''}
+						loading="lazy"
+						class="fullwidth-bg-img"
+					/>
+				{/if}
 			</div>
 		{/each}
 	</div>
