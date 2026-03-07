@@ -202,13 +202,13 @@
 			{
 				"image": "/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-30.jpg",
 				"imageAspect": "3/1",
-				"textBefore": "This research project explores the potential of mycelium in additive manufacturing, inspired by the \"Binder-Jetting\" process. The base material is made up of organic and mineral powders, which are selectively inoculated with mycelium in the form of liquid cultures.",
-				"text": "As the mycelium grows, it bonds the particles, forming stable geometric shapes, including overhangs and undercuts, without additional support structures. This eliminates conventional moulding constraints and enables greater design flexibility."
+				"textBefore": "This research project explores the potential of mycelium in additive manufacturing, inspired by the \"Binder-Jetting\" process. The base material is made up of organic and mineral powders, which are selectively inoculated with mycelium in the form of liquid cultures."
 			},
 			{
 				"image": "/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-29.jpg",
 				"imageAspect": "auto",
-				"stackBelow": true
+				"stackBelow": true,
+				"text": "As the mycelium grows, it bonds the particles, forming stable geometric shapes, including overhangs and undercuts, without additional support structures. This eliminates conventional moulding constraints and enables greater design flexibility."
 			},
 			{
 				"image": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_11.jpg",
