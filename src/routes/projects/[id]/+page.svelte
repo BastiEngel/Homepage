@@ -174,8 +174,8 @@
 									alt={block.alt || `${project.name} detail ${i + 1}`}
 									loading="lazy"
 									decoding="async"
-									class={block.imageAspect ? "content-img no-parallax" : "content-img"}
-									style="{block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}{block.imageScale ? ` transform: scale(${block.imageScale});` : ''}"
+									class={block.imageAspect === "auto" ? "content-img natural" : block.imageAspect ? "content-img no-parallax" : "content-img"}
+									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
 								/>
 							{/if}
 						</div>
@@ -315,6 +315,24 @@
 	@supports (animation-timeline: view()) {
 		.content-img.no-parallax {
 			height: 100%;
+			margin-top: 0;
+			animation: none;
+		}
+	}
+
+	/* Natural aspect ratio — image determines tile height, no crop */
+	.content-tile:has(.natural) {
+		aspect-ratio: auto;
+	}
+
+	.content-img.natural {
+		height: auto;
+		object-fit: initial;
+	}
+
+	@supports (animation-timeline: view()) {
+		.content-img.natural {
+			height: auto;
 			margin-top: 0;
 			animation: none;
 		}
