@@ -16,7 +16,7 @@
 	};
 </script>
 
-<footer id="contact" class="bg-surface relative px-6 py-16 md:px-12">
+<footer id="contact" class="glass-footer relative z-10 px-6 py-16 md:px-12">
 	<div class="mx-auto max-w-6xl text-center" use:scrollReveal>
 		{#if config.meta.socialLinks.length > 0}
 			<div class="mt-6 flex justify-center gap-4">
@@ -57,3 +57,11 @@
 		</div>
 	</div>
 </footer>
+
+<style>
+	.glass-footer {
+		background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+	}
+</style>

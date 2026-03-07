@@ -8,7 +8,7 @@
 <main class="relative z-[6] mx-auto max-w-3xl px-6 mt-16 py-12 md:px-12">
 	<h1 class="font-heading text-text mb-8 text-2xl font-bold">imprint</h1>
 
-	<div class="text-text space-y-6 text-sm leading-relaxed">
+	<div class="text-text space-y-6 text-sm">
 		<section>
 			<h2 class="mb-2 text-base font-bold">information according to § 5 TMG</h2>
 			<p>Bastian Engel</p>

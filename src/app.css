@@ -47,11 +47,14 @@
 
 html {
 	scroll-behavior: smooth;
+	font-size: 20px;
 }
+
 
 body {
 	font-family: var(--font-body);
-	font-weight: 500;
+	font-weight: 600;
+	line-height: 32.36px;
 	background-color: var(--color-bg);
 	color: var(--color-text);
 	-webkit-font-smoothing: antialiased;
