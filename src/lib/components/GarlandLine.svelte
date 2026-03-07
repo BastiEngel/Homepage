@@ -10,6 +10,28 @@
 
 	let { onpoints, featuredCount = 3 }: Props = $props();
 
+	// ── Module-level cache ────────────────────────────────────────────────────
+	// Survives component unmount/remount across SvelteKit navigations.
+	// On back-navigation the expensive LUT + char-width builds are skipped
+	// entirely when the viewport hasn't changed.
+	type LUTEntry = { x: number; y: number; cos: number; sin: number };
+	const _cache: {
+		pathD: string;
+		lut: LUTEntry[];
+		lutStep: number;
+		lutTotal: number;
+		charWidths: number[];
+		oneRepeatPx: number;
+		width: number;
+		height: number;
+		fontSize: number;
+	} = {
+		pathD: '', lut: [], lutStep: 2, lutTotal: 0,
+		charWidths: [], oneRepeatPx: 0,
+		width: 0, height: 0, fontSize: 0
+	};
+	// ─────────────────────────────────────────────────────────────────────────
+
 	let pathElement: SVGPathElement | undefined = $state();
 	let canvasEl: HTMLCanvasElement | undefined = $state();
 	let pathD = $state('');
@@ -31,7 +53,7 @@
 	const chars = [...fullText]; // Unicode-aware split — emoji = 1 element
 
 	// Path lookup table — built once per path change, interpolated per-frame
-	let pathLUT: { x: number; y: number; cos: number; sin: number }[] = [];
+	let pathLUT: LUTEntry[] = [];
 	let pathLUTStep = 2;
 	let pathLUTTotal = 0;
 
@@ -43,7 +65,7 @@
 		const total = el.getTotalLength();
 		if (total <= 0) return;
 		const step = Math.max(1, Math.round(total / 4000));
-		const lut: typeof pathLUT = [];
+		const lut: LUTEntry[] = [];
 		for (let d = 0; d < total; d += step) {
 			const p1 = el.getPointAtLength(d);
 			const p2 = el.getPointAtLength(Math.min(d + step, total));
@@ -53,20 +75,32 @@
 		pathLUT = lut;
 		pathLUTStep = step;
 		pathLUTTotal = total;
+		// Persist to module cache
+		_cache.lut = lut;
+		_cache.lutStep = step;
+		_cache.lutTotal = total;
 	}
 
 	function buildCharWidths(ctx: CanvasRenderingContext2D) {
-		// Measure in CSS pixel space (identity transform) for consistency with path LUT coords
+		// Skip if font size and canvas dimensions are unchanged (cache hit)
+		if (_cache.fontSize === fontSize && _cache.charWidths.length > 0) {
+			charCumWidths = _cache.charWidths;
+			oneRepeatPx = _cache.oneRepeatPx;
+			return;
+		}
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
 		const cumWidths: number[] = [];
 		let cum = 0;
 		for (const ch of chars) {
 			cumWidths.push(cum);
-			cum += ctx.measureText(ch).width + (ch === ' ' ? 12 : 0); // word-spacing: 12
+			cum += ctx.measureText(ch).width + (ch === ' ' ? 12 : 0);
 		}
 		charCumWidths = cumWidths;
 		oneRepeatPx = cum / repeatCount;
+		_cache.charWidths = cumWidths;
+		_cache.oneRepeatPx = oneRepeatPx;
+		_cache.fontSize = fontSize;
 	}
 
 	function lutPoint(dist: number) {
@@ -91,29 +125,57 @@
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
-		pageWidth = window.innerWidth;
-		pageHeight = document.documentElement.scrollHeight;
+		const w = window.innerWidth;
+		const h = document.documentElement.scrollHeight;
 		cachedInnerH = window.innerHeight;
-		cachedPageH = pageHeight;
+		cachedPageH = h;
 		cachedScrollY = window.scrollY;
+
+		// Restore from cache if dimensions unchanged (back-navigation fast path)
+		if (_cache.pathD && _cache.width === w && Math.abs(_cache.height - h) < 8) {
+			pageWidth = w;
+			pageHeight = h;
+			heroHeight = cachedInnerH;
+			pathD = _cache.pathD;
+			if (_cache.lut.length > 0) {
+				pathLUT = _cache.lut;
+				pathLUTStep = _cache.lutStep;
+				pathLUTTotal = _cache.lutTotal;
+				charCumWidths = _cache.charWidths;
+				oneRepeatPx = _cache.oneRepeatPx;
+			}
+			return;
+		}
+
+		pageWidth = w;
+		pageHeight = h;
 		const heroEl = document.querySelector('section.relative[class*="h-"]');
 		heroHeight = heroEl ? heroEl.getBoundingClientRect().height : window.innerHeight;
-		const effectiveYScale = 0.85 + 0.15 * Math.min(1, pageWidth / 1440);
-		pathD = generateGarlandPath(pageWidth, pageHeight / effectiveYScale, heroHeight);
+		const effectiveYScale = 0.85 + 0.15 * Math.min(1, w / 1440);
+		const newPathD = generateGarlandPath(w, h / effectiveYScale, heroHeight);
+		pathD = newPathD;
+		_cache.pathD = newPathD;
+		_cache.width = w;
+		_cache.height = h;
 	}
 
 	$effect(() => {
-		recalculate();
+		// Defer first recalculate behind RAF so browser paints the page first
+		let rafId = requestAnimationFrame(() => recalculate());
 
 		let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 		const onResize = () => {
 			clearTimeout(resizeTimer);
+			// Invalidate cache on resize
+			_cache.width = 0;
 			resizeTimer = setTimeout(recalculate, 150);
 		};
 		window.addEventListener('resize', onResize, { passive: true });
 
-		// Single deferred recalculate to catch late-loading fonts/images
-		const timer = setTimeout(() => recalculate(), 400);
+		// Deferred recalculate to catch late-loading fonts/images (only if needed)
+		const timer = setTimeout(() => {
+			if (_cache.width !== window.innerWidth) recalculate();
+		}, 400);
 
 		const ro = new ResizeObserver(() => {
 			clearTimeout(resizeTimer);
@@ -122,6 +184,7 @@
 		ro.observe(document.body);
 
 		return () => {
+			cancelAnimationFrame(rafId);
 			window.removeEventListener('resize', onResize);
 			clearTimeout(timer);
 			clearTimeout(resizeTimer);
@@ -146,6 +209,30 @@
 	$effect(() => {
 		if (!pathElement || !pathD) return;
 		const hh = heroHeight;
+
+		// Fast path: if cache is warm (same dimensions), restore LUT immediately
+		if (_cache.lut.length > 0 && _cache.lutTotal > 0) {
+			pathLUT = _cache.lut;
+			pathLUTStep = _cache.lutStep;
+			pathLUTTotal = _cache.lutTotal;
+			totalLength = _cache.lutTotal;
+			if (canvasEl) {
+				const ctx = canvasEl.getContext('2d');
+				if (ctx) buildCharWidths(ctx);
+			}
+			if (onpoints && featuredCount > 0) {
+				tick().then(() => {
+					if (!pathElement) return;
+					const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth).map((p) => ({
+						...p,
+						x: p.x,
+						y: p.y * yScale + yShift
+					}));
+					onpoints(points);
+				});
+			}
+			return;
+		}
 
 		tick().then(() => {
 			if (!pathElement) return;
