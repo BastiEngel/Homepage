@@ -73,7 +73,7 @@
 	<!-- Content: z-[2] renders above GIF -->
 	<div class="relative z-[2]">
 	<!-- Project info -->
-	<section class="relative px-6 pt-12 pb-6 md:px-12 lg:pt-20 lg:pb-10">
+	<section class="relative px-6 pt-12 pb-16 md:px-12 lg:pt-20 lg:pb-24">
 		<div class="mx-auto max-w-4xl" use:scrollReveal>
 			<h1 class="text-text project-heading">
 				{project.name}
