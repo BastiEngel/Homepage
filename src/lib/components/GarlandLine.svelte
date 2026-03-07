@@ -108,21 +108,22 @@
 		let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 		const onResize = () => {
 			clearTimeout(resizeTimer);
-			resizeTimer = setTimeout(recalculate, 100);
+			resizeTimer = setTimeout(recalculate, 150);
 		};
-		window.addEventListener('resize', onResize);
+		window.addEventListener('resize', onResize, { passive: true });
 
-		const timers = [setTimeout(() => recalculate(), 100), setTimeout(() => recalculate(), 500)];
+		// Single deferred recalculate to catch late-loading fonts/images
+		const timer = setTimeout(() => recalculate(), 400);
 
 		const ro = new ResizeObserver(() => {
 			clearTimeout(resizeTimer);
-			resizeTimer = setTimeout(recalculate, 100);
+			resizeTimer = setTimeout(recalculate, 150);
 		});
 		ro.observe(document.body);
 
 		return () => {
 			window.removeEventListener('resize', onResize);
-			timers.forEach(clearTimeout);
+			clearTimeout(timer);
 			clearTimeout(resizeTimer);
 			ro.disconnect();
 		};

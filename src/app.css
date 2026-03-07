@@ -74,6 +74,21 @@ body::before {
 	background-size: 512px 512px;
 }
 
+/* View Transitions — smooth cross-page fade */
+@keyframes vt-fade-out {
+	to { opacity: 0; }
+}
+@keyframes vt-fade-in {
+	from { opacity: 0; }
+}
+
+::view-transition-old(root) {
+	animation: 150ms ease both vt-fade-out;
+}
+::view-transition-new(root) {
+	animation: 250ms ease both vt-fade-in;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;
@@ -86,5 +101,10 @@ body::before {
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
+	}
+
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none;
 	}
 }

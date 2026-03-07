@@ -251,6 +251,7 @@
 						src="{base}{src}"
 						alt="{projectName} gallery"
 						loading="lazy"
+						decoding="async"
 						class="gallery-img"
 						draggable="false"
 						onload={(e) => markPortrait(src, e.currentTarget as HTMLImageElement)}
@@ -260,7 +261,7 @@
 			{/each}
 			{#each images as src}
 				<div class="gallery-tile" class:portrait={portraitSrcs.has(src)} aria-hidden="true">
-					<img src="{base}{src}" alt="" loading="lazy" class="gallery-img" draggable="false" />
+					<img src="{base}{src}" alt="" loading="lazy" decoding="async" class="gallery-img" draggable="false" />
 					<div class="bevel-edge"></div>
 				</div>
 			{/each}
@@ -323,7 +324,7 @@
 	.gallery-scroll {
 		width: 100%;
 		overflow: hidden;
-		contain: layout;
+		contain: layout paint;
 	}
 
 	.gallery-track {
@@ -349,7 +350,6 @@
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
 		aspect-ratio: 3 / 2;
 		height: 220px;
-		will-change: transform;
 	}
 
 	.gallery-tile.portrait {

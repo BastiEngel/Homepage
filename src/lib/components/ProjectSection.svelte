@@ -66,6 +66,7 @@
 						src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
 						alt="{project.name} cover"
 						loading="lazy"
+						decoding="async"
 						class="aspect-[3/2] w-full object-cover"
 					/>
 				</a>
@@ -75,6 +76,7 @@
 					src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
 					alt="{project.name} cover"
 					loading="lazy"
+					decoding="async"
 					class="aspect-[3/2] w-full object-cover"
 				/>
 			{/if}
