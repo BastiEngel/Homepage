@@ -167,13 +167,18 @@
 							</div>
 						{/if}
 						<div class="content-tile" use:revealCard>
-							<img
-								src="{base}{block.image}"
-								alt={block.alt || `${project.name} detail ${i + 1}`}
-								loading="lazy"
-								class="content-img"
-								style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
-							/>
+							{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm')}
+								<video src="{base}{block.image}" autoplay loop muted playsinline class="content-img"></video>
+							{:else}
+								<img
+									src="{base}{block.image}"
+									alt={block.alt || `${project.name} detail ${i + 1}`}
+									loading="lazy"
+									decoding="async"
+									class="content-img"
+									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
+								/>
+							{/if}
 							<div class="bevel-edge"></div>
 						</div>
 						{#if block.postHeading || block.text}

@@ -181,29 +181,71 @@
 	},
 	{
 		"id": "myzelfusion",
-		"name": "Myzelfusion",
-		"description": "Placeholder — wird mit echtem Content ersetzt.",
-		"subtitle": "Placeholder | Jahr",
-		"cover": "/images/placeholder.svg",
-		"coverType": "image",
-		"tagImage": "/images/placeholder.svg",
-		"tileImage": "/images/placeholder.svg",
+		"name": "MyzelFusion",
+		"description": "Can fungal growth be locally controlled to fabricate three-dimensional objects?",
+		"subtitle": "Bio Lab Residency | 2024/25\nSBYD · Fraunhofer UMSICHT · Folkwang Universität der Künste Essen\nBiomaterial Research | Eco Design | Sustainable Design",
+		"role": "",
+		"year": "2024/25",
+		"client": "",
+		"tags": [],
+		"cover": "/images/projects/Myzelfusion/myzelfusion_printer.mp4",
+		"coverType": "video",
+		"tagImage": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_1.jpg",
+		"tileImage": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_1.jpg",
+		"heroPathText": "Can fungal growth be locally controlled to fabricate three-dimensional objects?  ",
 		"featured": true,
 		"lineColor": "#d4b896",
 		"contentBlocks": [
-			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." },
-			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." }
+			{
+				"image": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_3.jpg",
+				"heading": "MYCELIUM AS MATERIAL",
+				"textBefore": "This research project explores the potential of mycelium in additive manufacturing, inspired by the \"Binder-Jetting\" process. The base material is made up of organic and mineral powders, which are selectively inoculated with mycelium in the form of liquid cultures.",
+				"text": "As the mycelium grows, it bonds the particles, forming stable geometric shapes, including overhangs and undercuts, without additional support structures. This eliminates conventional moulding constraints and enables greater design flexibility."
+			},
+			{
+				"image": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_6.jpg",
+				"postHeading": "THE PRINTER",
+				"text": "A 3D-printer was modified to produce simple three-dimensional objects. A custom extruder was designed, capable of holding 20 mL syringes. This allows controlled application of liquid onto the powder bed. A custom slicer profile was created, enabling rapid adjustments of various parameters. The result was a simple mushroom shaped object and other test objects."
+			},
+			{
+				"image": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_9.jpg",
+				"layout": "image-left",
+				"postHeading": "INCUBATION",
+				"text": "After one week of incubation, the objects can be removed from the remaining loose coffee grounds. The objects are then placed back in the incubator for additional days, allowing the mycelium to grow over them, strengthening the structure and forming a white outer layer. Finally, the objects are dried to complete the process."
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"galleryImages": [
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_10.jpg",
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_11.jpg",
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_12.jpg",
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_13.jpg",
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_14.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_19.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_21.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_22.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_23.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_24.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_25.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_26.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_27.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-28.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-29.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-30.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-31.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-32.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-33.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-34.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-35.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-36.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-37.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-38.jpg"
+				]
+			}
 		],
-		"gallery": [
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg"
-		]
+		"credits": "Supported by: SBYD (Sustainability by Design) Bio Lab Residency · Fraunhofer UMSICHT\nFolkwang Universität der Künste Essen",
+		"gallery": []
 	},
 	{
 		"id": "peebee",
