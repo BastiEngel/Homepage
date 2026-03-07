@@ -126,7 +126,6 @@
 									class="content-img"
 									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
 								/>
-								<div class="bevel-edge"></div>
 							</div>
 							<div class="image-left-text" use:scrollReveal={{ delay: 180 }}>
 								{#if block.postHeading}
@@ -179,7 +178,6 @@
 									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
 								/>
 							{/if}
-							<div class="bevel-edge"></div>
 						</div>
 						{#if block.postHeading || block.text}
 							<div class="mx-auto mt-8 mb-8 max-w-4xl" use:scrollReveal={{ delay: 180 }}>
@@ -211,7 +209,6 @@
 							loading="lazy"
 							class="content-img"
 						/>
-						<div class="bevel-edge"></div>
 					</div>
 				{/if}
 				<p class="text-text mx-auto mt-8 mb-8 max-w-4xl text-base lg:text-lg">{project.learnings}</p>
@@ -336,14 +333,6 @@
 
 	.back-pill:hover {
 		opacity: 0.6;
-	}
-
-	.bevel-edge {
-		position: absolute;
-		inset: 0;
-		border-radius: inherit;
-		pointer-events: none;
-		border: 2px solid rgba(255, 255, 255, 0.35);
 	}
 
 	.hero-gif-wrapper {
