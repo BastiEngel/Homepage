@@ -64,6 +64,7 @@ export interface ProjectContentBlock {
 	galleryImages?: string[];
 	fullWidthBg?: boolean;
 	imageFit?: 'cover' | 'contain';
+	imageAspect?: string;
 }
 
 export interface Project {

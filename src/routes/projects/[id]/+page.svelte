@@ -118,7 +118,7 @@
 				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
 					<div class="mx-auto max-w-4xl">
 						<div class="image-left-grid mb-8">
-							<div class="content-tile" use:revealCard>
+							<div class="content-tile" use:revealCard style={block.imageAspect ? `aspect-ratio: ${block.imageAspect}` : ""}>
 								<img
 									src="{base}{block.image}"
 									alt={block.alt || `${project.name} detail ${i + 1}`}
@@ -166,7 +166,7 @@
 								{/if}
 							</div>
 						{/if}
-						<div class="content-tile" use:revealCard>
+						<div class="content-tile" use:revealCard style={block.imageAspect ? `aspect-ratio: ${block.imageAspect}` : ""}>
 							{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm')}
 								<video src="{base}{block.image}" autoplay loop muted playsinline class="content-img"></video>
 							{:else}
