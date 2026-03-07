@@ -123,7 +123,7 @@
 									src="{base}{block.image}"
 									alt={block.alt || `${project.name} detail ${i + 1}`}
 									loading="lazy"
-									class="content-img"
+									class={block.imageAspect ? "content-img no-parallax" : "content-img"}
 									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
 								/>
 							</div>
@@ -174,7 +174,7 @@
 									alt={block.alt || `${project.name} detail ${i + 1}`}
 									loading="lazy"
 									decoding="async"
-									class="content-img"
+									class={block.imageAspect ? "content-img no-parallax" : "content-img"}
 									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
 								/>
 							{/if}
@@ -309,6 +309,14 @@
 			animation: parallax-img linear both;
 			animation-timeline: view(block);
 			animation-range: entry 0% exit 100%;
+		}
+	}
+
+	@supports (animation-timeline: view()) {
+		.content-img.no-parallax {
+			height: 100%;
+			margin-top: 0;
+			animation: none;
 		}
 	}
 
