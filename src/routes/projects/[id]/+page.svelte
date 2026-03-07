@@ -153,7 +153,7 @@
 					<GalleryCarousel images={block.galleryImages ?? []} projectName={project.name} />
 				</section>
 		{:else}
-				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex} style={block.stackBelow ? 'margin-top: -2rem' : ''}>
 					<div class="mx-auto max-w-4xl">
 						{#if block.heading || block.textBefore}
 							<div class="mx-auto mb-8 max-w-4xl" use:scrollReveal={{ delay: 180 }}>

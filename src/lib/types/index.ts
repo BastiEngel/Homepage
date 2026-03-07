@@ -66,6 +66,7 @@ export interface ProjectContentBlock {
 	imageFit?: 'cover' | 'contain';
 	imageAspect?: string;
 	imageScale?: number;
+	stackBelow?: boolean;
 }
 
 export interface Project {
