@@ -65,6 +65,7 @@ export interface ProjectContentBlock {
 	fullWidthBg?: boolean;
 	imageFit?: 'cover' | 'contain';
 	imageAspect?: string;
+	tileWidth?: string;
 }
 
 export interface Project {
