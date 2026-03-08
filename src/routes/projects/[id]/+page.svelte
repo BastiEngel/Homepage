@@ -175,7 +175,8 @@
 									loading="lazy"
 									decoding="async"
 									class={block.imageAspect === "auto" ? "content-img natural" : block.imageAspect ? "content-img no-parallax" : "content-img"}
-									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
+									style="{block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}{block.imagePosition ? `object-position: ${block.imagePosition};` : ''}"
+
 								/>
 							{/if}
 						</div>
