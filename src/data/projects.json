@@ -236,7 +236,8 @@
 			{
 				"image": "/images/projects/Myzelfusion/Myzelfusion_poster.png",
 				"imageAspect": "auto",
-				"lightbox": true
+				"lightbox": true,
+				"textBefore": "During development, many different parameters were tested, harmonised and documented in a structured manner as well as illustrated on a poster for viewers to understand.\nThe research results obtained so far from the 'Myzelfusion' project show the initial possibilities and potential of this process for various areas of application, including product design, trade fair booth and interior design.\nThey provide a scientific basis for the further development of bio-based additive manufacturing technologies and open up new perspectives for the use of mycelium in materials science."
 			},
 			{
 				"image": "",
