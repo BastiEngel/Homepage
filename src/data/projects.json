@@ -28,10 +28,10 @@
 				"image": "/images/projects/kick-and-vote/kickandvote_10.jpg",
 				"text": "The project helped young people form new peer groups and friendships, encouraging collaboration across diverse backgrounds. Participants actively shaped rules, made collective decisions, and learned to respect different perspectives. Workshops and tournaments provided spaces for discussion, co-creation, and inclusive participation, empowering young people to experience their own agency and influence within the group."
 			},
-		{
-			"image": "/images/projects/kick-and-vote/kickandvote_34.jpg",
-			"text": "Key learnings emphasized the importance of flexibility, close collaboration with youth workers, and creating a supportive environment where all voices are heard and valued."
-		}
+			{
+				"image": "/images/projects/kick-and-vote/kickandvote_34.jpg",
+				"text": "Key learnings emphasized the importance of flexibility, close collaboration with youth workers, and creating a supportive environment where all voices are heard and valued."
+			}
 		],
 		"credits": "Partner: Cultural Association 1210 Vienna\nFunding: European Capital of Democracy Vienna 2025/26\nSocial Design Project at the University of Applied Arts Vienna",
 		"gallery": [
@@ -82,7 +82,7 @@
 		"heroPathSrc": "/images/Path_binvisible.svg",
 		"heroPathTopOffset": -450,
 		"heroPathScale": 0.99,
-		"heroPathText": "\u201cMultidisciplinary concept for promoting responsible\u00a0public behaviour regarding environmental pollution and resource cycles through participatory methods\u201d  ",
+		"heroPathText": "“Multidisciplinary concept for promoting responsible public behaviour regarding environmental pollution and resource cycles through participatory methods”  ",
 		"description": "\"Multidisciplinary concept for promoting responsible public behaviour regarding environmental pollution and resource cycles through participatory methods\"",
 		"subtitle": "Bachelor Thesis | Product Design | 2024\nSupervisors: Prof. Dr. Bianca Herlo, Kristin Dolz\nSocial Design | Urban Hacking | Eco Design",
 		"cover": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-26.jpg",
@@ -172,7 +172,7 @@
 					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-14.jpg",
 					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-16.jpg",
 					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-17.jpg",
-						"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-27.jpg"
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-27.jpg"
 				]
 			}
 		],
@@ -243,7 +243,6 @@
 				"layout": "gallery",
 				"galleryImages": [
 					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_10.jpg",
-					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_11.jpg",
 					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_12.jpg",
 					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_13.jpg",
 					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_14.jpg",
@@ -252,14 +251,8 @@
 					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_22.jpg",
 					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_23.jpg",
 					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_24.jpg",
-					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_25.jpg",
-					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_26.jpg",
 					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_27.jpg",
-					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-28.jpg",
-					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-29.jpg",
-					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-30.jpg",
 					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-31.jpg",
-					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-32.jpg",
 					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-33.jpg",
 					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-34.jpg",
 					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-35.jpg",
@@ -284,8 +277,14 @@
 		"featured": true,
 		"lineColor": "#e8d870",
 		"contentBlocks": [
-			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." },
-			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." }
+			{
+				"image": "/images/placeholder.svg",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			},
+			{
+				"image": "/images/placeholder.svg",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			}
 		],
 		"gallery": [
 			"/images/placeholder.svg",
@@ -310,8 +309,14 @@
 		"featured": true,
 		"lineColor": "#90c4a0",
 		"contentBlocks": [
-			{ "image": "/images/projects/Pivot/detail-01.webp", "text": "Placeholder — wird mit echtem Content ersetzt." },
-			{ "image": "/images/projects/Pivot/detail-02.webp", "text": "Placeholder — wird mit echtem Content ersetzt." }
+			{
+				"image": "/images/projects/Pivot/detail-01.webp",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			},
+			{
+				"image": "/images/projects/Pivot/detail-02.webp",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			}
 		],
 		"gallery": [
 			"/images/placeholder.svg",
@@ -336,8 +341,14 @@
 		"featured": true,
 		"lineColor": "#a0a8b0",
 		"contentBlocks": [
-			{ "image": "/images/projects/Archive/detail-01.webp", "text": "Placeholder — wird mit echtem Content ersetzt." },
-			{ "image": "/images/projects/Archive/detail-02.webp", "text": "Placeholder — wird mit echtem Content ersetzt." }
+			{
+				"image": "/images/projects/Archive/detail-01.webp",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			},
+			{
+				"image": "/images/projects/Archive/detail-02.webp",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			}
 		],
 		"gallery": [
 			"/images/placeholder.svg",
@@ -362,8 +373,14 @@
 		"featured": true,
 		"lineColor": "#d4b8a0",
 		"contentBlocks": [
-			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." },
-			{ "image": "/images/placeholder.svg", "text": "Placeholder — wird mit echtem Content ersetzt." }
+			{
+				"image": "/images/placeholder.svg",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			},
+			{
+				"image": "/images/placeholder.svg",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			}
 		]
 	}
 ]
