@@ -220,6 +220,14 @@
 				"text": "A 3D-printer was modified to produce simple three-dimensional objects. A custom extruder was designed, capable of holding 20 mL syringes. This allows controlled application of liquid onto the powder bed. A custom slicer profile was created, enabling rapid adjustments of various parameters. The result was a simple mushroom shaped object and other test objects."
 			},
 			{
+				"image": "",
+				"layout": "portrait-pair",
+				"galleryImages": [
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_25.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_26.jpg"
+				]
+			},
+			{
 				"image": "/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-32.jpg",
 				"layout": "image-left",
 				"postHeading": "INCUBATION",

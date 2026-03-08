@@ -60,7 +60,7 @@ export interface ProjectContentBlock {
 	textBefore?: string;
 	text?: string;
 	postHeading?: string;
-	layout?: 'default' | 'image-left' | 'gallery';
+	layout?: 'default' | 'image-left' | 'gallery' | 'portrait-pair';
 	galleryImages?: string[];
 	fullWidthBg?: boolean;
 	imageFit?: 'cover' | 'contain';

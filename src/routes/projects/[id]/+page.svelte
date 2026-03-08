@@ -138,6 +138,18 @@
 						</div>
 					</div>
 				</section>
+			{:else if block.layout === 'portrait-pair'}
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+					<div class="mx-auto max-w-4xl">
+						<div class="portrait-pair-grid mb-8">
+							{#each (block.galleryImages ?? []).slice(0, 2) as img, j}
+								<div class="content-tile portrait-tile" use:revealCard>
+									<img src="{base}{img}" alt="{project.name} portrait {j + 1}" loading="lazy" decoding="async" class="content-img" />
+								</div>
+							{/each}
+						</div>
+					</div>
+				</section>
 			{:else if block.layout === 'gallery'}
 				<section class="content-block-section relative" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
 					{#if block.heading || block.textBefore}
@@ -397,6 +409,16 @@
 		grid-template-columns: 1fr 1fr;
 		gap: 2rem;
 		align-items: start;
+	}
+
+	.portrait-pair-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2rem;
+	}
+
+	.portrait-tile {
+		aspect-ratio: 2/3;
 	}
 
 	.image-left-text {
