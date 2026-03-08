@@ -235,7 +235,8 @@
 			},
 			{
 				"image": "/images/projects/Myzelfusion/Myzelfusion_poster.png",
-				"imageAspect": "auto"
+				"imageAspect": "auto",
+				"lightbox": true
 			},
 			{
 				"image": "",

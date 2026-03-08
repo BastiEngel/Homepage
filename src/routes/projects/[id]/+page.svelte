@@ -9,6 +9,8 @@
 	let { data } = $props();
 	const project = data.project;
 
+	let lightboxSrc = $state('');
+
 	const coverSrc = `${base}${project.cover}`;
 	const isVideo = project.coverType === 'video';
 	const isGif = !isVideo && project.cover.endsWith('.gif');
@@ -186,8 +188,9 @@
 									alt={block.alt || `${project.name} detail ${i + 1}`}
 									loading="lazy"
 									decoding="async"
-									class={block.imageAspect === "auto" ? "content-img natural" : block.imageAspect ? "content-img no-parallax" : "content-img"}
+									class={block.imageAspect === "auto" ? "content-img natural" + (block.lightbox ? " lightbox-trigger" : "") : block.imageAspect ? "content-img no-parallax" : "content-img"}
 									style="{block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}{block.imagePosition ? `object-position: ${block.imagePosition};` : ''}"
+									onclick={block.lightbox ? () => lightboxSrc = base + block.image : undefined}
 
 								/>
 							{/if}
@@ -258,6 +261,12 @@
 	</div>
 	</div><!-- /z-[2] over GIF -->
 </main>
+
+{#if lightboxSrc}
+	<div class="lightbox-overlay" role="button" tabindex="0" onclick={() => lightboxSrc = ''} onkeydown={(e) => e.key === 'Escape' && (lightboxSrc = '')}>
+		<img src={lightboxSrc} alt="fullscreen" class="lightbox-img" />
+	</div>
+{/if}
 
 <Footer />
 
@@ -432,6 +441,28 @@
 		.image-left-grid {
 			grid-template-columns: 1fr;
 		}
+	}
+
+	.lightbox-trigger {
+		cursor: zoom-in;
+	}
+
+	.lightbox-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		background: rgba(0, 0, 0, 0.9);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: zoom-out;
+	}
+
+	.lightbox-img {
+		max-width: 95vw;
+		max-height: 95vh;
+		object-fit: contain;
+		border-radius: 0.5rem;
 	}
 
 	.project-heading {

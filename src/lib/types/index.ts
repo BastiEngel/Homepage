@@ -68,6 +68,7 @@ export interface ProjectContentBlock {
 	imageAspect?: string;
 	imageScale?: number;
 	stackBelow?: boolean;
+	lightbox?: boolean;
 }
 
 export interface Project {
