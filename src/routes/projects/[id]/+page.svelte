@@ -141,7 +141,7 @@
 			{:else if block.layout === 'portrait-pair'}
 				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
 					<div class="mx-auto max-w-4xl">
-						<div class="portrait-pair-grid mb-8">
+						<div class="portrait-pair-grid mb-16">
 							{#each (block.galleryImages ?? []).slice(0, 2) as img, j}
 								<div class="content-tile portrait-tile" use:revealCard>
 									<img src="{base}{img}" alt="{project.name} portrait {j + 1}" loading="lazy" decoding="async" class="content-img" />
