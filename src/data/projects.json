@@ -93,7 +93,8 @@
 		"lineColor": "#6ba3d4",
 		"contentBlocks": [
 			{
-				"image": "/images/projects/binvisible/Binvisible_giff.mp4",
+				"image": "/images/projects/binvisible/Binvisible_giff_alpha.mov",
+				"imageFallback": "/images/projects/binvisible/Binvisible_giff_alpha.webm",
 				"text": "",
 				"fullWidthBg": true
 			},

@@ -51,15 +51,13 @@
 
 		{#each contentBlocks.filter(b => b.fullWidthBg) as block}
 			<div class="fullwidth-bg-section">
-				{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm')}
-					<video
-						src="{base}{block.image}"
-						autoplay
-						loop
-						muted
-						playsinline
-						class="fullwidth-bg-img"
-					></video>
+				{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm') || block.image.endsWith('.mov')}
+					<video autoplay loop muted playsinline class="fullwidth-bg-img">
+						<source src="{base}{block.image}" type={block.image.endsWith('.mov') ? 'video/mp4; codecs=hvc1' : 'video/mp4'} />
+						{#if block.imageFallback}
+							<source src="{base}{block.imageFallback}" type="video/webm; codecs=vp9" />
+						{/if}
+					</video>
 				{:else}
 					<img
 						src="{base}{block.image}"
