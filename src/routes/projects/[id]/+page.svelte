@@ -2,6 +2,7 @@
 	import Nav from '$lib/components/Nav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import ProjectHeroPath from '$lib/components/ProjectHeroPath.svelte';
+	import MyzelfusionHeroPath from '$lib/components/MyzelfusionHeroPath.svelte';
 	import GalleryCarousel from '$lib/components/GalleryCarousel.svelte';
 	import { scrollReveal, revealCard } from '$lib/utils/scrollAnimation';
 	import { base } from '$app/paths';
@@ -25,7 +26,9 @@
 <Nav />
 
 <main class="relative pt-16">
-	{#if project.heroPathSrc}
+	{#if project.id === 'myzelfusion' && project.heroPathSrc}
+		<MyzelfusionHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} pathScaleY={project.heroPathScaleY ?? 1} />
+	{:else if project.heroPathSrc}
 		<ProjectHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} marqueeText={project.heroPathText} />
 	{/if}
 	<!-- Hero + GIF: outside z-[2] so mix-blend-mode blends with body background -->

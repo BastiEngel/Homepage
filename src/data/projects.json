@@ -183,6 +183,10 @@
 	{
 		"id": "myzelfusion",
 		"name": "MyzelFusion",
+		"heroPathSrc": "/images/Path_myzelfusion.svg",
+		"heroPathTopOffset": -150,
+		"heroPathScale": 1,
+		"heroPathScaleY": 0.995,
 		"description": "Can fungal growth be locally controlled to fabricate three-dimensional objects?",
 		"subtitle": "Bio Lab Residency | 2024/25\nBiomaterial Research | Eco Design | Sustainable Design",
 		"role": "",
