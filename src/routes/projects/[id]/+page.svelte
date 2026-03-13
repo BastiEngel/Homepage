@@ -38,6 +38,7 @@
 					loop
 					muted
 					playsinline
+					poster={project.tileImage ? `${base}${project.tileImage}` : undefined}
 					class="hero-cover"
 				></video>
 			{:else}
@@ -71,7 +72,7 @@
 	</div>
 
 	<!-- Content: z-[2] renders above GIF -->
-	<div class="relative z-[2]">
+	<div class="relative z-[2]" class:has-fullwidth-bg={hasFullWidthBg}>
 	<!-- Project info -->
 	<section class="relative px-6 pt-12 pb-6 md:px-12 lg:pt-20 lg:pb-10">
 		<div class="mx-auto max-w-4xl" use:scrollReveal>
@@ -110,6 +111,22 @@
 			{/if}
 		</div>
 	</section>
+
+	<!-- Mobile: fullWidthBg inline between header and first content block -->
+	{#each contentBlocks.filter(b => b.fullWidthBg) as block}
+		<div class="mobile-fullwidth-bg">
+			{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm') || block.image.endsWith('.mov')}
+				<video autoplay loop muted playsinline class="fullwidth-bg-img">
+					<source src="{base}{block.image}" type={block.image.endsWith('.mov') ? 'video/mp4; codecs=hvc1' : 'video/mp4'} />
+					{#if block.imageFallback}
+						<source src="{base}{block.imageFallback}" type="video/webm; codecs=vp9" />
+					{/if}
+				</video>
+			{:else}
+				<img src="{base}{block.image}" alt={block.alt || ''} loading="lazy" class="fullwidth-bg-img" />
+			{/if}
+		</div>
+	{/each}
 
 	<!-- Content blocks — image + text -->
 	{#each contentBlocks as block, i}
@@ -473,5 +490,26 @@
 	.project-light {
 		font-family: 'area-inktrap-light', sans-serif;
 		font-style: italic;
+	}
+
+	.mobile-fullwidth-bg {
+		display: none;
+	}
+
+	@media (max-width: 767px) {
+		.has-fullwidth-bg {
+			padding-top: 0;
+		}
+		.fullwidth-bg-section {
+			display: none;
+		}
+		.mobile-fullwidth-bg {
+			display: block;
+			width: 85%;
+			margin: -3rem auto 2rem;
+		}
+		.first-content-block {
+			margin-top: 0;
+		}
 	}
 </style>
