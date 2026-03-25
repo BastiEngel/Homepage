@@ -274,34 +274,80 @@
 	{
 		"id": "peebee",
 		"name": "PeeBee",
-		"description": "Placeholder — wird mit echtem Content ersetzt.",
-		"subtitle": "Placeholder | Jahr",
-		"cover": "/images/placeholder.svg",
-		"coverType": "image",
-		"tagImage": "/images/placeholder.svg",
-		"tileImage": "/images/placeholder.svg",
+		"description": "Autonomous Toilet Delivery Robot Service",
+		"subtitle": "Individual work | WS 2024/25\nSpeculative Design | Biodesign | Transformation Design",
+		"cover": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Medien.mp4",
+		"coverType": "video",
+		"tagImage": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-1.jpg",
+		"tileImage": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-1.jpg",
 		"featured": true,
 		"lineColor": "#e8d870",
+		"heroPathText": "PeeBee is a speculative design project that highlights the scarcity of free and accessible public toilets in cities  ",
 		"contentBlocks": [
 			{
-				"image": "/images/placeholder.svg",
-				"text": "Placeholder — wird mit echtem Content ersetzt."
+				"image": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-32.jpg"
 			},
 			{
-				"image": "/images/placeholder.svg",
-				"text": "Placeholder — wird mit echtem Content ersetzt."
+				"image": "",
+				"layout": "gallery",
+				"gallerySize": "large",
+				"textBefore": "PeeBee is a speculative design concept for a network of autonomous toilet vehicles that reimagines the provision of public sanitation facilities in cities. In light of the shortage of free, accessible toilets in German cities, PeeBee offers a mobile, on-demand solution. The vehicles are distributed across the city and can be used directly or requested via an app. Usage is free of charge and is funded through public subsidies as well as the sale of recycled urine and humus, which are applied directly to fields by the vehicles themselves as fertiliser.",
+				"galleryImages": [
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-37.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-30.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-34.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-25.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-26.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-27.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-35.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-24.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-23.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-28.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-29.jpg"
+				]
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"textBefore": "Each vehicle contains a separating toilet that divides urine and faeces. In the rear section of the vehicle the collected urine is processed into natural fertiliser in three steps: nitrogen fixation by microorganisms in a bioreactor, removal of hormones and pharmaceutical residues using a charcoal filter and lastly sanitisation. This process is visible to users, highlighting the potential for sustainable nutrient recycling. Once the vehicle's storage is full, the collected and processed urine is autonomously applied to peri-urban fields.",
+				"galleryImages": [
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-14.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-15.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-16.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-17.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-18.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-19.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-20.jpg",
+						"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-22.jpg",
+					"/images/projects/PeeBee/PeeBee_Bastian_Engel_Final_Web_ 2048x1365px_-40.jpg",
+					"/images/projects/PeeBee/PeeBee_Bastian_Engel_Final_Web_ 2048x1365px_-41.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-5.jpg",
+						"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-10.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-11.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-36.jpg",
+					"/images/projects/PeeBee/PeeBee_Bastian_Engel_Final_Web_ 2048x1365px_-38.jpg",
+					"/images/projects/PeeBee/PeeBee_Bastian_Engel_Final_Web_ 2048x1365px_-39.jpg"
+				]
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"textBefore": "Once the vehicle's storage is full, the collected and processed urine is autonomously applied to peri-urban fields. The concept aims to draw attention to the lack of public toilets and the absence of gender-inclusive sanitation. Furthermore, it encourages people to view human waste as a resource and to critically examine existing wastewater infrastructures."
+			},
+			{
+				"image": "",
+				"layout": "portrait-pair",
+				"galleryImages": [
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-31.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-33.jpg"
+				]
+			},
+			{
+				"image": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-32.jpg"
 			}
 		],
-		"gallery": [
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg"
-		]
+		"credits": "Supported by: SBYD (Sustainability by Design) · Fraunhofer UMSICHT\nFolkwang Universität der Künste Essen",
+		"gallery": []
 	},
 	{
 		"id": "pivot",

@@ -161,7 +161,7 @@
 			{:else if block.layout === 'portrait-pair'}
 				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
 					<div class="mx-auto max-w-4xl">
-						<div class="portrait-pair-grid mb-16">
+						<div class="portrait-pair-grid mb-8">
 							{#each (block.galleryImages ?? []).slice(0, 2) as img, j}
 								<div class="content-tile portrait-tile" use:revealCard>
 									<img src="{base}{img}" alt="{project.name} portrait {j + 1}" loading="lazy" decoding="async" class="content-img" />
@@ -171,9 +171,9 @@
 					</div>
 				</section>
 			{:else if block.layout === 'gallery'}
-				<section class="content-block-section relative" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
 					{#if block.heading || block.textBefore}
-						<div class="mx-auto mb-8 max-w-4xl px-6 md:px-12" use:scrollReveal={{ delay: 180 }}>
+						<div class="mx-auto max-w-4xl" class:mb-24={(block.galleryImages ?? []).length > 0} class:mb-8={(block.galleryImages ?? []).length === 0} use:scrollReveal={{ delay: 180 }}>
 							{#if block.heading}
 								<p class="text-text text-base lg:text-lg" style="font-weight: 900;">{block.heading}</p>
 							{/if}
@@ -182,7 +182,11 @@
 							{/if}
 						</div>
 					{/if}
-					<GalleryCarousel images={block.galleryImages ?? []} projectName={project.name} />
+					{#if (block.galleryImages ?? []).length > 0}
+						<div class="-mx-6 md:-mx-12" style="margin-bottom: -40px">
+							<GalleryCarousel images={block.galleryImages ?? []} projectName={project.name} size={block.gallerySize ?? 'default'} />
+						</div>
+					{/if}
 				</section>
 		{:else}
 				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex} style={block.stackBelow ? 'margin-top: -1rem' : ''}>

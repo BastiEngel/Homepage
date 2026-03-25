@@ -62,6 +62,7 @@ export interface ProjectContentBlock {
 	postHeading?: string;
 	layout?: 'default' | 'image-left' | 'gallery' | 'portrait-pair';
 	galleryImages?: string[];
+	gallerySize?: 'default' | 'large';
 	fullWidthBg?: boolean;
 	imageFallback?: string;
 	imageFit?: 'cover' | 'contain';

@@ -4,92 +4,103 @@
 	interface Props {
 		images: string[];
 		projectName?: string;
+		size?: 'default' | 'large';
 	}
 
-	let { images, projectName = '' }: Props = $props();
+	let { images, projectName = '', size = 'default' }: Props = $props();
 
 	let trackEl: HTMLElement | undefined = $state();
 	let portraitSrcs: Set<string> = $state(new Set());
-	let needsRebuild = false;
+	let needsRemeasure = false;
 	let navigateFn: ((dir: 1 | -1) => void) | undefined = $state();
 
 	function markPortrait(src: string, img: HTMLImageElement) {
 		if (img.naturalHeight > img.naturalWidth) {
 			portraitSrcs = new Set([...portraitSrcs, src]);
-			needsRebuild = true;
+			needsRemeasure = true;
 		}
 	}
 
 	$effect(() => {
 		if (!trackEl || images.length === 0) return;
 
-		const GAP = 40;
+		const N = images.length;
+		const GAP = 32;
 		const ARC_HEIGHT = 55;
-		const AUTO_SPEED = 0.65;
+		const AUTO_SPEED = 0.65; // px/ms (scaled to radians via R)
 		const PAUSE_MS = 3500;
-		const SNAP_RADIUS = 160;
 		const LERP = 0.12;
+		const SNAP_RADIUS_PX = 160;
+
+		// Full-circle cylinder: N tiles evenly distributed over 360°
+		const ALPHA = (2 * Math.PI) / N;  // angular step per tile
+		const TOTAL = 2 * Math.PI;        // full rotation
 
 		let running = true;
 		let rafId: number;
-		let smooth = 0;
+		let angle = 0;         // current rotation (0 .. TOTAL)
+		let snapTarget = NaN;
 		let lastTime = -1;
 		let paused = false;
 		let pauseTimer: ReturnType<typeof setTimeout>;
-		let lastSnapPos = -99999;
+		let lastSnappedI = -1;
 
 		let dragging = false;
 		let activePointerId = -1;
 		let dragStartX = 0;
-		let dragStartTarget = 0;
+		let dragStartAngle = 0;
 
-		let tileData: { center: number }[] = [];
 		let cachedTiles: HTMLElement[] = [];
-		let halfWidth = 0;
-		let snapTarget = -99999;
-		let vw = window.innerWidth;
-		let prevSmooth = -1;
+		let tileWidths: number[] = [];
+		let W = 0;
+		let R = 0;
+		let vw = trackEl.offsetWidth;
 
-		function buildTileData() {
+		function measure() {
 			if (!trackEl) return;
 			const tiles = trackEl.querySelectorAll('.gallery-tile') as NodeListOf<HTMLElement>;
 			cachedTiles = Array.from(tiles);
-			tileData = [];
-			for (let i = 0; i < cachedTiles.length; i++) {
-				tileData.push({ center: cachedTiles[i].offsetLeft + cachedTiles[i].offsetWidth / 2 });
-			}
-			let hw = 0;
-			for (let i = 0; i < images.length && i < cachedTiles.length; i++) {
-				hw += cachedTiles[i].offsetWidth + GAP;
-			}
-			halfWidth = hw;
+			if (cachedTiles.length === 0) return;
+			tileWidths = cachedTiles.map(t => t.offsetWidth);
+			// Use widest tile for R so landscape tiles never overlap
+			W = Math.max(...tileWidths);
+			const tileH = cachedTiles[0].offsetHeight; // all tiles same height
+			const pitch = W + GAP;
+			R = pitch / (2 * Math.sin(ALPHA / 2));
+			if (tileH > 0) trackEl.style.height = (ARC_HEIGHT + tileH) + 'px';
 		}
 
-		function findNearestSnap(pos: number): number {
-			const vc = vw / 2;
-			let best = -99999;
-			let bestDist = Infinity;
-			for (const { center } of tileData) {
-				const snapPos = center - vc;
-				if (snapPos < 0 || snapPos >= halfWidth) continue;
-				const dist = Math.abs(pos - snapPos);
-				if (dist < bestDist) { bestDist = dist; best = snapPos; }
-			}
-			return bestDist <= SNAP_RADIUS ? best : -99999;
+		// Normalize angle to (−TOTAL/2, +TOTAL/2]
+		function norm(a: number): number {
+			const h = TOTAL / 2;
+			return ((a + h) % TOTAL + TOTAL) % TOTAL - h;
 		}
 
-		function applyArc() {
-			if (cachedTiles.length === 0 || tileData.length === 0) return;
+		function applyTransforms() {
+			if (W <= 0 || cachedTiles.length === 0) return;
 			const vc = vw / 2;
-			const maxDist = vw * 0.7;
-			for (let i = 0; i < cachedTiles.length; i++) {
-				if (!tileData[i]) continue;
-				const screenCenter = tileData[i].center - smooth;
-				const dist = Math.max(-1, Math.min(1, (screenCenter - vc) / maxDist));
-				const lift = (1 - dist * dist) * ARC_HEIGHT;
-				const scale = 1 + (1 - dist * dist) * 0.08;
-				cachedTiles[i].style.transform = `translate3d(0, -${lift}px, 0) scale(${scale})`;
+			for (let i = 0; i < N; i++) {
+				if (!cachedTiles[i]) continue;
+				const tileW = tileWidths[i] ?? W;
+				const theta = norm(i * ALPHA - angle);
+				const x3d = R * Math.sin(theta);
+				const z3d = R * (Math.cos(theta) - 1);
+				const proximity = Math.max(0, Math.cos(theta));
+				const ty = -Math.cos(theta) * ARC_HEIGHT;
+				const thetaDeg = theta * 180 / Math.PI;
+				const tx = vc - tileW / 2 + x3d; // center each tile by its own width
+				const opacity = 0.35 + 0.65 * proximity;
+				cachedTiles[i].style.transform =
+					`translateX(${tx.toFixed(1)}px) translateY(${ty.toFixed(1)}px) translateZ(${z3d.toFixed(1)}px) rotateY(${thetaDeg.toFixed(2)}deg)`;
+				cachedTiles[i].style.opacity = opacity.toFixed(3);
+				cachedTiles[i].style.zIndex = String(Math.round(proximity * 100));
 			}
+		}
+
+		function getSnapAngle(a: number): number {
+			const normA = ((a % TOTAL) + TOTAL) % TOTAL;
+			const i = Math.round(normA / ALPHA) % N;
+			return i * ALPHA;
 		}
 
 		function frame(now: number) {
@@ -97,44 +108,33 @@
 			const dt = lastTime < 0 ? 0 : Math.min(now - lastTime, 50);
 			lastTime = now;
 
-			if (needsRebuild || tileData.length === 0) {
-				const oldHW = halfWidth;
-				buildTileData();
-				needsRebuild = false;
-				prevSmooth = -1;
-				if (halfWidth > 0) {
-					// Scale smooth proportionally so position doesn't jump when portrait images load
-					smooth = oldHW > 0 ? (smooth / oldHW) * halfWidth : 0;
-					smooth = ((smooth % halfWidth) + halfWidth) % halfWidth;
-				}
-			}
-			if (halfWidth <= 0) { rafId = requestAnimationFrame(frame); return; }
+			if (needsRemeasure || W <= 0) { measure(); needsRemeasure = false; }
+			if (W <= 0) { rafId = requestAnimationFrame(frame); return; }
 
-			if (snapTarget !== -99999) {
+			const pitch = W + GAP;
+			const AUTO_RAD = AUTO_SPEED / pitch * ALPHA; // rad per ms
+			const SNAP_RAD = SNAP_RADIUS_PX / pitch * ALPHA;
+
+			if (!isNaN(snapTarget)) {
 				const lerpT = 1 - Math.pow(1 - LERP, dt / 16.667);
-				smooth += (snapTarget - smooth) * lerpT;
-				if (Math.abs(snapTarget - smooth) < 0.3) smooth = snapTarget;
+				const diff = norm(snapTarget - angle);
+				angle = ((angle + diff * lerpT) % TOTAL + TOTAL) % TOTAL;
+				if (Math.abs(norm(snapTarget - angle)) < 0.001) angle = snapTarget;
 			} else if (!dragging && !paused) {
-				smooth += AUTO_SPEED * dt;
-				if (smooth >= halfWidth) { smooth -= halfWidth; lastSnapPos -= halfWidth; }
-
-				const snap = findNearestSnap(smooth);
-				if (snap !== -99999 && Math.abs(snap - lastSnapPos) > 50) {
+				angle = ((angle + AUTO_RAD * dt) % TOTAL + TOTAL) % TOTAL;
+				const snap = getSnapAngle(angle);
+				const dist = Math.abs(norm(angle - snap));
+				const si = Math.round(((angle % TOTAL) + TOTAL) % TOTAL / ALPHA) % N;
+				if (dist <= SNAP_RAD && si !== lastSnappedI) {
 					snapTarget = snap;
-					lastSnapPos = snap;
+					lastSnappedI = si;
 					paused = true;
 					clearTimeout(pauseTimer);
-					pauseTimer = setTimeout(() => { paused = false; snapTarget = -99999; }, PAUSE_MS);
+					pauseTimer = setTimeout(() => { paused = false; snapTarget = NaN; }, PAUSE_MS);
 				}
 			}
 
-			smooth = ((smooth % halfWidth) + halfWidth) % halfWidth;
-
-			if (trackEl) trackEl.style.transform = `translate3d(-${smooth}px, 0, 0)`;
-			if (Math.abs(smooth - prevSmooth) > 0.05) {
-				applyArc();
-				prevSmooth = smooth;
-			}
+			applyTransforms();
 			rafId = requestAnimationFrame(frame);
 		}
 
@@ -142,58 +142,41 @@
 			dragging = true;
 			activePointerId = e.pointerId;
 			paused = false;
-			snapTarget = -99999;
+			snapTarget = NaN;
 			clearTimeout(pauseTimer);
 			dragStartX = e.clientX;
-			dragStartTarget = smooth;
+			dragStartAngle = angle;
 			trackEl?.setPointerCapture(e.pointerId);
 		}
 
 		function onPointerMove(e: PointerEvent) {
-			if (!dragging || e.pointerId !== activePointerId || halfWidth <= 0) return;
-			const dx = dragStartX - e.clientX;
-			smooth = ((dragStartTarget + dx) % halfWidth + halfWidth) % halfWidth;
-		}
-
-		function onPointerCancel() {
-			dragging = false;
-			activePointerId = -1;
+			if (!dragging || e.pointerId !== activePointerId || W <= 0) return;
+			const dx = e.clientX - dragStartX;
+			angle = ((dragStartAngle - dx / R) % TOTAL + TOTAL) % TOTAL;
 		}
 
 		function onPointerUp(e: PointerEvent) {
 			if (!dragging || e.pointerId !== activePointerId) return;
 			dragging = false;
 			activePointerId = -1;
-			const vc = vw / 2;
-			let best = -99999, bestDist = Infinity;
-			for (const { center } of tileData) {
-				const snapPos = center - vc;
-				if (snapPos < 0) continue;
-				const dist = Math.abs(smooth - snapPos);
-				if (dist < bestDist) { bestDist = dist; best = snapPos; }
-			}
-			if (best !== -99999) {
-				snapTarget = best;
-				lastSnapPos = best;
-				paused = true;
-				clearTimeout(pauseTimer);
-				pauseTimer = setTimeout(() => { paused = false; snapTarget = -99999; }, PAUSE_MS);
-			}
+			const snap = getSnapAngle(angle);
+			const si = Math.round(((angle % TOTAL) + TOTAL) % TOTAL / ALPHA) % N;
+			snapTarget = snap;
+			lastSnappedI = si;
+			paused = true;
+			clearTimeout(pauseTimer);
+			pauseTimer = setTimeout(() => { paused = false; snapTarget = NaN; }, PAUSE_MS);
 		}
+
+		function onPointerCancel() { dragging = false; activePointerId = -1; }
 
 		function onResize() {
-			vw = window.innerWidth;
-			buildTileData();
-			if (halfWidth > 0) {
-				smooth = ((smooth % halfWidth) + halfWidth) % halfWidth;
-				snapTarget = -99999;
-				lastSnapPos = -99999;
-			}
+			vw = trackEl?.offsetWidth ?? window.innerWidth;
+			measure();
+			applyTransforms();
 		}
 
-		function onVisibilityChange() {
-			if (!document.hidden) lastTime = -1;
-		}
+		function onVisibilityChange() { if (!document.hidden) lastTime = -1; }
 
 		trackEl.addEventListener('pointerdown', onPointerDown);
 		trackEl.addEventListener('pointercancel', onPointerCancel);
@@ -205,26 +188,14 @@
 		rafId = requestAnimationFrame(frame);
 
 		navigateFn = (dir: 1 | -1) => {
-			if (halfWidth <= 0 || tileData.length === 0) return;
-			const vc = window.innerWidth / 2;
-			const snaps: number[] = [];
-			for (const { center } of tileData) {
-				const sp = center - vc;
-				if (sp >= 0 && sp < halfWidth) snaps.push(sp);
-			}
-			snaps.sort((a, b) => a - b);
-			if (snaps.length === 0) return;
-			let bestIdx = 0, bestDist = Infinity;
-			for (let i = 0; i < snaps.length; i++) {
-				const dist = Math.abs(smooth - snaps[i]);
-				if (dist < bestDist) { bestDist = dist; bestIdx = i; }
-			}
-			const nextIdx = (bestIdx + dir + snaps.length) % snaps.length;
-			snapTarget = snaps[nextIdx];
-			lastSnapPos = snaps[nextIdx];
+			const normA = ((angle % TOTAL) + TOTAL) % TOTAL;
+			const ci = Math.round(normA / ALPHA) % N;
+			const ni = (ci + dir + N) % N;
+			snapTarget = ni * ALPHA;
+			lastSnappedI = ni;
 			paused = true;
 			clearTimeout(pauseTimer);
-			pauseTimer = setTimeout(() => { paused = false; snapTarget = -99999; }, PAUSE_MS);
+			pauseTimer = setTimeout(() => { paused = false; snapTarget = NaN; }, PAUSE_MS);
 		};
 
 		return () => {
@@ -244,9 +215,9 @@
 
 <div class="gallery-section">
 	<div class="gallery-scroll">
-		<div class="gallery-track" bind:this={trackEl}>
+		<div class="gallery-track" class:large={size === 'large'} bind:this={trackEl}>
 			{#each images as src}
-				<div class="gallery-tile" class:portrait={portraitSrcs.has(src)}>
+				<div class="gallery-tile" class:portrait={portraitSrcs.has(src)} class:large={size === 'large'}>
 					<img
 						src="{base}{src}"
 						alt="{projectName} gallery"
@@ -256,12 +227,6 @@
 						draggable="false"
 						onload={(e) => markPortrait(src, e.currentTarget as HTMLImageElement)}
 					/>
-					<div class="bevel-edge"></div>
-				</div>
-			{/each}
-			{#each images as src}
-				<div class="gallery-tile" class:portrait={portraitSrcs.has(src)} aria-hidden="true">
-					<img src="{base}{src}" alt="" loading="lazy" decoding="async" class="gallery-img" draggable="false" />
 					<div class="bevel-edge"></div>
 				</div>
 			{/each}
@@ -282,6 +247,9 @@
 <style>
 	.gallery-section {
 		position: relative;
+		overflow-x: clip;
+		overflow-y: visible;
+		margin-top: 3rem;
 	}
 
 	.gallery-section:hover .gallery-nav {
@@ -292,7 +260,7 @@
 		position: absolute;
 		top: 50%;
 		transform: translateY(-50%);
-		z-index: 10;
+		z-index: 110;
 		width: 3rem;
 		height: 3rem;
 		border-radius: 9999px;
@@ -323,19 +291,17 @@
 
 	.gallery-scroll {
 		width: 100%;
-		overflow: hidden;
-		contain: layout paint;
+		perspective: 1400px;
+		perspective-origin: center center;
 	}
 
 	.gallery-track {
-		display: flex;
-		gap: 2.5rem;
-		width: max-content;
-		padding: 6rem 0 4rem;
+		position: relative;
+		width: 100%;
 		cursor: grab;
 		user-select: none;
-		will-change: transform;
 		touch-action: none;
+		transform-style: preserve-3d;
 	}
 
 	.gallery-track:active {
@@ -343,17 +309,18 @@
 	}
 
 	.gallery-tile {
-		position: relative;
-		flex-shrink: 0;
+		position: absolute;
+		left: 0;
+		top: 0;
 		border-radius: 0.75rem;
 		overflow: hidden;
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
-		aspect-ratio: 3 / 2;
 		height: 220px;
+		aspect-ratio: 3 / 2;
 	}
 
 	.gallery-tile.portrait {
-		aspect-ratio: 2 / 3;
+		aspect-ratio: 2 / 3; /* same height, narrower width */
 	}
 
 	.gallery-img {
@@ -361,6 +328,19 @@
 		height: 100%;
 		display: block;
 		object-fit: cover;
+	}
+
+	.gallery-tile.large {
+		height: auto;
+		width: calc(100vw - 3rem);
+		max-width: 56rem;
+		aspect-ratio: 3 / 2;
+	}
+
+	@media (min-width: 768px) {
+		.gallery-tile.large {
+			width: calc(100vw - 6rem);
+		}
 	}
 
 	@media (min-width: 768px) {
