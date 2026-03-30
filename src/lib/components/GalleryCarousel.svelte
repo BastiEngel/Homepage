@@ -249,7 +249,7 @@
 		position: relative;
 		overflow-x: clip;
 		overflow-y: visible;
-		margin-top: 3rem;
+		padding-top: 3rem;
 	}
 
 	.gallery-section:hover .gallery-nav {

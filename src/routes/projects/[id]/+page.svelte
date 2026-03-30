@@ -171,7 +171,7 @@
 					</div>
 				</section>
 			{:else if block.layout === 'gallery'}
-				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex} style={block.sectionStyle ?? ''}>
 					{#if block.heading || block.textBefore}
 						<div class="mx-auto max-w-4xl" class:mb-24={(block.galleryImages ?? []).length > 0} class:mb-8={(block.galleryImages ?? []).length === 0} use:scrollReveal={{ delay: 180 }}>
 							{#if block.heading}

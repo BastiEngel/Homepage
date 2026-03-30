@@ -247,6 +247,7 @@
 			{
 				"image": "",
 				"layout": "gallery",
+				"sectionStyle": "padding-top: 2rem",
 				"galleryImages": [
 					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_10.jpg",
 					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_12.jpg",
