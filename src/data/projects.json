@@ -283,6 +283,10 @@
 		"tileImage": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-1.jpg",
 		"featured": true,
 		"lineColor": "#e8d870",
+		"heroPathSrc": "/images/Path_PeeBee.svg",
+		"heroPathTopOffset": 150,
+		"heroPathScale": 0.85,
+		"heroPathScaleX": 1.1,
 		"heroPathText": "PeeBee is a speculative design project that highlights the scarcity of free and accessible public toilets in cities  ",
 		"contentBlocks": [
 			{

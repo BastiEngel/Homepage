@@ -101,6 +101,7 @@ export interface Project {
 	heroPathSrc?: string;
 	heroPathTopOffset?: number;
 	heroPathScale?: number;
+	heroPathScaleX?: number;
 	heroPathText?: string;
 }
 

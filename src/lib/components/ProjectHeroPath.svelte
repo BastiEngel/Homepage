@@ -6,9 +6,10 @@
 		src: string;
 		topOffset?: number;
 		pathScale?: number;
+		pathScaleX?: number;
 	}
 
-	let { src, topOffset = 0, pathScale = 1 }: Props = $props();
+	let { src, topOffset = 0, pathScale = 1, pathScaleX = 1 }: Props = $props();
 
 	// SVG source dimensions — overwritten from viewBox on fetch
 	let svgW = $state(1920);
@@ -24,12 +25,13 @@
 	let vwScale     = $derived(Math.min(1, pageWidth / 1440));
 	let yShift      = $derived(-78 * vwScale * vwScale);
 	let svgTop      = $derived(topOffset + yShift);
+	let svgLeft     = $derived(pageWidth * (1 - pathScale * pathScaleX) / 2);
 	let strokeWidth = $derived(Math.max(18, 36 * vwScale));
 
 	let pathD = $derived.by(() => {
 		if (!rawPathD || !pageWidth || !pageHeight) return '';
-		const sx = (pageWidth / svgW) * pathScale;
-		const sy = sx * 1.002;
+		const sx = (pageWidth / svgW) * pathScale * pathScaleX;
+		const sy = (pageWidth / svgW) * pathScale * 1.002;
 		return scalePath(rawPathD, sx, sy);
 	});
 
@@ -89,9 +91,9 @@
 
 			const lerpT = 1 - Math.pow(0.88, dt / 16.667);
 
-			const viewBottom     = cachedScrollY + cachedInnerH;
-			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
-			const revealed       = Math.min(1, scrollFraction * (0.65 + scrollFraction * 0.35));
+			const tipY           = cachedScrollY + cachedInnerH * 0.75;
+			const scrollFraction = cachedPageH > 0 ? Math.min(1, tipY / cachedPageH) : 0;
+			const revealed       = Math.min(1, scrollFraction);
 			const targetOffset   = tl * (1 - revealed);
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
@@ -136,8 +138,8 @@
 </script>
 
 <svg
-	class="pointer-events-none absolute left-0 z-0"
-	style="top: {svgTop}px; transform: scaleY(1); transform-origin: top center; overflow: visible;"
+	class="pointer-events-none absolute z-0"
+	style="top: {svgTop}px; left: {svgLeft}px; transform: scaleY(1); transform-origin: top center; overflow: visible;"
 	width={pageWidth}
 	height={1}
 	aria-hidden="true"
