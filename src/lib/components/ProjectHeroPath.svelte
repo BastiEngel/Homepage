@@ -146,32 +146,6 @@
 		let wavePhase = 0;
 		let subdivSegs: Seg[] = [];
 
-		// LUT: arc-length → CSS-y in SVG element coordinate space
-		let pathYLUT: Array<{ arc: number; y: number }> = [];
-		let lutForLength = -1;
-
-		function buildLUT(el: SVGPathElement, tl: number) {
-			const N = 400;
-			pathYLUT = [];
-			for (let i = 0; i <= N; i++) {
-				const arc = (tl * i) / N;
-				pathYLUT.push({ arc, y: el.getPointAtLength(arc).y });
-			}
-			lutForLength = tl;
-		}
-
-		function arcForTargetY(targetY: number): number {
-			if (pathYLUT.length < 2) return 0;
-			for (let i = 1; i < pathYLUT.length; i++) {
-				if (pathYLUT[i].y >= targetY) {
-					const a = pathYLUT[i - 1], b = pathYLUT[i];
-					const t = b.y === a.y ? 0 : (targetY - a.y) / (b.y - a.y);
-					return a.arc + t * (b.arc - a.arc);
-				}
-			}
-			return pathYLUT[pathYLUT.length - 1].arc;
-		}
-
 		function loop(now: number) {
 			if (!running) return;
 
@@ -186,20 +160,11 @@
 				prevTotalLength = tl;
 			}
 
-			// Build LUT from static path (before wave animation mutates d)
-			if (pathEl && lutForLength !== tl) buildLUT(pathEl, tl);
-
-			// Target: keep path tip in lower third of viewport (≈80% down)
-			const lerpT = 1 - Math.pow(0.75, dt / 16.667);
-			const vwS = Math.min(1, pageWidth / 1440);
-			const svgTopCur = topOffset + (-78 * vwS * vwS);
-			const desiredCssY = Math.max(0, cachedScrollY + cachedInnerH * 0.8 - svgTopCur);
-			const viewLen = arcForTargetY(desiredCssY);
-			// Near bottom of page: blend toward full reveal so path exits off-screen
-			const scrollFraction = cachedPageH > 0 ? Math.min(1, (cachedScrollY + cachedInnerH) / cachedPageH) : 0;
-			const bottomPull = Math.pow(Math.max(0, (scrollFraction - 0.75) / 0.25), 2);
-			const targetLen = viewLen + (tl - viewLen) * bottomPull;
-			const targetOffset = Math.max(0, tl - targetLen);
+			const lerpT       = 1 - Math.pow(0.88, dt / 16.667);
+			const viewBottom  = cachedScrollY + cachedInnerH;
+			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
+			const revealed    = Math.min(1, scrollFraction * (0.65 + scrollFraction * 0.35));
+			const targetOffset = tl * (1 - revealed);
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 
