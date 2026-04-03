@@ -29,7 +29,7 @@
 	{#if project.id === 'myzelfusion' && project.heroPathSrc}
 		<MyzelfusionHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} pathScaleY={project.heroPathScaleY ?? 1} />
 	{:else if project.heroPathSrc}
-		<ProjectHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} pathScaleX={project.heroPathScaleX ?? 1} />
+		<ProjectHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} pathScaleX={project.heroPathScaleX ?? 1} revealSpeed={project.heroPathRevealSpeed ?? 1} />
 	{/if}
 	<!-- Hero + GIF: outside z-[2] so mix-blend-mode blends with body background -->
 	<div class="hero-gif-wrapper">
