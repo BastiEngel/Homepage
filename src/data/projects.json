@@ -410,17 +410,8 @@
 			},
 			{
 				"image": "",
-				"layout": "portrait-pair",
-				"galleryImages": [
-					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-5.jpg",
-					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-8.jpg"
-				]
-			},
-			{
-				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-9.jpg",
-				"layout": "image-left",
-				"postHeading": "ERGONOMICS",
-				"text": "Designed to adapt to both individual ergonomic needs and varying occupational contexts, Pivot offers versatility for a broad spectrum of users and usage scenarios. The promotion of postural variation alleviates physical strain, enhances circulatory function, and encourages mindful movement. In doing so, the stool actively contributes to the prevention of common musculoskeletal disorders associated with sedentary work."
+				"layout": "gallery",
+				"textBefore": "Designed to adapt to both individual ergonomic needs and varying occupational contexts, Pivot offers versatility for a broad spectrum of users and usage scenarios. The promotion of postural variation alleviates physical strain, enhances circulatory function, and encourages mindful movement. In doing so, the stool actively contributes to the prevention of common musculoskeletal disorders associated with sedentary work."
 			},
 			{
 				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-11.jpg",
