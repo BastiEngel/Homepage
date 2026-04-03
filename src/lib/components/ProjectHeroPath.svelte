@@ -7,9 +7,10 @@
 		topOffset?: number;
 		pathScale?: number;
 		pathScaleX?: number;
+		revealSpeed?: number;
 	}
 
-	let { src, topOffset = 0, pathScale = 1, pathScaleX = 1 }: Props = $props();
+	let { src, topOffset = 0, pathScale = 1, pathScaleX = 1, revealSpeed = 1 }: Props = $props();
 
 	let svgW = $state(1920);
 	let svgH = $state(7737.26);
@@ -163,7 +164,8 @@
 			const lerpT       = 1 - Math.pow(0.88, dt / 16.667);
 			const viewBottom  = cachedScrollY + cachedInnerH;
 			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
-			const revealed    = Math.min(1, scrollFraction * (0.65 + scrollFraction * 0.35));
+			const sf          = Math.min(1, scrollFraction * revealSpeed);
+			const revealed    = sf * (0.65 + sf * 0.35);
 			const targetOffset = tl * (1 - revealed);
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
