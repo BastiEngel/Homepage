@@ -4,6 +4,7 @@
 	import ProjectHeroPath from '$lib/components/ProjectHeroPath.svelte';
 	import MyzelfusionHeroPath from '$lib/components/MyzelfusionHeroPath.svelte';
 	import GalleryCarousel from '$lib/components/GalleryCarousel.svelte';
+	import GrassGrowth from '$lib/components/GrassGrowth.svelte';
 	import { scrollReveal, revealCard } from '$lib/utils/scrollAnimation';
 	import { base } from '$app/paths';
 
@@ -282,6 +283,10 @@
 		</a>
 	</div>
 	</div><!-- /z-[2] over GIF -->
+
+	{#if project.id === 'peebee'}
+		<GrassGrowth />
+	{/if}
 </main>
 
 {#if lightboxSrc}
