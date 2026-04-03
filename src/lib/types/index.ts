@@ -105,6 +105,7 @@ export interface Project {
 	heroPathScaleY?: number;
 	heroPathRevealSpeed?: number;
 	heroPathText?: string;
+	hideDescription?: boolean;
 }
 
 export interface GarlandPoint {
