@@ -48,7 +48,7 @@
 	});
 </script>
 
-<div bind:this={wrapEl} class="w-full overflow-hidden" style="height: {H}px;">
+<div bind:this={wrapEl} class="w-full overflow-hidden" style="height: {H}px; margin-top: -{H * 0.6 | 0}px;">
 	<svg width="100%" height={H} aria-hidden="true" style="overflow: visible; display: block;">
 		{#each blades as b}
 			<path
