@@ -23,7 +23,7 @@
 
 		for (let i = 0; i < COUNT; i++) {
 			const x = ((i + 0.5) / COUNT) * W + (Math.random() - 0.5) * (W / COUNT) * 1.5;
-			const h = 220 + Math.random() * 280;
+			const h = 80 + Math.random() * Math.random() * 420;
 			const bend = (Math.random() - 0.5) * 60;
 			const wobble = (Math.random() - 0.5) * 14;
 			const px = Math.max(3, Math.min(W - 3, x));
