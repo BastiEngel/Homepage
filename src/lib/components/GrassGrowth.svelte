@@ -32,8 +32,8 @@
 				d: `M${px.toFixed(1)},${H} C${(px + wobble).toFixed(1)},${(H - h * 0.38).toFixed(1)} ${(px + bend * 0.65).toFixed(1)},${(H - h * 0.72).toFixed(1)} ${(px + bend).toFixed(1)},${(H - h).toFixed(1)}`,
 				sw: 7 + Math.random() * 9,
 				op: 0.4 + Math.random() * 0.6,
-				dur: 0.55 + Math.random() * 0.55,
-				del: Math.random() * 0.8,
+				dur: 2.5 + Math.random() * 2.5,
+				del: Math.random() * 3.0,
 			});
 		}
 
