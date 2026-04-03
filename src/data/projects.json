@@ -401,8 +401,12 @@
 				"textBefore": "Pivot is available in three base variants to suit diverse functional requirements. The fixed base ensures stability and secure support, while the classic model with castors enables mobility within the workspace. The sprung base combines stability with controlled movement: upon slight weight redistribution, it allows subtle shifts in position without necessitating standing."
 			},
 			{
-				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.jpg",
-				"imageAspect": "3/2"
+				"image": "",
+				"layout": "portrait-pair",
+				"galleryImages": [
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-6.jpg"
+				]
 			},
 			{
 				"image": "",
