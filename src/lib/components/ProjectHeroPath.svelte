@@ -189,12 +189,16 @@
 			// Build LUT from static path (before wave animation mutates d)
 			if (pathEl && lutForLength !== tl) buildLUT(pathEl, tl);
 
-			// Target: keep path tip in lower third of viewport (≈75% down)
-			const lerpT = 1 - Math.pow(0.88, dt / 16.667);
+			// Target: keep path tip in lower third of viewport (≈80% down)
+			const lerpT = 1 - Math.pow(0.75, dt / 16.667);
 			const vwS = Math.min(1, pageWidth / 1440);
 			const svgTopCur = topOffset + (-78 * vwS * vwS);
-			const desiredCssY = Math.max(0, cachedScrollY + cachedInnerH * 0.75 - svgTopCur);
-			const targetLen   = arcForTargetY(desiredCssY);
+			const desiredCssY = Math.max(0, cachedScrollY + cachedInnerH * 0.8 - svgTopCur);
+			const viewLen = arcForTargetY(desiredCssY);
+			// Near bottom of page: blend toward full reveal so path exits off-screen
+			const scrollFraction = cachedPageH > 0 ? Math.min(1, (cachedScrollY + cachedInnerH) / cachedPageH) : 0;
+			const bottomPull = Math.pow(Math.max(0, (scrollFraction - 0.75) / 0.25), 2);
+			const targetLen = viewLen + (tl - viewLen) * bottomPull;
 			const targetOffset = Math.max(0, tl - targetLen);
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
