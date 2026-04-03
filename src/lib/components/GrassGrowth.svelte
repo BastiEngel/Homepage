@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 
 	const COUNT = 160;
-	const H = 320;
-	const DASH = 700;
+	const H = 520;
+	const DASH = 1100;
 
 	interface Blade {
 		d: string;
@@ -23,7 +23,7 @@
 
 		for (let i = 0; i < COUNT; i++) {
 			const x = ((i + 0.5) / COUNT) * W + (Math.random() - 0.5) * (W / COUNT) * 1.5;
-			const h = 120 + Math.random() * 180;
+			const h = 220 + Math.random() * 280;
 			const bend = (Math.random() - 0.5) * 60;
 			const wobble = (Math.random() - 0.5) * 14;
 			const px = Math.max(3, Math.min(W - 3, x));
