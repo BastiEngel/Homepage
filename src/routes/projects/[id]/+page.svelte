@@ -171,6 +171,18 @@
 						</div>
 					</div>
 				</section>
+		{:else if block.layout === 'landscape-pair'}
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+					<div class="mx-auto max-w-4xl">
+						<div class="portrait-pair-grid mb-8">
+							{#each (block.galleryImages ?? []).slice(0, 2) as img, j}
+								<div class="content-tile landscape-tile" use:revealCard>
+									<img src="{base}{img}" alt="{project.name} landscape {j + 1}" loading="lazy" decoding="async" class="content-img" />
+								</div>
+							{/each}
+						</div>
+					</div>
+				</section>
 			{:else if block.layout === 'gallery'}
 				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex} style={block.sectionStyle ?? ''}>
 					{#if block.heading || block.textBefore}
@@ -455,6 +467,10 @@
 
 	.portrait-tile {
 		aspect-ratio: 2/3;
+	}
+
+	.landscape-tile {
+		aspect-ratio: 3/2;
 	}
 
 	.image-left-text {
