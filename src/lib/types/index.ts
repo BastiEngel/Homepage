@@ -103,7 +103,6 @@ export interface Project {
 	heroPathScale?: number;
 	heroPathScaleX?: number;
 	heroPathScaleY?: number;
-	heroPathRevealSpeed?: number;
 	heroPathText?: string;
 }
 
