@@ -84,7 +84,7 @@
 				{project.name}
 			</h1>
 
-			{#if project.description && !project.hideDescription}
+			{#if project.description}
 				<p class="text-text mt-2 max-w-3xl text-base lg:text-lg">
 					{project.description}
 				</p>
