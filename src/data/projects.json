@@ -358,33 +358,87 @@
 	{
 		"id": "pivot",
 		"name": "Pivot",
-		"description": "Placeholder — wird mit echtem Content ersetzt.",
-		"subtitle": "Placeholder | Jahr",
-		"cover": "/images/projects/Pivot/cover.webp",
+		"description": "How can a seating solution be designed to dynamically adapt to the body's need for movement, thereby enhancing physical well-being in modern work environments?",
+		"subtitle": "A stool for active sitting that adapts to you\nIndividual work | 2025\nIndustrial design | Ergonomics | Human-centered design",
+		"role": "",
+		"year": "2025",
+		"client": "Knipex",
+		"tags": [],
+		"cover": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.jpg",
 		"coverType": "image",
-		"tagImage": "/images/projects/Pivot/cover.webp",
-		"tileImage": "/images/projects/Pivot/cover.webp",
+		"tagImage": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.jpg",
+		"tileImage": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.jpg",
 		"featured": true,
 		"lineColor": "#90c4a0",
 		"contentBlocks": [
 			{
-				"image": "/images/projects/Pivot/detail-01.webp",
-				"text": "Placeholder — wird mit echtem Content ersetzt."
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_VideoClip.mp4",
+				"alt": "Pivot stool video",
+				"fullWidthBg": true,
+				"imageFit": "cover"
 			},
 			{
-				"image": "/images/projects/Pivot/detail-02.webp",
-				"text": "Placeholder — wird mit echtem Content ersetzt."
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-2.jpg",
+				"alt": "Pivot stool overview",
+				"text": "Pivot is an ergonomic stool conceived as a dynamic seating solution, where movement and postural variation are central to its design philosophy. By facilitating spontaneous shifts in seating position, the stool integrates dynamic sitting into everyday work life, thereby counteracting the rigidity of prolonged static postures.\n\n\"Having held any posture for a while, the best posture is always the next one.\" (Opsvik, 1979)"
+			},
+			{
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-4.jpg",
+				"alt": "Four seat configurations",
+				"layout": "image-left",
+				"text": "The seat, crafted from shaped plywood, rotates via a pivot mechanism into four distinct configurations: as a saddle stool, angled like a riding seat, oblique as a reclining stool, or flat like a conventional chair."
+			},
+			{
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-6.jpg",
+				"alt": "Pivot configurations gallery",
+				"layout": "gallery",
+				"galleryImages": [
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-5.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-7.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-8.jpg"
+				]
+			},
+			{
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-9.jpg",
+				"alt": "Base variants",
+				"text": "Pivot is available in three base variants to suit diverse functional requirements. The fixed base ensures stability and secure support, while the classic model with castors enables mobility within the workspace. The sprung base combines stability with controlled movement: upon slight weight redistribution, it allows subtle shifts in position without necessitating standing."
+			},
+			{
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-11.jpg",
+				"alt": "Ergonomic benefits",
+				"layout": "image-left",
+				"text": "Designed to adapt to both individual ergonomic needs and varying occupational contexts, Pivot offers versatility for a broad spectrum of users and usage scenarios. The promotion of postural variation alleviates physical strain, enhances circulatory function, and encourages mindful movement. In doing so, the stool actively contributes to the prevention of common musculoskeletal disorders associated with sedentary work."
+			},
+			{
+				"image": "/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-1.jpg",
+				"alt": "Pivot at Knipex",
+				"layout": "gallery",
+				"galleryImages": [
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-4.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-6.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-26.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-27.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-33.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker--46.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker--47.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker--48.jpg"
+				]
 			}
 		],
+		"credits": "Supported by: Knipex\nFolkwang Universität der Künste Essen",
 		"gallery": [
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg",
-			"/images/placeholder.svg"
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-2.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-3.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-4.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-5.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-6.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-7.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-8.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-9.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-10.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-11.jpg",
+			"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-12.jpg"
 		]
 	},
 	{
