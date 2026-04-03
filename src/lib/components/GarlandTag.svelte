@@ -29,10 +29,10 @@
 
 	const zBack = 2;
 	const zFrontBase = 8;
+	let hovered = $state(false);
 	let zFront = $derived(hovered ? 30 : zFrontBase);
 
 	let pendulumEl: HTMLElement | undefined = $state();
-	let hovered = $state(false);
 	let swayBlend = 1;
 
 	// Direct-DOM refs for per-frame animation — bypasses Svelte reactive scheduler entirely
