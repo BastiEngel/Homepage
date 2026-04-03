@@ -13,9 +13,9 @@
 
 	let svgW = $state(1920);
 	let svgH = $state(7737.26);
+	let rawPathD = $state('');
 
-	let measurePathEl: SVGPathElement   | undefined = $state();
-	let renderPathEl:  SVGPathElement   | undefined = $state();
+	let pathEl: SVGPathElement | undefined = $state();
 
 	let totalLength = $state(0);
 	let pageWidth   = $state(1440);
@@ -27,8 +27,6 @@
 	let svgLeft     = $derived(pageWidth * (1 - pathScale * pathScaleX) / 2);
 	let strokeWidth = $derived(Math.max(18, 36 * vwScale));
 
-	// Static scaled path for measurement only
-	let rawPathD = $state('');
 	let pathD = $derived.by(() => {
 		if (!rawPathD || !pageWidth || !pageHeight) return '';
 		const sx = (pageWidth / svgW) * pathScale * pathScaleX;
@@ -45,9 +43,9 @@
 		});
 	}
 
-	// ── Bezier subdivision ──────────────────────────────────────────────────
+	// ── Bezier subdivision (only used in non-Safari) ─────────────────────────
 	type P   = [number, number];
-	type Seg = [P, P, P, P]; // [start, c1, c2, end]
+	type Seg = [P, P, P, P];
 
 	function parseCubics(d: string): Seg[] {
 		const tokens = d.match(/[MmCcLlSsQqTtAaZz]|[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?/g) || [];
@@ -96,7 +94,6 @@
 		return [[p0,q0,r0,s],[s,r1,q2,p3]];
 	}
 
-	// Adaptive subdivision: split until chord length ≤ maxLen (uniform in screen space)
 	function subdivideAdaptive(seg: Seg, maxLen: number, depth = 0): Seg[] {
 		const [p0, , , p3] = seg;
 		const dx = p3[0] - p0[0], dy = p3[1] - p0[1];
@@ -105,7 +102,6 @@
 		return [...subdivideAdaptive(a, maxLen, depth+1), ...subdivideAdaptive(b, maxLen, depth+1)];
 	}
 
-	// Build waved path as polyline of endpoints — round linejoin hides kinks
 	function buildWavedD(segs: Seg[], sx: number, sy: number, amp: number, freq: number, phase: number): string {
 		if (!segs.length) return '';
 		const parts: string[] = [];
@@ -118,12 +114,11 @@
 		return parts.join('');
 	}
 
-	// Remeasure on path/page change
 	$effect(() => {
-		if (!measurePathEl || !pathD) return;
+		if (!pathEl || !pathD) return;
 		tick().then(() => {
-			if (!measurePathEl) return;
-			const len = measurePathEl.getTotalLength();
+			if (!pathEl) return;
+			const len = pathEl.getTotalLength();
 			if (len > 0) totalLength = len;
 		});
 	});
@@ -141,6 +136,8 @@
 	}
 
 	onMount(() => {
+		const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 		let running = true;
 		let rafId: number;
 		let lastTime = 0;
@@ -164,27 +161,28 @@
 			}
 
 			const lerpT = 1 - Math.pow(0.88, dt / 16.667);
-			const tipY           = cachedScrollY + cachedInnerH * 0.75;
-			const scrollFraction = cachedPageH > 0 ? Math.min(1, tipY / cachedPageH) : 0;
-			const revealed       = Math.min(1, scrollFraction);
+			const viewBottom     = cachedScrollY + cachedInnerH;
+			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
+			const revealed       = Math.min(1, scrollFraction * (0.65 + scrollFraction * 0.35));
 			const targetOffset   = tl * (1 - revealed);
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 
-			if (measurePathEl) measurePathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
-
-			// Wave animation
-			wavePhase = (wavePhase + 5 * dt * 0.001) % (Math.PI * 2);
-			if (renderPathEl && subdivSegs.length) {
-				const sx  = (pageWidth / svgW) * pathScale * pathScaleX;
-				const sy  = (pageWidth / svgW) * pathScale * 1.002;
-				const amp = strokeWidth * 0.09;
-				const freq = 1.8; // rad/segment → ~90 wave cycles across subdivided path
-				renderPathEl.setAttribute('d', buildWavedD(subdivSegs, sx, sy, amp, freq, wavePhase));
-				renderPathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
+			if (isSafari) {
+				// Safari: static d, only update dashoffset — identical to K&V
+				if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
+			} else {
+				// Other browsers: wave animation — update d first, then dashoffset
+				wavePhase = (wavePhase + 5 * dt * 0.001) % (Math.PI * 2);
+				if (pathEl && subdivSegs.length) {
+					const sx  = (pageWidth / svgW) * pathScale * pathScaleX;
+					const sy  = (pageWidth / svgW) * pathScale * 1.002;
+					pathEl.setAttribute('d', buildWavedD(subdivSegs, sx, sy, strokeWidth * 0.09, 1.8, wavePhase));
+				}
+				if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
 			}
 
-rafId = requestAnimationFrame(loop);
+			rafId = requestAnimationFrame(loop);
 		}
 
 		let timers: ReturnType<typeof setTimeout>[] = [];
@@ -193,7 +191,7 @@ rafId = requestAnimationFrame(loop);
 			.then(r => r.text())
 			.then(text => {
 				const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-				const vb  = doc.querySelector('svg')?.getAttribute('viewBox')?.trim().split(/[\s,]+/);
+				const vb = doc.querySelector('svg')?.getAttribute('viewBox')?.trim().split(/[\s,]+/);
 				if (vb && vb.length >= 4) {
 					const w = parseFloat(vb[2]), h = parseFloat(vb[3]);
 					if (w > 0 && h > 0) { svgW = w; svgH = h; }
@@ -201,9 +199,10 @@ rafId = requestAnimationFrame(loop);
 				const path = doc.querySelector('path');
 				if (path) {
 					rawPathD = path.getAttribute('d') ?? '';
-					// Adaptive subdivision: max chord length 15 raw units → uniform segments
-					const raw = parseCubics(rawPathD);
-					subdivSegs = raw.flatMap(seg => subdivideAdaptive(seg, 15));
+					if (!isSafari) {
+						const raw = parseCubics(rawPathD);
+						subdivSegs = raw.flatMap(seg => subdivideAdaptive(seg, 15));
+					}
 				}
 				recalc();
 				timers = [setTimeout(recalc, 300), setTimeout(recalc, 1000)];
@@ -228,25 +227,14 @@ rafId = requestAnimationFrame(loop);
 
 <svg
 	class="pointer-events-none absolute z-0"
-	style="top: {svgTop}px; left: {svgLeft}px; overflow: visible;"
+	style="top: {svgTop}px; left: {svgLeft}px; transform: scaleY(1); transform-origin: top center; overflow: visible;"
 	width={pageWidth}
 	height={1}
 	aria-hidden="true"
 >
 	{#if pathD}
-		<!-- Hidden: measurement only -->
 		<path
-			bind:this={measurePathEl}
-			d={pathD}
-			fill="none"
-			stroke="none"
-			stroke-width={strokeWidth}
-			stroke-linecap="round"
-			stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
-		/>
-		<!-- Visible: wave-animated -->
-		<path
-			bind:this={renderPathEl}
+			bind:this={pathEl}
 			d={pathD}
 			fill="none"
 			stroke="var(--color-line)"
