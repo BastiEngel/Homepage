@@ -11,23 +11,24 @@
 
 	let { src, topOffset = 0, pathScale = 1, pathScaleX = 1 }: Props = $props();
 
-	// SVG source dimensions — overwritten from viewBox on fetch
 	let svgW = $state(1920);
 	let svgH = $state(7737.26);
-	let rawPathD = $state('');
 
-	let pathEl: SVGPathElement | undefined = $state();
+	let measurePathEl: SVGPathElement   | undefined = $state();
+	let renderPathEl:  SVGPathElement   | undefined = $state();
+
 	let totalLength = $state(0);
-	let pageWidth  = $state(1440);
-	let pageHeight = $state(0);
+	let pageWidth   = $state(1440);
+	let pageHeight  = $state(0);
 
-	// Same derived layout as GarlandLine
 	let vwScale     = $derived(Math.min(1, pageWidth / 1440));
 	let yShift      = $derived(-78 * vwScale * vwScale);
 	let svgTop      = $derived(topOffset + yShift);
 	let svgLeft     = $derived(pageWidth * (1 - pathScale * pathScaleX) / 2);
 	let strokeWidth = $derived(Math.max(18, 36 * vwScale));
 
+	// Static scaled path for measurement only
+	let rawPathD = $state('');
 	let pathD = $derived.by(() => {
 		if (!rawPathD || !pageWidth || !pageHeight) return '';
 		const sx = (pageWidth / svgW) * pathScale * pathScaleX;
@@ -44,7 +45,89 @@
 		});
 	}
 
-	// Cached scroll state — plain vars, same pattern as GarlandLine
+	// ── Bezier subdivision ──────────────────────────────────────────────────
+	type P   = [number, number];
+	type Seg = [P, P, P, P]; // [start, c1, c2, end]
+
+	function parseCubics(d: string): Seg[] {
+		const tokens = d.match(/[MmCcLlSsQqTtAaZz]|[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?/g) || [];
+		const segs: Seg[] = [];
+		let cx = 0, cy = 0, i = 0;
+		while (i < tokens.length) {
+			const cmd = tokens[i++];
+			if (cmd === 'M') {
+				cx = parseFloat(tokens[i++]); cy = parseFloat(tokens[i++]);
+				while (i < tokens.length && !/[A-Za-z]/.test(tokens[i])) {
+					cx = parseFloat(tokens[i++]); cy = parseFloat(tokens[i++]);
+				}
+			} else if (cmd === 'C') {
+				while (i < tokens.length && !/[A-Za-z]/.test(tokens[i])) {
+					const sx = cx, sy = cy;
+					const c1x = parseFloat(tokens[i++]), c1y = parseFloat(tokens[i++]);
+					const c2x = parseFloat(tokens[i++]), c2y = parseFloat(tokens[i++]);
+					const ex  = parseFloat(tokens[i++]), ey  = parseFloat(tokens[i++]);
+					segs.push([[sx,sy],[c1x,c1y],[c2x,c2y],[ex,ey]]);
+					cx = ex; cy = ey;
+				}
+			} else if (cmd === 'c') {
+				while (i < tokens.length && !/[A-Za-z]/.test(tokens[i])) {
+					const sx = cx, sy = cy;
+					const dc1x = parseFloat(tokens[i++]), dc1y = parseFloat(tokens[i++]);
+					const dc2x = parseFloat(tokens[i++]), dc2y = parseFloat(tokens[i++]);
+					const dex  = parseFloat(tokens[i++]), dey  = parseFloat(tokens[i++]);
+					segs.push([[sx,sy],[cx+dc1x,cy+dc1y],[cx+dc2x,cy+dc2y],[cx+dex,cy+dey]]);
+					cx += dex; cy += dey;
+				}
+			} else {
+				while (i < tokens.length && !/[A-Za-z]/.test(tokens[i])) i++;
+			}
+		}
+		return segs;
+	}
+
+	function splitSeg(seg: Seg): [Seg, Seg] {
+		const [p0, p1, p2, p3] = seg;
+		const q0: P = [(p0[0]+p1[0])*.5, (p0[1]+p1[1])*.5];
+		const q1: P = [(p1[0]+p2[0])*.5, (p1[1]+p2[1])*.5];
+		const q2: P = [(p2[0]+p3[0])*.5, (p2[1]+p3[1])*.5];
+		const r0: P = [(q0[0]+q1[0])*.5, (q0[1]+q1[1])*.5];
+		const r1: P = [(q1[0]+q2[0])*.5, (q1[1]+q2[1])*.5];
+		const s:  P = [(r0[0]+r1[0])*.5, (r0[1]+r1[1])*.5];
+		return [[p0,q0,r0,s],[s,r1,q2,p3]];
+	}
+
+	// Adaptive subdivision: split until chord length ≤ maxLen (uniform in screen space)
+	function subdivideAdaptive(seg: Seg, maxLen: number, depth = 0): Seg[] {
+		const [p0, , , p3] = seg;
+		const dx = p3[0] - p0[0], dy = p3[1] - p0[1];
+		if (Math.sqrt(dx*dx + dy*dy) <= maxLen || depth >= 9) return [seg];
+		const [a, b] = splitSeg(seg);
+		return [...subdivideAdaptive(a, maxLen, depth+1), ...subdivideAdaptive(b, maxLen, depth+1)];
+	}
+
+	// Build waved path as polyline of endpoints — round linejoin hides kinks
+	function buildWavedD(segs: Seg[], sx: number, sy: number, amp: number, freq: number, phase: number): string {
+		if (!segs.length) return '';
+		const parts: string[] = [];
+		for (let i = 0; i < segs.length; i++) {
+			const [p0, , , p3] = segs[i];
+			const w = Math.sin(i * freq - phase) * amp;
+			if (i === 0) parts.push(`M${(p0[0]*sx+w).toFixed(2)},${(p0[1]*sy).toFixed(2)}`);
+			parts.push(`L${(p3[0]*sx+w).toFixed(2)},${(p3[1]*sy).toFixed(2)}`);
+		}
+		return parts.join('');
+	}
+
+	// Remeasure on path/page change
+	$effect(() => {
+		if (!measurePathEl || !pathD) return;
+		tick().then(() => {
+			if (!measurePathEl) return;
+			const len = measurePathEl.getTotalLength();
+			if (len > 0) totalLength = len;
+		});
+	});
+
 	let cachedScrollY = 0;
 	let cachedInnerH  = 0;
 	let cachedPageH   = 0;
@@ -57,23 +140,14 @@
 		cachedScrollY = window.scrollY;
 	}
 
-	// Remeasure path length after DOM update
-	$effect(() => {
-		if (!pathEl || !pathD) return;
-		tick().then(() => {
-			if (!pathEl) return;
-			const len = pathEl.getTotalLength();
-			if (len > 0) totalLength = len;
-		});
-	});
-
-	// Animation loop — identical to GarlandLine's path section
 	onMount(() => {
 		let running = true;
 		let rafId: number;
 		let lastTime = 0;
 		let currentOffset = -1;
 		let prevTotalLength = 0;
+		let wavePhase = 0;
+		let subdivSegs: Seg[] = [];
 
 		function loop(now: number) {
 			if (!running) return;
@@ -90,7 +164,6 @@
 			}
 
 			const lerpT = 1 - Math.pow(0.88, dt / 16.667);
-
 			const tipY           = cachedScrollY + cachedInnerH * 0.75;
 			const scrollFraction = cachedPageH > 0 ? Math.min(1, tipY / cachedPageH) : 0;
 			const revealed       = Math.min(1, scrollFraction);
@@ -98,9 +171,20 @@
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 
-			if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
+			if (measurePathEl) measurePathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
 
-			rafId = requestAnimationFrame(loop);
+			// Wave animation
+			wavePhase = (wavePhase + 5 * dt * 0.001) % (Math.PI * 2);
+			if (renderPathEl && subdivSegs.length) {
+				const sx  = (pageWidth / svgW) * pathScale * pathScaleX;
+				const sy  = (pageWidth / svgW) * pathScale * 1.002;
+				const amp = strokeWidth * 0.09;
+				const freq = 1.8; // rad/segment → ~90 wave cycles across subdivided path
+				renderPathEl.setAttribute('d', buildWavedD(subdivSegs, sx, sy, amp, freq, wavePhase));
+				renderPathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
+			}
+
+rafId = requestAnimationFrame(loop);
 		}
 
 		let timers: ReturnType<typeof setTimeout>[] = [];
@@ -109,13 +193,18 @@
 			.then(r => r.text())
 			.then(text => {
 				const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
-				const vb = doc.querySelector('svg')?.getAttribute('viewBox')?.trim().split(/[\s,]+/);
+				const vb  = doc.querySelector('svg')?.getAttribute('viewBox')?.trim().split(/[\s,]+/);
 				if (vb && vb.length >= 4) {
 					const w = parseFloat(vb[2]), h = parseFloat(vb[3]);
 					if (w > 0 && h > 0) { svgW = w; svgH = h; }
 				}
 				const path = doc.querySelector('path');
-				if (path) rawPathD = path.getAttribute('d') ?? '';
+				if (path) {
+					rawPathD = path.getAttribute('d') ?? '';
+					// Adaptive subdivision: max chord length 15 raw units → uniform segments
+					const raw = parseCubics(rawPathD);
+					subdivSegs = raw.flatMap(seg => subdivideAdaptive(seg, 15));
+				}
 				recalc();
 				timers = [setTimeout(recalc, 300), setTimeout(recalc, 1000)];
 				window.addEventListener('resize', recalc, { passive: true });
@@ -139,19 +228,31 @@
 
 <svg
 	class="pointer-events-none absolute z-0"
-	style="top: {svgTop}px; left: {svgLeft}px; transform: scaleY(1); transform-origin: top center; overflow: visible;"
+	style="top: {svgTop}px; left: {svgLeft}px; overflow: visible;"
 	width={pageWidth}
 	height={1}
 	aria-hidden="true"
 >
 	{#if pathD}
+		<!-- Hidden: measurement only -->
 		<path
-			bind:this={pathEl}
+			bind:this={measurePathEl}
+			d={pathD}
+			fill="none"
+			stroke="none"
+			stroke-width={strokeWidth}
+			stroke-linecap="round"
+			stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
+		/>
+		<!-- Visible: wave-animated -->
+		<path
+			bind:this={renderPathEl}
 			d={pathD}
 			fill="none"
 			stroke="var(--color-line)"
 			stroke-width={strokeWidth}
 			stroke-linecap="round"
+			stroke-linejoin="round"
 			stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
 		/>
 	{/if}
