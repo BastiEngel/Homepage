@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	const COUNT = 80;
+	const COUNT = 160;
 	const H = 160;
 	const DASH = 450;
 
@@ -30,7 +30,7 @@
 
 			generated.push({
 				d: `M${px.toFixed(1)},${H} C${(px + wobble).toFixed(1)},${(H - h * 0.38).toFixed(1)} ${(px + bend * 0.65).toFixed(1)},${(H - h * 0.72).toFixed(1)} ${(px + bend).toFixed(1)},${(H - h).toFixed(1)}`,
-				sw: 1.8 + Math.random() * 2.4,
+				sw: 3 + Math.random() * 4,
 				op: 0.4 + Math.random() * 0.6,
 				dur: 0.55 + Math.random() * 0.55,
 				del: Math.random() * 0.8,
