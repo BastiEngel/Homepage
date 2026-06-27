@@ -371,6 +371,7 @@
 		"tileImage": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.webp",
 		"featured": true,
 		"lineColor": "#90c4a0",
+		"heroPathSrc": "/images/Path_pivot.svg",
 		"contentBlocks": [
 			{
 				"image": "/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-33.jpg"
