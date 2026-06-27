@@ -168,7 +168,7 @@
 			const viewBottom     = cachedScrollY + cachedInnerH;
 			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
 			const sf             = Math.min(1, scrollFraction * speed);
-			const revealed       = sf * (0.75 + sf * 0.25);
+			const revealed       = sf * (0.65 + sf * 0.35);
 			const targetOffset   = tl * (1 - revealed);
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
