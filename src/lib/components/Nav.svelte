@@ -61,7 +61,7 @@ import projectsData from '../../data/projects.json';
 		noisePhase: Math.random() * Math.PI * 2,
 	}));
 
-	let bundleSwayEl: HTMLElement | undefined;
+	let bundleSwayEl: HTMLElement | undefined = $state();
 	let masterAngle = 0;
 	let bundleT0 = 0;
 	let rafId = 0;
