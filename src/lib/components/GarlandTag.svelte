@@ -153,7 +153,7 @@
 			<div class="push-layer" bind:this={backPushEl}>
 				<div class="tag-shell">
 					<img
-						src="{base}/images/keytags/Keytag_{variantPad}.png?v=2"
+						src="{base}/images/keytags/Keytag_{variantPad}.webp"
 						alt=""
 						class="tag-img ring-back"
 						style="clip-path: polygon(0 0, {splitBack}% 0, {splitBack}% {splitH}%, 0 26%);"
@@ -185,14 +185,14 @@
 					<!-- Key dangling from the ring hole, behind everything -->
 					<img
 						bind:this={keyImgEl}
-						src="{base}/images/key-01.png"
+						src="{base}/images/key-01.webp"
 						alt=""
 						class="dangling-key"
 						draggable="false"
 					/>
 					<!-- Right half of ring + full body (in front of the line) -->
 					<img
-						src="{base}/images/keytags/Keytag_{variantPad}.png?v=2"
+						src="{base}/images/keytags/Keytag_{variantPad}.webp"
 						alt=""
 						class="tag-img ring-front"
 						style="clip-path: polygon({splitFront}% 0, 100% 0, 100% 100%, 0 100%, 0 26%, {splitFront}% {splitH}%);"

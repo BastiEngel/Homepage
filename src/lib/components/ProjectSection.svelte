@@ -60,7 +60,7 @@
 			style="--fan-origin: {fromRight ? 'right bottom' : 'left bottom'}; --fan-rotate: {fromRight ? '2deg' : '-2deg'};"
 		>
 			{#if project.id !== 'about'}
-				<a href="{base}/projects/{project.id}">
+				<a href="{base}/projects/{project.id}" data-sveltekit-reload>
 					<img
 						bind:this={imgEl}
 						src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
@@ -85,13 +85,17 @@
 
 		<!-- Text column -->
 		<div class="flex flex-col justify-start" class:lg:order-1={reversed} use:scrollReveal>
-			<h2 class="text-text project-title">
-				{project.name}
-			</h2>
+			{#if project.id !== 'about'}
+				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="text-text no-underline hover:opacity-70 transition-opacity">
+					<h2 class="project-title">{project.name}</h2>
+				</a>
+			{:else}
+				<h2 class="text-text project-title">{project.name}</h2>
+			{/if}
 			<p class="text-text text-base lg:text-lg">
 				{project.description}
 			</p>
-			</div>
+		</div>
 	</div>
 </section>
 
