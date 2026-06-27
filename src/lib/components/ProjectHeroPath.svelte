@@ -8,9 +8,10 @@
 		pathScale?: number;
 		pathScaleX?: number;
 		revealSpeed?: number;
+		wave?: boolean;
 	}
 
-	let { src, topOffset = 0, pathScale = 1, pathScaleX = 1, revealSpeed = 1 }: Props = $props();
+	let { src, topOffset = 0, pathScale = 1, pathScaleX = 1, revealSpeed = 1, wave = false }: Props = $props();
 
 	let svgW = $state(1920);
 	let svgH = $state(7737.26);
@@ -138,7 +139,8 @@
 
 	onMount(() => {
 		const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-		const speed = revealSpeed; // snapshot prop — avoids reactive closure issues
+		const speed = revealSpeed;
+		const useWave = wave; // snapshot prop — avoids reactive closure issues
 
 		let running = true;
 		let rafId: number;
@@ -171,19 +173,16 @@
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 
-			if (isSafari) {
-				// Safari: static d, only update dashoffset — identical to K&V
-				if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
-			} else {
-				// Other browsers: wave animation — update d first, then dashoffset
+			if (!isSafari && useWave) {
+				// Wave animation: update d first, then dashoffset
 				wavePhase = (wavePhase + 5 * dt * 0.001) % (Math.PI * 2);
 				if (pathEl && subdivSegs.length) {
 					const sx  = (pageWidth / svgW) * pathScale * pathScaleX;
 					const sy  = (pageWidth / svgW) * pathScale * 1.002;
 					pathEl.setAttribute('d', buildWavedD(subdivSegs, sx, sy, strokeWidth * 0.09, 1.8, wavePhase));
 				}
-				if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
 			}
+			if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
 
 			rafId = requestAnimationFrame(loop);
 		}

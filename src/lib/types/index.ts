@@ -104,6 +104,7 @@ export interface Project {
 	heroPathScaleX?: number;
 	heroPathScaleY?: number;
 	heroPathRevealSpeed?: number;
+	heroPathWave?: boolean;
 	heroPathText?: string;
 	hideDescription?: boolean;
 }
