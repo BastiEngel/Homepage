@@ -192,17 +192,21 @@
 		};
 	});
 
+	// Cached canvas context and DPR — avoid per-frame lookups
+	let cachedCtx: CanvasRenderingContext2D | null = null;
+	let cachedDpr = 1;
+
 	// Resize canvas to match layout — also rebuilds char widths on font-size change
 	$effect(() => {
 		if (!canvasEl || !pageWidth || !pageHeight) return;
-		const dpr = window.devicePixelRatio || 1;
+		cachedDpr = window.devicePixelRatio || 1;
 		const logicalH = Math.ceil(pageHeight / yScale);
-		canvasEl.width = Math.round(pageWidth * dpr);
-		canvasEl.height = Math.round(logicalH * dpr);
+		canvasEl.width = Math.round(pageWidth * cachedDpr);
+		canvasEl.height = Math.round(logicalH * cachedDpr);
 		canvasEl.style.width = pageWidth + 'px';
 		canvasEl.style.height = logicalH + 'px';
-		const ctx = canvasEl.getContext('2d');
-		if (ctx) buildCharWidths(ctx);
+		cachedCtx = canvasEl.getContext('2d');
+		if (cachedCtx) buildCharWidths(cachedCtx);
 	});
 
 	// Measure path, build LUT, compute fan points after DOM flush
@@ -312,17 +316,17 @@
 			// Path draw — direct setAttribute, bypasses Svelte scheduler
 			if (pathElement) pathElement.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
 
-			// Canvas text draw
-			if (canvasEl && pathLUTTotal > 0 && oneRepeatPx > 0 && charCumWidths.length > 0) {
+			// Canvas text draw — skip entirely when path not yet visible
+			const revealedLength = tl - currentOffset;
+			if (cachedCtx && revealedLength > 1 && pathLUTTotal > 0 && oneRepeatPx > 0 && charCumWidths.length > 0) {
 				const speedPx = pathLUTTotal * 0.00005 * (dt / 16.667);
 				textStart = ((textStart - speedPx) % oneRepeatPx + oneRepeatPx) % oneRepeatPx;
 
-				const revealedLength = tl - currentOffset;
-				const dpr = window.devicePixelRatio || 1;
-				const ctx = canvasEl.getContext('2d')!;
+				const dpr = cachedDpr;
+				const ctx = cachedCtx;
 
 				ctx.setTransform(1, 0, 0, 1, 0, 0);
-				ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+				ctx.clearRect(0, 0, canvasEl!.width, canvasEl!.height);
 
 				ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
 				ctx.fillStyle = '#ffffff';

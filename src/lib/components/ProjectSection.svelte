@@ -22,26 +22,22 @@
 
 	$effect(() => {
 		if (!tileEl) return;
-		const observer = new IntersectionObserver(
-			([entry]) => { if (entry.isIntersecting) { tileVisible = true; observer.disconnect(); } },
-			{ threshold: 0.05 }
-		);
-		observer.observe(tileEl);
-		return () => observer.disconnect();
-	});
+		const targets: Element[] = [tileEl];
+		if (imgEl && isGif) targets.push(imgEl);
 
-	// For GIFs: only set src when in viewport so they play on scroll
-	$effect(() => {
-		if (!imgEl || !isGif) return;
+		const observer = new IntersectionObserver((entries) => {
+			for (const entry of entries) {
+				if (entry.target === tileEl && entry.isIntersecting) {
+					tileVisible = true;
+					observer.unobserve(tileEl);
+				}
+				if (imgEl && entry.target === imgEl) {
+					visible = entry.isIntersecting;
+				}
+			}
+		}, { threshold: 0.05 });
 
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				visible = entry.isIntersecting;
-			},
-			{ threshold: 0.1 }
-		);
-
-		observer.observe(imgEl);
+		for (const t of targets) observer.observe(t);
 		return () => observer.disconnect();
 	});
 </script>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Project, GarlandPoint } from '$lib/types';
 	import { base } from '$app/paths';
+	import { addTicker, removeTicker } from '$lib/utils/sharedTicker';
 
 	interface Props {
 		project: Project;
@@ -43,14 +44,12 @@
 	let keyImgEl: HTMLImageElement | undefined = $state();
 	let sheenEl: HTMLElement | undefined = $state();
 
-	// Idle sway + spring physics in a single RAF loop
+	// Idle sway + spring physics — driven by shared 30fps ticker
 	const swayAmplitude = 6;
 	const swaySpeed = (2 * Math.PI) / swayDuration;
 	const keySwaySpeed = (2 * Math.PI) / (swayDuration * 1.3);
 	const keySwayAmplitude = 12;
 	let startTime = 0;
-	let running = false;
-	let lastFrame = 0;
 
 	// Spring physics state
 	let angle = 0;
@@ -59,19 +58,9 @@
 	const stiffness = 0.08;
 	const damping = 0.88;
 
-	function animationLoop(now: number) {
-		if (!running) return;
-
-		// Throttle to ~30fps
-		if (now - lastFrame < 33) {
-			requestAnimationFrame(animationLoop);
-			return;
-		}
-		lastFrame = now;
-
+	function onTick(now: number) {
 		if (!startTime) startTime = now + swayDelay * 1000;
 
-		// Sway
 		const blendTarget = hovered ? 0 : 1;
 		swayBlend += (blendTarget - swayBlend) * 0.04;
 
@@ -82,7 +71,6 @@
 			keySwayA = Math.sin(t * keySwaySpeed + 1.2) * keySwayAmplitude * swayBlend;
 		}
 
-		// Spring
 		const force = (target - angle) * stiffness;
 		velocity = (velocity + force) * damping;
 		angle += velocity;
@@ -94,7 +82,6 @@
 			pushA = target;
 		}
 
-		// Direct DOM writes — no Svelte reactive overhead per frame
 		const swayT = `rotate(${swayA.toFixed(3)}deg)`;
 		const pushT = `rotate(${pushA.toFixed(3)}deg)`;
 		if (backSwayEl) backSwayEl.style.transform = swayT;
@@ -103,14 +90,11 @@
 		if (frontPushEl) frontPushEl.style.transform = pushT;
 		if (keyImgEl) keyImgEl.style.transform = `rotate(${(keySwayA - pushA * 0.7).toFixed(3)}deg)`;
 		if (sheenEl) sheenEl.style.backgroundPosition = `${(50 + (swayA + pushA) * 3).toFixed(1)}% 0`;
-
-		requestAnimationFrame(animationLoop);
 	}
 
 	$effect(() => {
-		running = true;
-		requestAnimationFrame(animationLoop);
-		return () => { running = false; };
+		addTicker(onTick);
+		return () => removeTicker(onTick);
 	});
 
 	function scrollToProject() {

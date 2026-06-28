@@ -134,11 +134,15 @@ import projectsData from '../../data/projects.json';
 		return () => window.removeEventListener('click', onClickOutside);
 	});
 
-	function handleMouseEnter(i: number) { hoveredIdx = i; }
+	const tagRects: (DOMRect | undefined)[] = [];
+
+	function handleMouseEnter(i: number) {
+		hoveredIdx = i;
+		tagRects[i] = pendulumEls[i]?.getBoundingClientRect();
+	}
 	function handleMouseMove(e: MouseEvent, i: number) {
-		const el = pendulumEls[i];
-		if (!el) return;
-		const rect = el.getBoundingClientRect();
+		const rect = tagRects[i];
+		if (!rect) return;
 		const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
 		physics[i].target = dx * 22;
 	}
