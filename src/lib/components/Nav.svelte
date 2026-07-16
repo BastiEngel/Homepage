@@ -41,7 +41,7 @@ import projectsData from '../../data/projects.json';
 		const labelTransform = (labelRot || labelShiftY || labelShiftX)
 			? `transform: rotate(${labelRot}deg) translate(${labelShiftX}px, ${labelShiftY}px);`
 			: '';
-		const dropDelay = `${(i * 0.05).toFixed(3)}s`;
+		const dropDelay = `${(i * 0.02).toFixed(3)}s`;
 		const zFront = 8 + i;
 		return { project, fanRot, pad, clipBack, clipFront, labelTransform, dropDelay, zFront };
 	});
@@ -67,15 +67,28 @@ import projectsData from '../../data/projects.json';
 	let rafId = 0;
 	let lastFrame = 0;
 
+	// Swing-in spring state — large initial angle that decays to 0
+	let introAngle = 0;
+	let introVel = 0;
+
 	function rafLoop(now: number) {
 		if (now - lastFrame < 33) { rafId = requestAnimationFrame(rafLoop); return; }
 		lastFrame = now;
 
-		// Master pendulum sway
 		if (!bundleT0) bundleT0 = now;
 		const bt = (now - bundleT0) / 1000;
+
+		// Intro spring: decays from large starting angle toward 0
+		const iF = (0 - introAngle) * 0.07;
+		introVel = (introVel + iF) * 0.87;
+		introAngle += introVel;
+		if (Math.abs(introAngle) < 0.05 && Math.abs(introVel) < 0.05) introAngle = 0;
+
+		// Gentle idle sway (sine), blends in as intro settles
+		const sineIdle = 8 * Math.sin(bt * 0.65);
+
 		const prevMaster = masterAngle;
-		masterAngle = 8 * Math.sin(bt * 0.65);
+		masterAngle = introAngle + sineIdle;
 		const masterVel = masterAngle - prevMaster;
 		if (bundleSwayEl) bundleSwayEl.style.transform = `rotate(${masterAngle.toFixed(3)}deg)`;
 
@@ -90,10 +103,12 @@ import projectsData from '../../data/projects.json';
 			const swayA    = Math.sin(t * sp  + i * 0.8) * 4 * p.swayBlend;
 			const keySwayA = Math.sin(t * ksp + 1.2 + i * 0.5) * 12 * p.swayBlend;
 
-			// Tags lag behind master + random noise per tag
 			if (hoveredIdx !== i) {
 				const noise = p.noiseAmp * Math.sin(bt * p.noiseFreq + p.noisePhase);
-				p.target = masterVel * 12 + noise;
+				// During intro swing: tags hang neutral — bundle rotates as one unit
+				// After intro: gentle lag + noise
+				const introActive = Math.abs(introAngle) > 1;
+				p.target = introActive ? 0 : (masterVel * 12 + noise);
 			}
 
 			p.velocity = (p.velocity + (p.target - p.angle) * 0.06) * 0.90;
@@ -111,7 +126,10 @@ import projectsData from '../../data/projects.json';
 
 	$effect(() => {
 		if (projectsOpen) {
-			masterAngle = 0; bundleT0 = 0;
+			bundleT0 = 0;
+			introAngle = -70;
+			introVel = 0;
+			masterAngle = -70;
 			physics.forEach(p => { p.angle = 0; p.velocity = 0; p.target = 0; p.swayBlend = 1; p.t0 = 0; });
 			rafId = requestAnimationFrame(rafLoop);
 			return () => cancelAnimationFrame(rafId);
@@ -348,12 +366,12 @@ import projectsData from '../../data/projects.json';
 
 	.drop-anim {
 		transform-origin: 0 0;
-		animation: dropOpen 0.4s cubic-bezier(0.34, 1.52, 0.64, 1) both;
+		animation: dropFade 0.15s ease both;
 		animation-delay: var(--drop-delay);
 	}
-	@keyframes dropOpen {
-		from { transform: scale(0.05); opacity: 0; }
-		to   { transform: scale(1);    opacity: 1; }
+	@keyframes dropFade {
+		from { opacity: 0; }
+		to   { opacity: 1; }
 	}
 
 	/* RAF controls transform — no CSS animation here */
