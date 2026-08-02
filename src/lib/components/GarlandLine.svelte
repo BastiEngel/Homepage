@@ -295,6 +295,7 @@
 		let prevTotalLength = 0;
 		let textStart = 0;
 		let lastWrittenOffset = '';
+		let canvasAccum = 0;
 
 		function loop(now: number) {
 			if (!running) return;
@@ -339,8 +340,16 @@
 
 			// Canvas text draw — skip entirely when path not yet visible
 			const revealedLength = tl - currentOffset;
-			if (cachedCtx && revealedLength > 1 && pathLUTTotal > 0 && oneRepeatPx > 0 && charCumWidths.length > 0) {
-				const speedPx = pathLUTTotal * 0.00005 * (dt / 16.667);
+			canvasAccum += dt;
+			// fillText() with a heavy custom webfont rasterizes on the compositor/raster
+			// thread, not the JS main thread — performance.now() around this block reads
+			// near-zero even though it was the dominant driver of ~80% renderer CPU at a
+			// 120Hz display's native rate. Throttling the redraw to ~30fps (matching the
+			// GarlandTag ticker convention) cuts the raster workload 4x with no visible
+			// difference for a continuously-scrolling marquee.
+			if (cachedCtx && revealedLength > 1 && pathLUTTotal > 0 && oneRepeatPx > 0 && charCumWidths.length > 0 && canvasAccum >= 33) {
+				const speedPx = pathLUTTotal * 0.00005 * (canvasAccum / 16.667);
+				canvasAccum = 0;
 				textStart = ((textStart - speedPx) % oneRepeatPx + oneRepeatPx) % oneRepeatPx;
 
 				const dpr = cachedDpr;
