@@ -149,6 +149,7 @@
 		let prevTotalLength = 0;
 		let wavePhase = 0;
 		let subdivSegs: Seg[] = [];
+		let lastWrittenOffset = '';
 
 		function loop(now: number) {
 			if (!running) return;
@@ -182,7 +183,13 @@
 					pathEl.setAttribute('d', buildWavedD(subdivSegs, sx, sy, strokeWidth * 0.09, 1.8, wavePhase));
 				}
 			}
-			if (pathEl) pathEl.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
+			// Skip the DOM write once settled and unchanged — avoids forcing a style/layout
+			// recalc every frame forever after the reveal has finished and scrolling stopped.
+			const offsetStr = currentOffset.toFixed(1);
+			if (pathEl && offsetStr !== lastWrittenOffset) {
+				pathEl.setAttribute('stroke-dashoffset', offsetStr);
+				lastWrittenOffset = offsetStr;
+			}
 
 			rafId = requestAnimationFrame(loop);
 		}

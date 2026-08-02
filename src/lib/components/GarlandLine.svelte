@@ -280,6 +280,7 @@
 		let currentOffset = -1;
 		let prevTotalLength = 0;
 		let textStart = 0;
+		let lastWrittenOffset = '';
 
 		function loop(now: number) {
 			if (!running) return;
@@ -313,8 +314,14 @@
 			currentOffset += (targetOffset - currentOffset) * lerpT;
 			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 
-			// Path draw — direct setAttribute, bypasses Svelte scheduler
-			if (pathElement) pathElement.setAttribute('stroke-dashoffset', currentOffset.toFixed(1));
+			// Path draw — direct setAttribute, bypasses Svelte scheduler.
+			// Skip the write once settled at the same value — avoids forcing a
+			// style/layout recalc every frame once the user stops scrolling.
+			const offsetStr = currentOffset.toFixed(1);
+			if (pathElement && offsetStr !== lastWrittenOffset) {
+				pathElement.setAttribute('stroke-dashoffset', offsetStr);
+				lastWrittenOffset = offsetStr;
+			}
 
 			// Canvas text draw — skip entirely when path not yet visible
 			const revealedLength = tl - currentOffset;
@@ -332,6 +339,14 @@
 				ctx.fillStyle = '#ffffff';
 				ctx.textBaseline = 'middle';
 
+				// Only the viewport (plus a small buffer) needs actual canvas draws — text
+				// above/below it is still "revealed" but invisible. Skipping the expensive
+				// setTransform+fillText for those chars keeps per-frame cost bounded to
+				// ~1 viewport instead of growing with scroll depth (was O(revealedLength)).
+				const viewMargin = 300;
+				const viewTopY = (cachedScrollY - viewMargin - yShift) / yScale;
+				const viewBottomY = (cachedScrollY + cachedInnerH + viewMargin - yShift) / yScale;
+
 				const charsPerRepeat = Math.round(chars.length / repeatCount);
 				const repeatsNeeded = Math.ceil((revealedLength + textStart) / oneRepeatPx) + 1;
 				outerLoop: for (let r = 0; r < repeatsNeeded; r++) {
@@ -341,6 +356,7 @@
 						if (pathDist < 0) continue;
 						if (pathDist > revealedLength || pathDist >= pathLUTTotal) break outerLoop;
 						const { x, y, cos, sin } = lutPoint(pathDist);
+						if (y < viewTopY || y > viewBottomY) continue;
 						ctx.setTransform(dpr * cos, dpr * sin, -dpr * sin, dpr * cos, x * dpr, y * dpr);
 						ctx.fillText(chars[j], 0, 4);
 					}

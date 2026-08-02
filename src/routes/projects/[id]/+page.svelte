@@ -6,6 +6,7 @@
 	import GalleryCarousel from '$lib/components/GalleryCarousel.svelte';
 	import GrassGrowth from '$lib/components/GrassGrowth.svelte';
 	import { scrollReveal, revealCard } from '$lib/utils/scrollAnimation';
+	import { lazyAutoplay } from '$lib/utils/lazyVideo';
 	import { base } from '$app/paths';
 
 	let { data } = $props();
@@ -38,7 +39,8 @@
 			{#if isVideo}
 				<video
 					src={coverSrc}
-					autoplay
+					use:lazyAutoplay
+					preload="none"
 					loop
 					muted
 					playsinline
@@ -57,7 +59,7 @@
 		{#each contentBlocks.filter(b => b.fullWidthBg) as block}
 			<div class="fullwidth-bg-section">
 				{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm') || block.image.endsWith('.mov')}
-					<video autoplay loop muted playsinline class="fullwidth-bg-img">
+					<video use:lazyAutoplay preload="none" loop muted playsinline class="fullwidth-bg-img">
 						<source src="{base}{block.image}" type={block.image.endsWith('.mov') ? 'video/mp4; codecs=hvc1' : 'video/mp4'} />
 						{#if block.imageFallback}
 							<source src="{base}{block.imageFallback}" type="video/webm; codecs=vp9" />
@@ -216,7 +218,7 @@
 						{/if}
 						<div class="content-tile" use:revealCard style={block.imageAspect ? `aspect-ratio: ${block.imageAspect}` : ""}>
 							{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm')}
-								<video src="{base}{block.image}" autoplay loop muted playsinline class="content-img"></video>
+								<video src="{base}{block.image}" use:lazyAutoplay preload="none" loop muted playsinline class="content-img"></video>
 							{:else}
 								<img
 									src="{base}{block.image}"
