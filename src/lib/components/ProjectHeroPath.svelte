@@ -125,6 +125,19 @@
 		});
 	});
 
+	// Once the hero has scrolled well out of view, the wave-morph string rebuild
+	// (every frame) and the dash-offset write are pure wasted CPU — pause both.
+	let heroVisible = $state(true);
+	$effect(() => {
+		if (!pathEl) return;
+		const io = new IntersectionObserver(
+			([entry]) => { heroVisible = entry.isIntersecting; },
+			{ rootMargin: '200px' }
+		);
+		io.observe(pathEl);
+		return () => io.disconnect();
+	});
+
 	let cachedScrollY = 0;
 	let cachedInnerH  = 0;
 	let cachedPageH   = 0;
@@ -159,6 +172,10 @@
 
 			const tl = totalLength;
 			if (tl <= 0) { rafId = requestAnimationFrame(loop); return; }
+
+			// Once scrolled well out of view, the reveal has already settled and the
+			// wave morph is invisible — skip the per-frame string rebuild + DOM write.
+			if (!heroVisible) { rafId = requestAnimationFrame(loop); return; }
 
 			if (tl !== prevTotalLength) {
 				currentOffset = prevTotalLength > 0 ? currentOffset * (tl / prevTotalLength) : tl;
