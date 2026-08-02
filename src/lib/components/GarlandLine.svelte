@@ -346,13 +346,6 @@
 				const dpr = cachedDpr;
 				const ctx = cachedCtx;
 
-				ctx.setTransform(1, 0, 0, 1, 0, 0);
-				ctx.clearRect(0, 0, canvasEl!.width, canvasEl!.height);
-
-				ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
-				ctx.fillStyle = '#ffffff';
-				ctx.textBaseline = 'middle';
-
 				// Only the viewport (plus a small buffer) needs actual canvas draws — text
 				// above/below it is still "revealed" but invisible. Skipping the expensive
 				// setTransform+fillText for those chars keeps per-frame cost bounded to
@@ -360,6 +353,19 @@
 				const viewMargin = 300;
 				const viewTopY = (cachedScrollY - viewMargin - yShift) / yScale;
 				const viewBottomY = (cachedScrollY + cachedInnerH + viewMargin - yShift) / yScale;
+
+				// Clearing the whole page-length canvas every frame (regardless of scroll
+				// position) was the dominant per-frame cost — clear only the same
+				// viewport-sized band we're about to draw into.
+				const clearTopPx = Math.max(0, Math.floor(viewTopY * dpr));
+				const clearBottomPx = Math.min(canvasEl!.height, Math.ceil(viewBottomY * dpr));
+
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				ctx.clearRect(0, clearTopPx, canvasEl!.width, clearBottomPx - clearTopPx);
+
+				ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
+				ctx.fillStyle = '#ffffff';
+				ctx.textBaseline = 'middle';
 
 				const charsPerRepeat = Math.round(chars.length / repeatCount);
 				const repeatsNeeded = Math.ceil((revealedLength + textStart) / oneRepeatPx) + 1;
