@@ -64,11 +64,21 @@
 	function buildPathLUT(el: SVGPathElement) {
 		const total = el.getTotalLength();
 		if (total <= 0) return;
-		const step = Math.max(1, Math.round(total / 4000));
-		const lut: LUTEntry[] = [];
+		// Native getPointAtLength() on this many-segment path costs ~0.5ms/call —
+		// the old 4000-sample LUT made two calls per sample (8000 total, ~4s wall
+		// time). 600 samples is still finer than a marquee character (~25px) and
+		// needs only one call per sample (angle comes from consecutive points).
+		const SAMPLE_COUNT = 600;
+		const step = Math.max(1, total / SAMPLE_COUNT);
+		const raw: { x: number; y: number }[] = [];
 		for (let d = 0; d < total; d += step) {
-			const p1 = el.getPointAtLength(d);
-			const p2 = el.getPointAtLength(Math.min(d + step, total));
+			raw.push(el.getPointAtLength(d));
+		}
+		raw.push(el.getPointAtLength(total));
+		const lut: LUTEntry[] = [];
+		for (let i = 0; i < raw.length; i++) {
+			const p1 = raw[i];
+			const p2 = raw[i + 1] ?? p1;
 			const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
 			lut.push({ x: p1.x, y: p1.y, cos: Math.cos(angle), sin: Math.sin(angle) });
 		}
@@ -81,6 +91,10 @@
 		_cache.lutTotal = total;
 	}
 
+	// The render loop only ever reads indices [0, charsPerRepeat) of charCumWidths
+	// (one repeat's worth) — measuring the other 39 repeats was pure waste.
+	const repeatChars = [...marqueeText];
+
 	function buildCharWidths(ctx: CanvasRenderingContext2D) {
 		// Skip if font size and canvas dimensions are unchanged (cache hit)
 		if (_cache.fontSize === fontSize && _cache.charWidths.length > 0) {
@@ -92,12 +106,12 @@
 		ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
 		const cumWidths: number[] = [];
 		let cum = 0;
-		for (const ch of chars) {
+		for (const ch of repeatChars) {
 			cumWidths.push(cum);
 			cum += ctx.measureText(ch).width + (ch === ' ' ? 12 : 0);
 		}
 		charCumWidths = cumWidths;
-		oneRepeatPx = cum / repeatCount;
+		oneRepeatPx = cum;
 		_cache.charWidths = cumWidths;
 		_cache.oneRepeatPx = oneRepeatPx;
 		_cache.fontSize = fontSize;
