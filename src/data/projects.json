@@ -12,7 +12,7 @@
 		"coverType": "video",
 		"tagImage": "/images/projects/kick-and-vote/260115_K&V_Logo_final.svg",
 		"tileImage": "/images/projects/kick-and-vote/kickandvote_26.webp",
-		"heroPathSrc": "/images/Path_Kich_and_Vote.svg",
+		"heroPathSrc": "/images/paths/Path_Kich_and_Vote.svg",
 		"featured": true,
 		"lineColor": "#e8a87c",
 		"contentBlocks": [
@@ -79,7 +79,7 @@
 	{
 		"id": "binvisible",
 		"name": "Binvisible",
-		"heroPathSrc": "/images/Path_binvisible.svg",
+		"heroPathSrc": "/images/paths/Path_binvisible.svg",
 		"heroPathTopOffset": -450,
 		"heroPathScale": 0.99,
 		"heroPathText": "“Multidisciplinary concept for promoting responsible public behaviour regarding environmental pollution and resource cycles through participatory methods”  ",
@@ -183,7 +183,7 @@
 	{
 		"id": "myzelfusion",
 		"name": "MyzelFusion",
-		"heroPathSrc": "/images/Path_myzelfusion.svg",
+		"heroPathSrc": "/images/paths/Path_myzelfusion.svg",
 		"heroPathTopOffset": -150,
 		"heroPathScale": 1,
 		"heroPathScaleY": 0.995,
@@ -283,7 +283,7 @@
 		"tileImage": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-1.webp",
 		"featured": true,
 		"lineColor": "#e8d870",
-		"heroPathSrc": "/images/Path_PeeBee.svg",
+		"heroPathSrc": "/images/paths/Path_PeeBee.svg",
 		"heroPathTopOffset": 150,
 		"heroPathScale": 0.85,
 		"heroPathScaleX": 1.1,
@@ -371,7 +371,7 @@
 		"tileImage": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.webp",
 		"featured": true,
 		"lineColor": "#90c4a0",
-		"heroPathSrc": "/images/Path_pivot.svg",
+		"heroPathSrc": "/images/paths/Path_pivot.svg",
 		"heroPathScale": 1.03,
 		"heroPathTopOffset": -225,
 		"contentBlocks": [
