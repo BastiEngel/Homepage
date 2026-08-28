@@ -50,6 +50,16 @@
 		let dragStartX = 0;
 		let dragStartAngle = 0;
 
+		// Auto-rotation has no reason to keep computing per-tile transforms while the
+		// carousel is scrolled out of view — pages with two carousels otherwise run
+		// two permanent RAF loops even when neither is visible.
+		let visible = true;
+		const io = new IntersectionObserver(
+			([entry]) => { visible = entry.isIntersecting; },
+			{ rootMargin: '200px' }
+		);
+		io.observe(trackEl);
+
 		let cachedTiles: HTMLElement[] = [];
 		let tileWidths: number[] = [];
 		let W = 0;
@@ -107,6 +117,9 @@
 			if (!running) return;
 			const dt = lastTime < 0 ? 0 : Math.min(now - lastTime, 50);
 			lastTime = now;
+
+			// Skip auto-rotation entirely while scrolled out of view
+			if (!visible) { rafId = requestAnimationFrame(frame); return; }
 
 			if (needsRemeasure || W <= 0) { measure(); needsRemeasure = false; }
 			if (W <= 0) { rafId = requestAnimationFrame(frame); return; }
@@ -203,6 +216,7 @@
 			navigateFn = undefined;
 			cancelAnimationFrame(rafId);
 			clearTimeout(pauseTimer);
+			io.disconnect();
 			trackEl!.removeEventListener('pointerdown', onPointerDown);
 			trackEl!.removeEventListener('pointercancel', onPointerCancel);
 			window.removeEventListener('pointermove', onPointerMove);

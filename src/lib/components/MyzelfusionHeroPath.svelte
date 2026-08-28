@@ -68,6 +68,19 @@
 		});
 	});
 
+	// Once scrolled well out of view, the branch grow/shrink writes and dash-offset
+	// updates are pure wasted CPU — pause the whole RAF loop (same fix as ProjectHeroPath).
+	let heroVisible = $state(true);
+	$effect(() => {
+		if (!mainPathEl) return;
+		const io = new IntersectionObserver(
+			([entry]) => { heroVisible = entry.isIntersecting; },
+			{ rootMargin: '200px' }
+		);
+		io.observe(mainPathEl);
+		return () => io.disconnect();
+	});
+
 	onMount(() => {
 		let running = true;
 		let rafId: number;
@@ -231,6 +244,9 @@
 				buildMainLUT();
 				buildBranchData();
 			}
+
+			// Once scrolled well out of view, skip the reveal + branch grow/shrink work
+			if (!heroVisible) { rafId = requestAnimationFrame(loop); return; }
 
 			// Main path scroll reveal — tip tracks 80% down the viewport in SVG coordinate space
 			const lerpT = 1 - Math.pow(0.93, dt / 16.667);
