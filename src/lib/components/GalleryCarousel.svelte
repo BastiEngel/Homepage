@@ -33,9 +33,12 @@
 		const SNAP_RADIUS_PX = 160;
 		// Safari mis-renders perspective scaling for elements at negative translateZ
 		// (the depth effect inverts — distant tiles grow instead of shrinking). Keeping
-		// the whole z-range at 0..+2R sidesteps it; perspective is boosted by 2R so the
-		// front tile (z=2R) still sits the intended BASE_PERSPECTIVE away from the viewer.
+		// the whole z-range at 0..+2*Z_AMP sidesteps it. Z_AMP is a FIXED depth amount,
+		// deliberately independent of R (tile radius) — tying it to R made the required
+		// size-correction blow up for galleries with wide tiles or many images (R scales
+		// with tile count/width, so large galleries were shrinking to ~25% of natural size).
 		const BASE_PERSPECTIVE = 1400;
+		const Z_AMP = 150;
 
 		// Full-circle cylinder: N tiles evenly distributed over 360°
 		const ALPHA = (2 * Math.PI) / N;  // angular step per tile
@@ -83,16 +86,12 @@
 			const tileH = cachedTiles[0].offsetHeight; // all tiles same height
 			const pitch = W + GAP;
 			R = pitch / (2 * Math.sin(ALPHA / 2));
-			const perspectiveVal = BASE_PERSPECTIVE + 2 * R;
+			// perspectiveVal/sizeCorrection depend only on the fixed Z_AMP, not on R —
+			// so the correction stays the same modest amount regardless of how wide or
+			// numerous the tiles are (a "large" gallery no longer shrinks to ~25%).
+			const perspectiveVal = BASE_PERSPECTIVE + 2 * Z_AMP;
 			trackEl.style.perspective = `${perspectiveVal}px`;
 			(trackEl.style as any).webkitPerspective = `${perspectiveVal}px`;
-			// Pushing the whole z-range up by 2R (see z3d below) pins the BACK tile at
-			// its natural size instead of the FRONT tile like before — the front tile
-			// now renders (perspectiveVal / BASE_PERSPECTIVE)x too large. Counter-scale
-			// the WHOLE scene (not per-tile) so tile size AND the gaps between tiles
-			// shrink together, preserving the original size-to-gap ratio, then shrink
-			// the reserved layout height by the same factor so content doesn't float
-			// inside an oversized box.
 			sizeCorrection = BASE_PERSPECTIVE / perspectiveVal;
 			trackEl.style.transform = `scale(${sizeCorrection})`;
 			(trackEl.style as any).webkitTransform = `scale(${sizeCorrection})`;
@@ -113,7 +112,7 @@
 				const tileW = tileWidths[i] ?? W;
 				const theta = norm(i * ALPHA - angle);
 				const x3d = R * Math.sin(theta);
-				const z3d = R * (Math.cos(theta) + 1);
+				const z3d = Z_AMP * (Math.cos(theta) + 1);
 				const proximity = Math.max(0, Math.cos(theta));
 				const ty = -Math.cos(theta) * ARC_HEIGHT;
 				const thetaDeg = theta * 180 / Math.PI;
