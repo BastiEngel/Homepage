@@ -40,6 +40,13 @@
 		// size-correction down to an unusably small fraction of natural size.
 		const BASE_PERSPECTIVE = 1400;
 		const Z_AMP_CAP = 350;
+		// A wide tile rotated by a large angle has its near edge sitting noticeably
+		// closer to the viewer than its far edge (keystone effect) — for tiles far
+		// around the arc this can make a side edge appear taller than the barely-
+		// rotated front tile. Rendering the rotation itself at a fraction of the
+		// true angle (positions/depth/opacity still use the full angle) keeps the
+		// fan arrangement while keeping each card closer to flat-on.
+		const ROTATION_DAMPING = 0.55;
 
 		// Full-circle cylinder: N tiles evenly distributed over 360°
 		const ALPHA = (2 * Math.PI) / N;  // angular step per tile
@@ -115,7 +122,7 @@
 				const z3d = zAmp * (Math.cos(theta) + 1);
 				const proximity = Math.max(0, Math.cos(theta));
 				const ty = -Math.cos(theta) * ARC_HEIGHT;
-				const thetaDeg = theta * 180 / Math.PI;
+				const thetaDeg = theta * 180 / Math.PI * ROTATION_DAMPING;
 				const tx = vc - tileW / 2 + x3d; // center each tile by its own width
 				const opacity = 0.35 + 0.65 * proximity;
 				cachedTiles[i].style.transform =
