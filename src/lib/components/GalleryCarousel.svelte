@@ -83,16 +83,20 @@
 			const tileH = cachedTiles[0].offsetHeight; // all tiles same height
 			const pitch = W + GAP;
 			R = pitch / (2 * Math.sin(ALPHA / 2));
-			if (tileH > 0) trackEl.style.height = (ARC_HEIGHT + tileH) + 'px';
 			const perspectiveVal = BASE_PERSPECTIVE + 2 * R;
 			trackEl.style.perspective = `${perspectiveVal}px`;
 			(trackEl.style as any).webkitPerspective = `${perspectiveVal}px`;
 			// Pushing the whole z-range up by 2R (see z3d below) pins the BACK tile at
 			// its natural size instead of the FRONT tile like before — the front tile
-			// now renders (perspectiveVal / BASE_PERSPECTIVE)x too large. sizeCorrection
-			// counter-scales each tile (applied in applyTransforms) so the front tile
-			// lands back at its original 1:1 size without affecting layout height.
+			// now renders (perspectiveVal / BASE_PERSPECTIVE)x too large. Counter-scale
+			// the WHOLE scene (not per-tile) so tile size AND the gaps between tiles
+			// shrink together, preserving the original size-to-gap ratio, then shrink
+			// the reserved layout height by the same factor so content doesn't float
+			// inside an oversized box.
 			sizeCorrection = BASE_PERSPECTIVE / perspectiveVal;
+			trackEl.style.transform = `scale(${sizeCorrection})`;
+			(trackEl.style as any).webkitTransform = `scale(${sizeCorrection})`;
+			if (tileH > 0) trackEl.style.height = ((ARC_HEIGHT + tileH) * sizeCorrection) + 'px';
 		}
 
 		// Normalize angle to (−TOTAL/2, +TOTAL/2]
@@ -116,7 +120,7 @@
 				const tx = vc - tileW / 2 + x3d; // center each tile by its own width
 				const opacity = 0.35 + 0.65 * proximity;
 				cachedTiles[i].style.transform =
-					`translateX(${tx.toFixed(1)}px) translateY(${ty.toFixed(1)}px) translateZ(${z3d.toFixed(1)}px) rotateY(${thetaDeg.toFixed(2)}deg) scale(${sizeCorrection.toFixed(4)})`;
+					`translateX(${tx.toFixed(1)}px) translateY(${ty.toFixed(1)}px) translateZ(${z3d.toFixed(1)}px) rotateY(${thetaDeg.toFixed(2)}deg)`;
 				cachedTiles[i].style.opacity = opacity.toFixed(3);
 				cachedTiles[i].style.zIndex = String(Math.round(proximity * 100));
 			}
@@ -330,7 +334,12 @@
 		cursor: grab;
 		user-select: none;
 		touch-action: none;
-		/* perspective is set inline (JS) once R is known — see measure() */
+		/* perspective and the Safari size-correction scale are set inline (JS)
+		   once R is known — see measure(). transform-origin: top keeps the
+		   scaled-down content anchored at the same top edge instead of
+		   floating toward the vertical center of the (now oversized) box. */
+		transform-origin: center top;
+		-webkit-transform-origin: center top;
 		-webkit-perspective-origin: center center;
 		perspective-origin: center center;
 		-webkit-transform-style: preserve-3d;
