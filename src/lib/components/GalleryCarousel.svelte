@@ -31,6 +31,11 @@
 		const PAUSE_MS = 3500;
 		const LERP = 0.12;
 		const SNAP_RADIUS_PX = 160;
+		// Safari mis-renders perspective scaling for elements at negative translateZ
+		// (the depth effect inverts — distant tiles grow instead of shrinking). Keeping
+		// the whole z-range at 0..+2R sidesteps it; perspective is boosted by 2R so the
+		// front tile (z=2R) still sits the intended BASE_PERSPECTIVE away from the viewer.
+		const BASE_PERSPECTIVE = 1400;
 
 		// Full-circle cylinder: N tiles evenly distributed over 360°
 		const ALPHA = (2 * Math.PI) / N;  // angular step per tile
@@ -78,6 +83,9 @@
 			const pitch = W + GAP;
 			R = pitch / (2 * Math.sin(ALPHA / 2));
 			if (tileH > 0) trackEl.style.height = (ARC_HEIGHT + tileH) + 'px';
+			const perspectivePx = `${BASE_PERSPECTIVE + 2 * R}px`;
+			trackEl.style.perspective = perspectivePx;
+			(trackEl.style as any).webkitPerspective = perspectivePx;
 		}
 
 		// Normalize angle to (−TOTAL/2, +TOTAL/2]
@@ -94,7 +102,7 @@
 				const tileW = tileWidths[i] ?? W;
 				const theta = norm(i * ALPHA - angle);
 				const x3d = R * Math.sin(theta);
-				const z3d = R * (Math.cos(theta) - 1);
+				const z3d = R * (Math.cos(theta) + 1);
 				const proximity = Math.max(0, Math.cos(theta));
 				const ty = -Math.cos(theta) * ARC_HEIGHT;
 				const thetaDeg = theta * 180 / Math.PI;
@@ -307,10 +315,6 @@
 
 	.gallery-scroll {
 		width: 100%;
-		-webkit-perspective: 1400px;
-		perspective: 1400px;
-		-webkit-perspective-origin: center center;
-		perspective-origin: center center;
 	}
 
 	.gallery-track {
@@ -319,6 +323,9 @@
 		cursor: grab;
 		user-select: none;
 		touch-action: none;
+		/* perspective is set inline (JS) once R is known — see measure() */
+		-webkit-perspective-origin: center center;
+		perspective-origin: center center;
 		-webkit-transform-style: preserve-3d;
 		transform-style: preserve-3d;
 	}
