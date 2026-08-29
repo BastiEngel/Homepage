@@ -33,12 +33,13 @@
 		const SNAP_RADIUS_PX = 160;
 		// Safari mis-renders perspective scaling for elements at negative translateZ
 		// (the depth effect inverts — distant tiles grow instead of shrinking). Keeping
-		// the whole z-range at 0..+2*Z_AMP sidesteps it. Z_AMP is a FIXED depth amount,
-		// deliberately independent of R (tile radius) — tying it to R made the required
-		// size-correction blow up for galleries with wide tiles or many images (R scales
-		// with tile count/width, so large galleries were shrinking to ~25% of natural size).
+		// the whole z-range at 0..+2*Z_AMP sidesteps it. Z_AMP tracks R (tile radius) —
+		// exactly like the original, unshifted design — so galleries keep their natural
+		// depth intensity (small galleries stay subtle, many-tile ones stay dramatic).
+		// It's capped so wide/many-tile galleries (R can reach ~900px) don't force the
+		// size-correction down to an unusably small fraction of natural size.
 		const BASE_PERSPECTIVE = 1400;
-		const Z_AMP = 150;
+		const Z_AMP_CAP = 350;
 
 		// Full-circle cylinder: N tiles evenly distributed over 360°
 		const ALPHA = (2 * Math.PI) / N;  // angular step per tile
@@ -72,6 +73,7 @@
 		let tileWidths: number[] = [];
 		let W = 0;
 		let R = 0;
+		let zAmp = 0;
 		let sizeCorrection = 1;
 		let vw = trackEl.offsetWidth;
 
@@ -86,10 +88,8 @@
 			const tileH = cachedTiles[0].offsetHeight; // all tiles same height
 			const pitch = W + GAP;
 			R = pitch / (2 * Math.sin(ALPHA / 2));
-			// perspectiveVal/sizeCorrection depend only on the fixed Z_AMP, not on R —
-			// so the correction stays the same modest amount regardless of how wide or
-			// numerous the tiles are (a "large" gallery no longer shrinks to ~25%).
-			const perspectiveVal = BASE_PERSPECTIVE + 2 * Z_AMP;
+			zAmp = Math.min(R, Z_AMP_CAP);
+			const perspectiveVal = BASE_PERSPECTIVE + 2 * zAmp;
 			trackEl.style.perspective = `${perspectiveVal}px`;
 			(trackEl.style as any).webkitPerspective = `${perspectiveVal}px`;
 			sizeCorrection = BASE_PERSPECTIVE / perspectiveVal;
@@ -112,7 +112,7 @@
 				const tileW = tileWidths[i] ?? W;
 				const theta = norm(i * ALPHA - angle);
 				const x3d = R * Math.sin(theta);
-				const z3d = Z_AMP * (Math.cos(theta) + 1);
+				const z3d = zAmp * (Math.cos(theta) + 1);
 				const proximity = Math.max(0, Math.cos(theta));
 				const ty = -Math.cos(theta) * ARC_HEIGHT;
 				const thetaDeg = theta * 180 / Math.PI;
