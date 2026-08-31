@@ -232,16 +232,18 @@
 		<div class="gallery-track" class:large={size === 'large'} bind:this={trackEl}>
 			{#each images as src}
 				<div class="gallery-tile" class:portrait={portraitSrcs.has(src)} class:large={size === 'large'}>
-					<img
-						src="{base}{src}"
-						alt="{projectName} gallery"
-						loading="lazy"
-						decoding="async"
-						class="gallery-img"
-						draggable="false"
-						onload={(e) => markPortrait(src, e.currentTarget as HTMLImageElement)}
-					/>
-					<div class="bevel-edge"></div>
+					<div class="gallery-tile-inner">
+						<img
+							src="{base}{src}"
+							alt="{projectName} gallery"
+							loading="lazy"
+							decoding="async"
+							class="gallery-img"
+							draggable="false"
+							onload={(e) => markPortrait(src, e.currentTarget as HTMLImageElement)}
+						/>
+						<div class="bevel-edge"></div>
+					</div>
 				</div>
 			{/each}
 		</div>
@@ -305,7 +307,9 @@
 
 	.gallery-scroll {
 		width: 100%;
+		-webkit-perspective: 1400px;
 		perspective: 1400px;
+		-webkit-perspective-origin: center center;
 		perspective-origin: center center;
 	}
 
@@ -315,6 +319,7 @@
 		cursor: grab;
 		user-select: none;
 		touch-action: none;
+		-webkit-transform-style: preserve-3d;
 		transform-style: preserve-3d;
 	}
 
@@ -322,15 +327,27 @@
 		cursor: grabbing;
 	}
 
+	/* Safari (documented WebKit behavior): an element with overflow:hidden loses
+	   its 3D position inside a preserve-3d ancestor and renders flat, stacked by
+	   DOM/paint order instead of true depth — exactly the "flat, back tile drawn
+	   on top" bug reported here. Fix: the transformed .gallery-tile itself stays a
+	   plain box with no overflow/border-radius/shadow; those move to this inner,
+	   untransformed wrapper instead. Chrome renders both structures identically. */
 	.gallery-tile {
 		position: absolute;
 		left: 0;
 		top: 0;
+		height: 220px;
+		aspect-ratio: 3 / 2;
+	}
+
+	.gallery-tile-inner {
+		position: relative;
+		width: 100%;
+		height: 100%;
 		border-radius: 0.75rem;
 		overflow: hidden;
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
-		height: 220px;
-		aspect-ratio: 3 / 2;
 	}
 
 	.gallery-tile.portrait {
