@@ -31,22 +31,6 @@
 		const PAUSE_MS = 3500;
 		const LERP = 0.12;
 		const SNAP_RADIUS_PX = 160;
-		// Safari mis-renders perspective scaling for elements at negative translateZ
-		// (the depth effect inverts — distant tiles grow instead of shrinking). Keeping
-		// the whole z-range at 0..+2*Z_AMP sidesteps it. Z_AMP tracks R (tile radius) —
-		// exactly like the original, unshifted design — so galleries keep their natural
-		// depth intensity (small galleries stay subtle, many-tile ones stay dramatic).
-		// It's capped so wide/many-tile galleries (R can reach ~900px) don't force the
-		// size-correction down to an unusably small fraction of natural size.
-		const BASE_PERSPECTIVE = 1400;
-		const Z_AMP_CAP = 350;
-		// A wide tile rotated by a large angle has its near edge sitting noticeably
-		// closer to the viewer than its far edge (keystone effect) — for tiles far
-		// around the arc this can make a side edge appear taller than the barely-
-		// rotated front tile. Rendering the rotation itself at a fraction of the
-		// true angle (positions/depth/opacity still use the full angle) keeps the
-		// fan arrangement while keeping each card closer to flat-on.
-		const ROTATION_DAMPING = 0.55;
 
 		// Full-circle cylinder: N tiles evenly distributed over 360°
 		const ALPHA = (2 * Math.PI) / N;  // angular step per tile
@@ -80,8 +64,6 @@
 		let tileWidths: number[] = [];
 		let W = 0;
 		let R = 0;
-		let zAmp = 0;
-		let sizeCorrection = 1;
 		let vw = trackEl.offsetWidth;
 
 		function measure() {
@@ -95,14 +77,7 @@
 			const tileH = cachedTiles[0].offsetHeight; // all tiles same height
 			const pitch = W + GAP;
 			R = pitch / (2 * Math.sin(ALPHA / 2));
-			zAmp = Math.min(R, Z_AMP_CAP);
-			const perspectiveVal = BASE_PERSPECTIVE + 2 * zAmp;
-			trackEl.style.perspective = `${perspectiveVal}px`;
-			(trackEl.style as any).webkitPerspective = `${perspectiveVal}px`;
-			sizeCorrection = BASE_PERSPECTIVE / perspectiveVal;
-			trackEl.style.transform = `scale(${sizeCorrection})`;
-			(trackEl.style as any).webkitTransform = `scale(${sizeCorrection})`;
-			if (tileH > 0) trackEl.style.height = ((ARC_HEIGHT + tileH) * sizeCorrection) + 'px';
+			if (tileH > 0) trackEl.style.height = (ARC_HEIGHT + tileH) + 'px';
 		}
 
 		// Normalize angle to (−TOTAL/2, +TOTAL/2]
@@ -119,10 +94,10 @@
 				const tileW = tileWidths[i] ?? W;
 				const theta = norm(i * ALPHA - angle);
 				const x3d = R * Math.sin(theta);
-				const z3d = zAmp * (Math.cos(theta) + 1);
+				const z3d = R * (Math.cos(theta) - 1);
 				const proximity = Math.max(0, Math.cos(theta));
 				const ty = -Math.cos(theta) * ARC_HEIGHT;
-				const thetaDeg = theta * 180 / Math.PI * ROTATION_DAMPING;
+				const thetaDeg = theta * 180 / Math.PI;
 				const tx = vc - tileW / 2 + x3d; // center each tile by its own width
 				const opacity = 0.35 + 0.65 * proximity;
 				cachedTiles[i].style.transform =
@@ -257,18 +232,16 @@
 		<div class="gallery-track" class:large={size === 'large'} bind:this={trackEl}>
 			{#each images as src}
 				<div class="gallery-tile" class:portrait={portraitSrcs.has(src)} class:large={size === 'large'}>
-					<div class="gallery-tile-inner">
-						<img
-							src="{base}{src}"
-							alt="{projectName} gallery"
-							loading="lazy"
-							decoding="async"
-							class="gallery-img"
-							draggable="false"
-							onload={(e) => markPortrait(src, e.currentTarget as HTMLImageElement)}
-						/>
-						<div class="bevel-edge"></div>
-					</div>
+					<img
+						src="{base}{src}"
+						alt="{projectName} gallery"
+						loading="lazy"
+						decoding="async"
+						class="gallery-img"
+						draggable="false"
+						onload={(e) => markPortrait(src, e.currentTarget as HTMLImageElement)}
+					/>
+					<div class="bevel-edge"></div>
 				</div>
 			{/each}
 		</div>
@@ -332,6 +305,8 @@
 
 	.gallery-scroll {
 		width: 100%;
+		perspective: 1400px;
+		perspective-origin: center center;
 	}
 
 	.gallery-track {
@@ -340,15 +315,6 @@
 		cursor: grab;
 		user-select: none;
 		touch-action: none;
-		/* perspective and the Safari size-correction scale are set inline (JS)
-		   once R is known — see measure(). transform-origin: top keeps the
-		   scaled-down content anchored at the same top edge instead of
-		   floating toward the vertical center of the (now oversized) box. */
-		transform-origin: center top;
-		-webkit-transform-origin: center top;
-		-webkit-perspective-origin: center center;
-		perspective-origin: center center;
-		-webkit-transform-style: preserve-3d;
 		transform-style: preserve-3d;
 	}
 
@@ -360,21 +326,11 @@
 		position: absolute;
 		left: 0;
 		top: 0;
-		height: 220px;
-		aspect-ratio: 3 / 2;
-	}
-
-	/* Safari flattens a 3D-transformed element (translateZ) that also has its own
-	   overflow:hidden, ignoring preserve-3d on ancestors — the visual clipping and
-	   rounded corners live on this untransformed inner element instead so the
-	   outer .gallery-tile stays a plain flat box that WebKit can position in 3D. */
-	.gallery-tile-inner {
-		position: relative;
-		width: 100%;
-		height: 100%;
 		border-radius: 0.75rem;
 		overflow: hidden;
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
+		height: 220px;
+		aspect-ratio: 3 / 2;
 	}
 
 	.gallery-tile.portrait {
