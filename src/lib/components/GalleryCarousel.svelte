@@ -21,6 +21,44 @@
 		}
 	}
 
+	// Manual 4x4 projective-matrix math, replacing CSS `perspective` +
+	// `transform-style: preserve-3d` + `translateZ`/`rotateY`. Safari forces
+	// `transform-style: flat` on a preserve-3d element whenever any ancestor
+	// (even one that isn't itself 3D-transformed) has overflow other than
+	// visible — documented WebKit behavior. A `matrix3d()` baked with the
+	// perspective divide already folded in is self-contained on a single leaf
+	// element and needs no ancestor `perspective`/`preserve-3d` at all, so
+	// that whole bug class no longer applies. Verified to reproduce the old
+	// CSS-chain's rendered geometry pixel-for-pixel (see gallery-baseline docs).
+	function mat4Mul(a: number[], b: number[]): number[] {
+		const r = new Array(16).fill(0);
+		for (let i = 0; i < 4; i++)
+			for (let j = 0; j < 4; j++)
+				for (let k = 0; k < 4; k++)
+					r[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
+		return r;
+	}
+	function mat4Translate(x: number, y: number, z: number): number[] {
+		return [1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1];
+	}
+	function mat4RotateY(rad: number): number[] {
+		const c = Math.cos(rad), s = Math.sin(rad);
+		return [c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1];
+	}
+	function mat4Perspective(d: number): number[] {
+		return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -1 / d, 1];
+	}
+	function toCssMatrix3d(m: number[]): string {
+		let out = 'matrix3d(';
+		for (let col = 0; col < 4; col++) {
+			for (let row = 0; row < 4; row++) {
+				out += m[row * 4 + col].toFixed(6);
+				if (!(col === 3 && row === 3)) out += ',';
+			}
+		}
+		return out + ')';
+	}
+
 	$effect(() => {
 		if (!trackEl || images.length === 0) return;
 
@@ -65,6 +103,8 @@
 		let W = 0;
 		let R = 0;
 		let vw = trackEl.offsetWidth;
+		let tileH = 0;
+		const D_PERSP = 1400; // matches previous CSS `perspective: 1400px`
 
 		function measure() {
 			if (!trackEl) return;
@@ -74,7 +114,7 @@
 			tileWidths = cachedTiles.map(t => t.offsetWidth);
 			// Use widest tile for R so landscape tiles never overlap
 			W = Math.max(...tileWidths);
-			const tileH = cachedTiles[0].offsetHeight; // all tiles same height
+			tileH = cachedTiles[0].offsetHeight; // all tiles same height
 			const pitch = W + GAP;
 			R = pitch / (2 * Math.sin(ALPHA / 2));
 			if (tileH > 0) trackEl.style.height = (ARC_HEIGHT + tileH) + 'px';
@@ -88,7 +128,8 @@
 
 		function applyTransforms() {
 			if (W <= 0 || cachedTiles.length === 0) return;
-			const vc = vw / 2;
+			const vc = vw / 2; // also doubles as perspective-origin x (was .gallery-scroll center)
+			const oy = (ARC_HEIGHT + tileH) / 2; // perspective-origin y (was .gallery-scroll center)
 			for (let i = 0; i < N; i++) {
 				if (!cachedTiles[i]) continue;
 				const tileW = tileWidths[i] ?? W;
@@ -97,11 +138,23 @@
 				const z3d = R * (Math.cos(theta) - 1);
 				const proximity = Math.max(0, Math.cos(theta));
 				const ty = -Math.cos(theta) * ARC_HEIGHT;
-				const thetaDeg = theta * 180 / Math.PI;
 				const tx = vc - tileW / 2 + x3d; // center each tile by its own width
 				const opacity = 0.35 + 0.65 * proximity;
-				cachedTiles[i].style.transform =
-					`translateX(${tx.toFixed(1)}px) translateY(${ty.toFixed(1)}px) translateZ(${z3d.toFixed(1)}px) rotateY(${thetaDeg.toFixed(2)}deg)`;
+
+				// Same transform chain as before (rotate around own center, then
+				// translateZ/Y/X), composed by hand into one matrix, with the
+				// perspective divide (around the old perspective-origin point)
+				// folded in directly instead of relying on an ancestor.
+				const cx = tileW / 2, cy = tileH / 2;
+				let m = mat4Translate(-cx, -cy, 0);
+				m = mat4Mul(mat4RotateY(theta), m);
+				m = mat4Mul(mat4Translate(cx, cy, 0), m);
+				m = mat4Mul(mat4Translate(tx, ty, z3d), m);
+				m = mat4Mul(mat4Translate(-vc, -oy, 0), m);
+				m = mat4Mul(mat4Perspective(D_PERSP), m);
+				m = mat4Mul(mat4Translate(vc, oy, 0), m);
+
+				cachedTiles[i].style.transform = toCssMatrix3d(m);
 				cachedTiles[i].style.opacity = opacity.toFixed(3);
 				cachedTiles[i].style.zIndex = String(Math.round(proximity * 100));
 			}
@@ -307,10 +360,6 @@
 
 	.gallery-scroll {
 		width: 100%;
-		-webkit-perspective: 1400px;
-		perspective: 1400px;
-		-webkit-perspective-origin: center center;
-		perspective-origin: center center;
 	}
 
 	.gallery-track {
@@ -319,26 +368,24 @@
 		cursor: grab;
 		user-select: none;
 		touch-action: none;
-		-webkit-transform-style: preserve-3d;
-		transform-style: preserve-3d;
 	}
 
 	.gallery-track:active {
 		cursor: grabbing;
 	}
 
-	/* Safari (documented WebKit behavior): an element with overflow:hidden loses
-	   its 3D position inside a preserve-3d ancestor and renders flat, stacked by
-	   DOM/paint order instead of true depth — exactly the "flat, back tile drawn
-	   on top" bug reported here. Fix: the transformed .gallery-tile itself stays a
-	   plain box with no overflow/border-radius/shadow; those move to this inner,
-	   untransformed wrapper instead. Chrome renders both structures identically. */
+	/* Each tile gets a self-contained matrix3d() (computed in JS) with the
+	   perspective divide already folded in, so no ancestor perspective/
+	   preserve-3d is needed — sidesteps the Safari bug where overflow on any
+	   ancestor forces a preserve-3d context flat. transform-origin: 0 0 because
+	   the matrix already bakes in "rotate around own center" itself. */
 	.gallery-tile {
 		position: absolute;
 		left: 0;
 		top: 0;
 		height: 220px;
 		aspect-ratio: 3 / 2;
+		transform-origin: 0 0;
 	}
 
 	.gallery-tile-inner {
