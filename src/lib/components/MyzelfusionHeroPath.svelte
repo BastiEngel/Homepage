@@ -82,6 +82,7 @@
 	});
 
 	onMount(() => {
+		const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 		let running = true;
 		let rafId: number;
 		let lastTime = 0;
@@ -245,8 +246,11 @@
 				buildBranchData();
 			}
 
-			// Once scrolled well out of view, skip the reveal + branch grow/shrink work
-			if (!heroVisible) { rafId = requestAnimationFrame(loop); return; }
+			// Once scrolled well out of view, skip the reveal + branch grow/shrink work.
+			// Safari-only: skip this gate — WebKit's IntersectionObserver on this SVG
+			// <path> target gets stuck reporting isIntersecting: false, which silently
+			// froze the whole scroll reveal there (same fix as ProjectHeroPath).
+			if (!isSafari && !heroVisible) { rafId = requestAnimationFrame(loop); return; }
 
 			// Main path scroll reveal — tip tracks 80% down the viewport in SVG coordinate space
 			const lerpT = 1 - Math.pow(0.93, dt / 16.667);

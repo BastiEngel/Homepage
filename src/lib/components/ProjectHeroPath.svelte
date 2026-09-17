@@ -175,7 +175,11 @@
 
 			// Once scrolled well out of view, the reveal has already settled and the
 			// wave morph is invisible — skip the per-frame string rebuild + DOM write.
-			if (!heroVisible) { rafId = requestAnimationFrame(loop); return; }
+			// Safari-only: skip this gate entirely — WebKit's IntersectionObserver on this
+			// SVG <path> target gets stuck reporting isIntersecting: false, which silently
+			// froze the whole scroll reveal there. Safari never runs the wave rebuild below
+			// anyway, so there's no perf optimization being given up.
+			if (!isSafari && !heroVisible) { rafId = requestAnimationFrame(loop); return; }
 
 			if (tl !== prevTotalLength) {
 				currentOffset = prevTotalLength > 0 ? currentOffset * (tl / prevTotalLength) : tl;
