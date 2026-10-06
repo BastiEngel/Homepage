@@ -166,7 +166,7 @@ import projectsData from '../../data/projects.json';
 	});
 
 	// Animate the keyring out (mirrors the drop-in) before unmounting it
-	const PROJECTS_EXIT_MS = 460;
+	const PROJECTS_EXIT_MS = 650;
 	let exitTimer = 0;
 	function requestCloseProjects() {
 		if (!projectsOpen || closingProjects) return;
@@ -367,14 +367,14 @@ import projectsData from '../../data/projects.json';
 	}
 
 	.keyring-drop.closing {
-		animation: keyringSwingAway 0.46s cubic-bezier(0.4, 0, 0.2, 1) both;
+		animation: keyringSwingAway 0.65s both;
 		pointer-events: none;
 	}
 	@keyframes keyringSwingAway {
-		0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
-		20%  { opacity: 1; transform: translateY(0) rotate(14deg); }     /* small swing right: build momentum */
-		60%  { opacity: 1; transform: translateY(-30px) rotate(-30deg); } /* big swing left, starting to rise */
-		100% { opacity: 0; transform: translateY(-200px) rotate(-36deg); } /* swings up and away */
+		0%   { opacity: 1; transform: translateY(0) rotate(0deg);        animation-timing-function: ease-in-out; }
+		28%  { opacity: 1; transform: translateY(0) rotate(-11deg);      animation-timing-function: ease-in; }       /* small swing right: slow, build momentum */
+		65%  { opacity: 1; transform: translateY(-24px) rotate(30deg);   animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.3); } /* big swing left, accelerating, starting to rise */
+		100% { opacity: 0; transform: translateY(-230px) rotate(48deg); } /* fast final swing up and away */
 	}
 
 	.nav-keyring {
