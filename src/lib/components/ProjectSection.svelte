@@ -16,28 +16,16 @@
 
 	let imgEl: HTMLImageElement | undefined = $state();
 	let visible = $state(false);
-	let tileEl: HTMLElement | undefined = $state();
-	let tileVisible = $state(false);
-	const fromRight = index % 2 === 0;
 
+	// Only needed to lazily swap in GIF sources once they're actually on screen
 	$effect(() => {
-		if (!tileEl) return;
-		const targets: Element[] = [tileEl];
-		if (imgEl && isGif) targets.push(imgEl);
-
+		if (!imgEl || !isGif) return;
 		const observer = new IntersectionObserver((entries) => {
 			for (const entry of entries) {
-				if (entry.target === tileEl && entry.isIntersecting) {
-					tileVisible = true;
-					observer.unobserve(tileEl);
-				}
-				if (imgEl && entry.target === imgEl) {
-					visible = entry.isIntersecting;
-				}
+				if (entry.target === imgEl) visible = entry.isIntersecting;
 			}
 		}, { threshold: 0.05 });
-
-		for (const t of targets) observer.observe(t);
+		observer.observe(imgEl);
 		return () => observer.disconnect();
 	});
 </script>
@@ -49,11 +37,8 @@
 	>
 		<!-- Image -->
 		<div
-			bind:this={tileEl}
 			class="project-tile overflow-hidden rounded-2xl"
 			class:lg:order-2={reversed}
-			class:tile-visible={tileVisible}
-			style="--fan-origin: {fromRight ? 'right bottom' : 'left bottom'}; --fan-rotate: {fromRight ? '2deg' : '-2deg'};"
 		>
 			{#if project.id !== 'about'}
 				<a href="{base}/projects/{project.id}" data-sveltekit-reload>
@@ -108,26 +93,6 @@
 	.project-tile {
 		position: relative;
 		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
-		transform-origin: var(--fan-origin);
-		transform: rotate(var(--fan-rotate)) scale(0.97);
-		opacity: 0;
-		transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-	}
-
-	.project-tile.tile-visible {
-		transform: rotate(0deg) scale(1);
-		opacity: 1;
-	}
-
-	@media (max-width: 1023px) {
-		.project-tile {
-			transform-origin: center center;
-			transform: perspective(800px) rotateY(var(--fan-rotate)) scale(0.98);
-		}
-
-		.project-tile.tile-visible {
-			transform: perspective(800px) rotateY(0deg) scale(1);
-		}
 	}
 
 	.project-title {
