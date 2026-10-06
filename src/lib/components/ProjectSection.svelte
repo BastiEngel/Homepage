@@ -146,6 +146,9 @@
 		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
 		transform-origin: top center;
 		will-change: transform;
+		/* Align to the x-height of the adjacent title, not the raw text-box
+		   top — line-height leading + cap-height sit above the x-height. */
+		margin-top: 15px;
 	}
 
 	.project-title {
