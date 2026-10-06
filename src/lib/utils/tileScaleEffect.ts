@@ -12,18 +12,20 @@
 // entirely, which is what was causing the visible stutter/snap.
 import { addTicker, removeTicker } from './sharedTicker';
 
-const MIN_SCALE = 0.94; // smaller size difference than the original (was 0.85), but still visible
+const MIN_SCALE = 0.98; // very subtle size difference
 const RAMP_OUTSIDE = 0; // px below/above the edge where the transition starts — right at the edge
-const RAMP_INSIDE = 250; // px past the edge over which it eases in
+const RAMP_INSIDE = 350; // px past the edge over which it eases in — bigger than before so the static "parked at full size" middle stretch is shorter (it was eating most of the viewport, which read as snap-static-static-snap rather than one continuous motion)
 const RAMP_TOTAL = RAMP_OUTSIDE + RAMP_INSIDE;
 
-// Smooth, monotonic ease (exponential in/out) — never overshoots past 1 or
-// below MIN_SCALE, so the "biggest" state always matches the original
-// pre-effect size exactly.
-function easeInOutExpo(x: number): number {
-	if (x <= 0) return 0;
-	if (x >= 1) return 1;
-	return x < 0.5 ? Math.pow(2, 20 * x - 10) / 2 : (2 - Math.pow(2, -20 * x + 10)) / 2;
+// Smooth, monotonic ease (sine in/out) — gentler than the exponential curve
+// used before: that one's long near-flat stretches at both ends, with
+// almost the whole size change crammed into a short middle burst, read as a
+// sudden jump rather than a continuous animation. Sine keeps accelerating
+// and decelerating the whole way through, no flat dead zones, no sudden
+// burst — never overshoots past 1 or below MIN_SCALE, so the "biggest"
+// state always matches the original pre-effect size exactly.
+function easeInOutSine(x: number): number {
+	return -(Math.cos(Math.PI * x) - 1) / 2;
 }
 
 function clamp01(v: number): number {
@@ -46,7 +48,7 @@ function update() {
 		const enterT = clamp01((vh - top + RAMP_OUTSIDE) / RAMP_TOTAL);
 		const exitT = clamp01((top + RAMP_OUTSIDE) / RAMP_TOTAL);
 		const inside = Math.min(enterT, exitT);
-		const eased = easeInOutExpo(inside);
+		const eased = easeInOutSine(inside);
 		const scale = MIN_SCALE + eased * (1 - MIN_SCALE);
 		el.style.transform = `scale(${scale.toFixed(4)})`;
 	}
