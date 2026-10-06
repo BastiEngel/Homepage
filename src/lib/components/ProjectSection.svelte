@@ -146,9 +146,11 @@
 		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
 		transform-origin: top center;
 		will-change: transform;
-		/* Align to the x-height of the adjacent title, not the raw text-box
-		   top — line-height leading + cap-height sit above the x-height. */
-		margin-top: 15px;
+		/* Align to the x-height of the adjacent title. Measured directly in
+		   the browser (DOM probe glyph, not a guess): the title's own
+		   font overflows its CSS line-box, so the x-height sits ~2.5px
+		   ABOVE the heading's box top, not below it. */
+		margin-top: -2.5px;
 	}
 
 	.project-title {
