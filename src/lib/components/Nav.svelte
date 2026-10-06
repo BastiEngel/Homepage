@@ -166,7 +166,7 @@ import projectsData from '../../data/projects.json';
 	});
 
 	// Animate the keyring out (mirrors the drop-in) before unmounting it
-	const PROJECTS_EXIT_MS = 220;
+	const PROJECTS_EXIT_MS = 320;
 	let exitTimer = 0;
 	function requestCloseProjects() {
 		if (!projectsOpen || closingProjects) return;
@@ -367,22 +367,13 @@ import projectsData from '../../data/projects.json';
 	}
 
 	.keyring-drop.closing {
-		animation: keyringRetract 0.22s ease both;
+		animation: keyringSwingUp 0.32s cubic-bezier(0.5, 0, 0.85, 0.35) both;
 		pointer-events: none;
 	}
-	@keyframes keyringRetract {
-		from { opacity: 1; transform: translateY(0) scale(1); }
-		to   { opacity: 0; transform: translateY(-16px) scale(0.92); }
-	}
-
-	/* Mirror the drop-in stagger on the way out */
-	.keyring-drop.closing .drop-anim {
-		animation: dropFadeOut 0.16s ease both;
-		animation-delay: var(--drop-delay);
-	}
-	@keyframes dropFadeOut {
-		from { opacity: 1; }
-		to   { opacity: 0; }
+	@keyframes keyringSwingUp {
+		0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+		70%  { opacity: 1; }
+		100% { opacity: 0; transform: translateY(-180px) rotate(-16deg); }
 	}
 
 	.nav-keyring {
