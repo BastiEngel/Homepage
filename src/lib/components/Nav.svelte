@@ -63,16 +63,20 @@ import projectsData from '../../data/projects.json';
 	}));
 
 	let bundleSwayEl: HTMLElement | undefined = $state();
+	let keyringDropEl: HTMLElement | undefined = $state();
 	let masterAngle = 0;
 	let bundleT0 = 0;
 	let rafId = 0;
 	let lastFrame = 0;
 
-	// Swing spring state — large initial angle that decays to 0 on open;
-	// on close the target is pushed back out, so the same spring runs in reverse.
+	// Swing-in spring state — large initial angle that decays to 0.
+	// Every frame of this swing is recorded into introRecording; closing the
+	// dropdown just plays that recording back in reverse (see rafLoop below),
+	// so the close is the literal time-reversal of the open.
 	let introAngle = 0;
 	let introVel = 0;
-	let introTarget = 0;
+	let introRecording: number[] = [];
+	let replayIdx = -1;
 
 	function rafLoop(now: number) {
 		if (now - lastFrame < 33) { rafId = requestAnimationFrame(rafLoop); return; }
@@ -81,19 +85,43 @@ import projectsData from '../../data/projects.json';
 		if (!bundleT0) bundleT0 = now;
 		const bt = (now - bundleT0) / 1000;
 
-		// Spring toward introTarget (0 while open, swung back out while closing)
-		const iF = (introTarget - introAngle) * 0.07;
-		introVel = (introVel + iF) * 0.87;
-		introAngle += introVel;
-		if (introTarget === 0 && Math.abs(introAngle) < 0.05 && Math.abs(introVel) < 0.05) introAngle = 0;
+		let masterVel = 0;
 
-		// Gentle idle sway (sine), blends in as intro settles
-		const sineIdle = 8 * Math.sin(bt * 0.65);
+		if (closingProjects) {
+			// Play the recorded intro swing backwards, frame for frame.
+			if (replayIdx >= 0) {
+				const prevMaster = masterAngle;
+				masterAngle = introRecording[replayIdx];
+				masterVel = masterAngle - prevMaster;
+				if (bundleSwayEl) bundleSwayEl.style.transform = `rotate(${masterAngle.toFixed(3)}deg)`;
+				// Fade out over the last few frames, once it's swung back out of the way
+				const fadeFrames = 8;
+				if (keyringDropEl) keyringDropEl.style.opacity = replayIdx < fadeFrames ? String(Math.max(0, replayIdx / fadeFrames)) : '1';
+				replayIdx--;
+			} else {
+				projectsOpen = false;
+				closingProjects = false;
+				return; // don't schedule another frame — the effect cleanup below handles it
+			}
+		} else {
+			// Spring decays from the large starting angle toward 0
+			const iF = (0 - introAngle) * 0.07;
+			introVel = (introVel + iF) * 0.87;
+			introAngle += introVel;
+			const settled = Math.abs(introAngle) < 0.05 && Math.abs(introVel) < 0.05;
+			if (settled) introAngle = 0;
 
-		const prevMaster = masterAngle;
-		masterAngle = introAngle + sineIdle;
-		const masterVel = masterAngle - prevMaster;
-		if (bundleSwayEl) bundleSwayEl.style.transform = `rotate(${masterAngle.toFixed(3)}deg)`;
+			// Gentle idle sway (sine), blends in as intro settles
+			const sineIdle = 8 * Math.sin(bt * 0.65);
+
+			const prevMaster = masterAngle;
+			masterAngle = introAngle + sineIdle;
+			masterVel = masterAngle - prevMaster;
+			if (bundleSwayEl) bundleSwayEl.style.transform = `rotate(${masterAngle.toFixed(3)}deg)`;
+
+			// Only record the active swing-in, not the idle sway that follows
+			if (!settled || introRecording.length === 0) introRecording.push(masterAngle);
+		}
 
 		for (let i = 0; i < tagData.length; i++) {
 			const p = physics[i];
@@ -108,9 +136,9 @@ import projectsData from '../../data/projects.json';
 
 			if (hoveredIdx !== i) {
 				const noise = p.noiseAmp * Math.sin(bt * p.noiseFreq + p.noisePhase);
-				// During intro swing: tags hang neutral — bundle rotates as one unit
-				// After intro: gentle lag + noise
-				const introActive = Math.abs(introAngle) > 1;
+				// During intro/outro swing: tags hang neutral — bundle rotates as one unit
+				// Otherwise: gentle lag + noise
+				const introActive = closingProjects ? replayIdx >= 0 : Math.abs(introAngle) > 1;
 				p.target = introActive ? 0 : (masterVel * 12 + noise);
 			}
 
@@ -132,8 +160,10 @@ import projectsData from '../../data/projects.json';
 			bundleT0 = 0;
 			introAngle = -70;
 			introVel = 0;
-			introTarget = 0;
 			masterAngle = -70;
+			introRecording = [];
+			replayIdx = -1;
+			closingProjects = false;
 			physics.forEach(p => { p.angle = 0; p.velocity = 0; p.target = 0; p.swayBlend = 1; p.t0 = 0; });
 			rafId = requestAnimationFrame(rafLoop);
 			return () => cancelAnimationFrame(rafId);
@@ -168,19 +198,13 @@ import projectsData from '../../data/projects.json';
 		return () => { window.removeEventListener('scroll', onScroll); clearTimeout(scrollDebounce); };
 	});
 
-	// Close the keyring by reversing the same intro spring: push its target
-	// back out so it swings away exactly like it swung in, just backwards.
-	const PROJECTS_EXIT_MS = 650;
-	let exitTimer = 0;
+	// Close by playing the recorded intro swing back in reverse (see rafLoop).
 	function requestCloseProjects() {
 		if (!projectsOpen || closingProjects) return;
+		if (introRecording.length === 0) { projectsOpen = false; return; }
 		closingProjects = true;
-		introTarget = -70;
-		clearTimeout(exitTimer);
-		exitTimer = window.setTimeout(() => {
-			projectsOpen = false;
-			closingProjects = false;
-		}, PROJECTS_EXIT_MS);
+		if (keyringDropEl) keyringDropEl.style.opacity = '1';
+		replayIdx = introRecording.length - 1;
 	}
 
 	const tagRects: (DOMRect | undefined)[] = [];
@@ -227,7 +251,7 @@ import projectsData from '../../data/projects.json';
 			</button>
 
 			{#if projectsOpen}
-				<div class="keyring-drop" class:closing={closingProjects}>
+				<div class="keyring-drop" class:closing={closingProjects} bind:this={keyringDropEl}>
 					<div class="bundle-sway" bind:this={bundleSwayEl}>
 
 					<!-- PASS 1: back ring halves (behind keyring, z-index auto) -->
@@ -370,14 +394,11 @@ import projectsData from '../../data/projects.json';
 		overflow: visible;
 	}
 
-	/* The swing itself is the same spring that drives the drop-in, just run
-	   in reverse (see requestCloseProjects) — only fade it out right at the
-	   end, once it's swung back out of the way. */
+	/* The swing itself is the recorded intro played back in reverse (see
+	   rafLoop/requestCloseProjects) — opacity is driven frame-by-frame
+	   from JS as it fades out over the last few frames of that replay. */
 	.keyring-drop.closing {
 		pointer-events: none;
-		transition: opacity 0.15s ease;
-		transition-delay: 0.45s;
-		opacity: 0;
 	}
 
 	.nav-keyring {
