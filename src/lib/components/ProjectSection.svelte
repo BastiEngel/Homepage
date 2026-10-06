@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Project } from '$lib/types';
-	import { scrollReveal } from '$lib/utils/scrollAnimation';
 	import { registerScaleTile } from '$lib/utils/tileScaleEffect';
 	import { base } from '$app/paths';
 
@@ -78,7 +77,7 @@
 		</div>
 
 		<!-- Text column -->
-		<div class="flex flex-col justify-start" class:lg:order-1={reversed} use:scrollReveal>
+		<div class="flex flex-col justify-start" class:lg:order-1={reversed}>
 			{#if project.id !== 'about'}
 				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="project-text-link text-text no-underline">
 					<h2 class="project-title">{project.name}</h2>
