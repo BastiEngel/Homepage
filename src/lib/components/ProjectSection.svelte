@@ -15,6 +15,7 @@
 	const isGif = project.cover.endsWith('.gif');
 
 	let imgEl: HTMLImageElement | undefined = $state();
+	let tileEl: HTMLElement | undefined = $state();
 	let visible = $state(false);
 
 	// Only needed to lazily swap in GIF sources once they're actually on screen
@@ -28,6 +29,42 @@
 		observer.observe(imgEl);
 		return () => observer.disconnect();
 	});
+
+	// Continuous scroll-linked scale: the tile is smaller the further its
+	// center sits from the viewport center, full size (1) right in the
+	// middle, and shrinks again as it scrolls past — only runs the rAF loop
+	// while the tile is actually near the viewport.
+	const MIN_SCALE = 0.85;
+	$effect(() => {
+		if (!tileEl) return;
+		let rafId = 0;
+
+		function update() {
+			if (!tileEl) return;
+			const rect = tileEl.getBoundingClientRect();
+			const elCenter = rect.top + rect.height / 2;
+			const viewportCenter = window.innerHeight / 2;
+			const maxDist = window.innerHeight / 2 + rect.height / 2;
+			const t = maxDist > 0 ? Math.min(Math.abs(elCenter - viewportCenter) / maxDist, 1) : 0;
+			const scale = 1 - t * (1 - MIN_SCALE);
+			tileEl.style.transform = `scale(${scale.toFixed(4)})`;
+			rafId = requestAnimationFrame(update);
+		}
+
+		const io = new IntersectionObserver(
+			([entry]) => {
+				cancelAnimationFrame(rafId);
+				if (entry.isIntersecting) rafId = requestAnimationFrame(update);
+			},
+			{ rootMargin: '50% 0px 50% 0px' }
+		);
+		if (tileEl) io.observe(tileEl);
+
+		return () => {
+			io.disconnect();
+			cancelAnimationFrame(rafId);
+		};
+	});
 </script>
 
 <section id={project.id} class="relative z-[6] px-6 py-10 md:px-12 lg:py-16">
@@ -37,6 +74,7 @@
 	>
 		<!-- Image -->
 		<div
+			bind:this={tileEl}
 			class="project-tile overflow-hidden rounded-2xl"
 			class:lg:order-2={reversed}
 		>
@@ -93,6 +131,8 @@
 	.project-tile {
 		position: relative;
 		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
+		transform-origin: center center;
+		will-change: transform;
 	}
 
 	.project-title {
