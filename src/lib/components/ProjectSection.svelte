@@ -39,7 +39,7 @@
 	// viewport, not just a narrow band around its center. Only runs the rAF
 	// loop while the tile is near the viewport.
 	const MIN_SCALE = 0.94; // smaller size difference than the original (was 0.85), but still visible
-	const RAMP_OUTSIDE = 300; // px below/above the edge where the transition starts
+	const RAMP_OUTSIDE = 0; // px below/above the edge where the transition starts — right at the edge
 	const RAMP_INSIDE = 60; // px past the edge where it's already finished
 	const RAMP_TOTAL = RAMP_OUTSIDE + RAMP_INSIDE;
 
