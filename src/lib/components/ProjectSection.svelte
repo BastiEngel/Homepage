@@ -39,26 +39,36 @@
 	const PLATEAU = 0.15; // fraction of the ramp that stays at full size around center
 	const EXTRA_RANGE = 0.15; // small head start before the tile is visible — 0.8 stretched the whole ramp so thin it was barely visible
 
-	// Smooth, monotonic ease (cubic in/out) — never overshoots past 1 or
-	// below MIN_SCALE, so the "biggest" state always matches the original
-	// pre-effect size exactly.
-	function easeInOutCubic(x: number): number {
-		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+	// Smooth, monotonic ease (exponential in/out — an even more extreme
+	// slow/fast/slow curve than quintic: nearly flat at both ends, steep
+	// through the middle, so the non-linearity reads clearly even over a
+	// small scale range) — never overshoots past 1 or below MIN_SCALE, so
+	// the "biggest" state always matches the original pre-effect size exactly.
+	function easeInOutExpo(x: number): number {
+		if (x <= 0) return 0;
+		if (x >= 1) return 1;
+		return x < 0.5 ? Math.pow(2, 20 * x - 10) / 2 : (2 - Math.pow(2, -20 * x + 10)) / 2;
 	}
 
 	$effect(() => {
 		if (!tileEl) return;
 		let rafId = 0;
+		// Measured once via offsetHeight (layout size, unaffected by our own
+		// `transform: scale()`), so the distance calc below never reads back
+		// its own previous output — using the live, already-scaled
+		// getBoundingClientRect().height here would feed the curve's output
+		// into its own input and blunt the eased shape.
+		const naturalHeight = tileEl.offsetHeight;
 
 		function update() {
 			if (!tileEl) return;
 			const rect = tileEl.getBoundingClientRect();
-			const elCenter = rect.top + rect.height / 2;
+			const elCenter = rect.top + naturalHeight / 2;
 			const viewportCenter = window.innerHeight / 2;
-			const maxDist = window.innerHeight * (0.5 + EXTRA_RANGE) + rect.height / 2;
+			const maxDist = window.innerHeight * (0.5 + EXTRA_RANGE) + naturalHeight / 2;
 			const rawT = maxDist > 0 ? Math.min(Math.abs(elCenter - viewportCenter) / maxDist, 1) : 0;
 			const plateaued = rawT <= PLATEAU ? 0 : (rawT - PLATEAU) / (1 - PLATEAU);
-			const eased = easeInOutCubic(Math.min(plateaued, 1));
+			const eased = easeInOutExpo(Math.min(plateaued, 1));
 			const scale = 1 - eased * (1 - MIN_SCALE);
 			tileEl.style.transform = `scale(${scale.toFixed(4)})`;
 			rafId = requestAnimationFrame(update);
