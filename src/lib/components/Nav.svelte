@@ -371,10 +371,10 @@ import projectsData from '../../data/projects.json';
 		pointer-events: none;
 	}
 	@keyframes keyringSwingAway {
-		0%   { opacity: 1; transform: translateY(0) rotate(0deg);        animation-timing-function: ease-in-out; }
-		28%  { opacity: 1; transform: translateY(0) rotate(-11deg);      animation-timing-function: ease-in; }       /* small swing right: slow, build momentum */
-		65%  { opacity: 1; transform: translateY(-24px) rotate(30deg);   animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.3); } /* big swing left, accelerating, starting to rise */
-		100% { opacity: 0; transform: translateY(-230px) rotate(48deg); } /* fast final swing up and away */
+		0%   { opacity: 1; transform: rotate(0deg);   animation-timing-function: ease-in-out; }
+		28%  { opacity: 1; transform: rotate(-24deg); animation-timing-function: ease-in; }       /* small swing right: bigger amplitude, slow, build momentum */
+		65%  { opacity: 1; transform: rotate(55deg);  animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.3); } /* big swing left, accelerating, far past where it came to rest */
+		100% { opacity: 0; transform: rotate(92deg); } /* swing carries it up and away — no separate translate, the rotation itself is the "upward" motion */
 	}
 
 	.nav-keyring {
