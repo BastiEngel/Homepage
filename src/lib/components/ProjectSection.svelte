@@ -50,7 +50,7 @@
 		<!-- Image -->
 		<div
 			bind:this={tileEl}
-			class="project-tile overflow-hidden rounded-xl"
+			class="project-tile overflow-hidden rounded-2xl"
 			class:lg:order-2={reversed}
 			class:tile-visible={tileVisible}
 			style="--fan-origin: {fromRight ? 'right bottom' : 'left bottom'}; --fan-rotate: {fromRight ? '2deg' : '-2deg'};"
@@ -142,7 +142,7 @@
 		inset: 0;
 		border-radius: inherit;
 		pointer-events: none;
-		border: 2px solid rgba(255, 255, 255, 0.35);
+		border: none;
 	}
 
 	.project-text-link {

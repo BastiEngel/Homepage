@@ -47,6 +47,6 @@
 		inset: 0;
 		border-radius: inherit;
 		pointer-events: none;
-		border: 2px solid rgba(255, 255, 255, 0.35);
+		border: none;
 	}
 </style>
