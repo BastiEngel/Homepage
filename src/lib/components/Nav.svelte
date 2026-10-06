@@ -8,6 +8,7 @@ import projectsData from '../../data/projects.json';
 	let scrolled = $state(false);
 	let menuOpen = $state(false);
 	let projectsOpen = $state(false);
+	let closingProjects = $state(false);
 	let mobileProjectsOpen = $state(false);
 	let hoveredIdx = $state(-1);
 
@@ -62,14 +63,20 @@ import projectsData from '../../data/projects.json';
 	}));
 
 	let bundleSwayEl: HTMLElement | undefined = $state();
+	let keyringDropEl: HTMLElement | undefined = $state();
 	let masterAngle = 0;
 	let bundleT0 = 0;
 	let rafId = 0;
 	let lastFrame = 0;
 
-	// Swing-in spring state — large initial angle that decays to 0
+	// Swing-in spring state — large initial angle that decays to 0.
+	// Every frame of this swing is recorded into introRecording; closing the
+	// dropdown just plays that recording back in reverse (see rafLoop below),
+	// so the close is the literal time-reversal of the open.
 	let introAngle = 0;
 	let introVel = 0;
+	let introRecording: number[] = [];
+	let replayIdx = -1;
 
 	function rafLoop(now: number) {
 		if (now - lastFrame < 33) { rafId = requestAnimationFrame(rafLoop); return; }
@@ -78,19 +85,43 @@ import projectsData from '../../data/projects.json';
 		if (!bundleT0) bundleT0 = now;
 		const bt = (now - bundleT0) / 1000;
 
-		// Intro spring: decays from large starting angle toward 0
-		const iF = (0 - introAngle) * 0.07;
-		introVel = (introVel + iF) * 0.87;
-		introAngle += introVel;
-		if (Math.abs(introAngle) < 0.05 && Math.abs(introVel) < 0.05) introAngle = 0;
+		let masterVel = 0;
 
-		// Gentle idle sway (sine), blends in as intro settles
-		const sineIdle = 8 * Math.sin(bt * 0.65);
+		if (closingProjects) {
+			// Play the recorded intro swing backwards, frame for frame.
+			if (replayIdx >= 0) {
+				const prevMaster = masterAngle;
+				masterAngle = introRecording[replayIdx];
+				masterVel = masterAngle - prevMaster;
+				if (bundleSwayEl) bundleSwayEl.style.transform = `rotate(${masterAngle.toFixed(3)}deg)`;
+				// Fade out over the last few frames, once it's swung back out of the way
+				const fadeFrames = 8;
+				if (keyringDropEl) keyringDropEl.style.opacity = replayIdx < fadeFrames ? String(Math.max(0, replayIdx / fadeFrames)) : '1';
+				replayIdx--;
+			} else {
+				projectsOpen = false;
+				closingProjects = false;
+				return; // don't schedule another frame — the effect cleanup below handles it
+			}
+		} else {
+			// Spring decays from the large starting angle toward 0
+			const iF = (0 - introAngle) * 0.07;
+			introVel = (introVel + iF) * 0.87;
+			introAngle += introVel;
+			const settled = Math.abs(introAngle) < 0.05 && Math.abs(introVel) < 0.05;
+			if (settled) introAngle = 0;
 
-		const prevMaster = masterAngle;
-		masterAngle = introAngle + sineIdle;
-		const masterVel = masterAngle - prevMaster;
-		if (bundleSwayEl) bundleSwayEl.style.transform = `rotate(${masterAngle.toFixed(3)}deg)`;
+			// Gentle idle sway (sine), blends in as intro settles
+			const sineIdle = 8 * Math.sin(bt * 0.65);
+
+			const prevMaster = masterAngle;
+			masterAngle = introAngle + sineIdle;
+			masterVel = masterAngle - prevMaster;
+			if (bundleSwayEl) bundleSwayEl.style.transform = `rotate(${masterAngle.toFixed(3)}deg)`;
+
+			// Only record the active swing-in, not the idle sway that follows
+			if (!settled || introRecording.length === 0) introRecording.push(masterAngle);
+		}
 
 		for (let i = 0; i < tagData.length; i++) {
 			const p = physics[i];
@@ -105,9 +136,9 @@ import projectsData from '../../data/projects.json';
 
 			if (hoveredIdx !== i) {
 				const noise = p.noiseAmp * Math.sin(bt * p.noiseFreq + p.noisePhase);
-				// During intro swing: tags hang neutral — bundle rotates as one unit
-				// After intro: gentle lag + noise
-				const introActive = Math.abs(introAngle) > 1;
+				// During intro/outro swing: tags hang neutral — bundle rotates as one unit
+				// Otherwise: gentle lag + noise
+				const introActive = closingProjects ? replayIdx >= 0 : Math.abs(introAngle) > 1;
 				p.target = introActive ? 0 : (masterVel * 12 + noise);
 			}
 
@@ -130,6 +161,9 @@ import projectsData from '../../data/projects.json';
 			introAngle = -70;
 			introVel = 0;
 			masterAngle = -70;
+			introRecording = [];
+			replayIdx = -1;
+			closingProjects = false;
 			physics.forEach(p => { p.angle = 0; p.velocity = 0; p.target = 0; p.swayBlend = 1; p.t0 = 0; });
 			rafId = requestAnimationFrame(rafLoop);
 			return () => cancelAnimationFrame(rafId);
@@ -146,11 +180,32 @@ import projectsData from '../../data/projects.json';
 	$effect(() => {
 		if (!projectsOpen) return;
 		function onClickOutside(e: MouseEvent) {
-			if (!(e.target as Element).closest('.projects-dropdown-wrapper')) projectsOpen = false;
+			if (!(e.target as Element).closest('.projects-dropdown-wrapper')) requestCloseProjects();
 		}
 		window.addEventListener('click', onClickOutside);
 		return () => window.removeEventListener('click', onClickOutside);
 	});
+
+	// Close the keyring dropdown shortly after the page is scrolled
+	$effect(() => {
+		if (!projectsOpen) return;
+		let scrollDebounce = 0;
+		function onScroll() {
+			clearTimeout(scrollDebounce);
+			scrollDebounce = window.setTimeout(requestCloseProjects, 150);
+		}
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => { window.removeEventListener('scroll', onScroll); clearTimeout(scrollDebounce); };
+	});
+
+	// Close by playing the recorded intro swing back in reverse (see rafLoop).
+	function requestCloseProjects() {
+		if (!projectsOpen || closingProjects) return;
+		if (introRecording.length === 0) { projectsOpen = false; return; }
+		closingProjects = true;
+		if (keyringDropEl) keyringDropEl.style.opacity = '1';
+		replayIdx = introRecording.length - 1;
+	}
 
 	const tagRects: (DOMRect | undefined)[] = [];
 
@@ -186,7 +241,7 @@ import projectsData from '../../data/projects.json';
 
 	<div class="desktop-links">
 		<div class="projects-dropdown-wrapper">
-			<button onclick={() => isHomepage ? window.scrollTo({ top: 0, behavior: 'smooth' }) : (projectsOpen = !projectsOpen)} class="nav-link projects-btn" class:active={projectsOpen && !isHomepage}>
+			<button onclick={() => isHomepage ? window.scrollTo({ top: 0, behavior: 'smooth' }) : (projectsOpen ? requestCloseProjects() : (projectsOpen = true))} class="nav-link projects-btn" class:active={projectsOpen && !isHomepage}>
 				projects
 				{#if !isHomepage}
 				<svg class="chevron" class:rotated={projectsOpen} width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -196,7 +251,7 @@ import projectsData from '../../data/projects.json';
 			</button>
 
 			{#if projectsOpen}
-				<div class="keyring-drop">
+				<div class="keyring-drop" class:closing={closingProjects} bind:this={keyringDropEl}>
 					<div class="bundle-sway" bind:this={bundleSwayEl}>
 
 					<!-- PASS 1: back ring halves (behind keyring, z-index auto) -->
@@ -337,6 +392,13 @@ import projectsData from '../../data/projects.json';
 		width: 0;
 		height: 0;
 		overflow: visible;
+	}
+
+	/* The swing itself is the recorded intro played back in reverse (see
+	   rafLoop/requestCloseProjects) — opacity is driven frame-by-frame
+	   from JS as it fades out over the last few frames of that replay. */
+	.keyring-drop.closing {
+		pointer-events: none;
 	}
 
 	.nav-keyring {
