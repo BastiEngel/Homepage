@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Project, GarlandPoint } from '$lib/types';
 	import { base } from '$app/paths';
+	import { addTicker, removeTicker } from '$lib/utils/sharedTicker';
 
 	interface Props {
 		project: Project;
@@ -29,24 +30,26 @@
 
 	const zBack = 2;
 	const zFrontBase = 8;
+	let hovered = $state(false);
 	let zFront = $derived(hovered ? 30 : zFrontBase);
 
 	let pendulumEl: HTMLElement | undefined = $state();
-	let pushAngle = $state(0);
-	let swayAngle = $state(0);
-	let keySwayAngle = $state(0);
-	let hovered = $state(false);
 	let swayBlend = 1;
-	let sheenPos = $derived(50 + (swayAngle + pushAngle) * 3);
 
-	// Idle sway + spring physics in a single RAF loop
+	// Direct-DOM refs for per-frame animation — bypasses Svelte reactive scheduler entirely
+	let backSwayEl: HTMLElement | undefined = $state();
+	let backPushEl: HTMLElement | undefined = $state();
+	let frontSwayEl: HTMLElement | undefined = $state();
+	let frontPushEl: HTMLElement | undefined = $state();
+	let keyImgEl: HTMLImageElement | undefined = $state();
+	let sheenEl: HTMLElement | undefined = $state();
+
+	// Idle sway + spring physics — driven by shared 30fps ticker
 	const swayAmplitude = 6;
 	const swaySpeed = (2 * Math.PI) / swayDuration;
 	const keySwaySpeed = (2 * Math.PI) / (swayDuration * 1.3);
 	const keySwayAmplitude = 12;
 	let startTime = 0;
-	let running = false;
-	let lastFrame = 0;
 
 	// Spring physics state
 	let angle = 0;
@@ -55,47 +58,43 @@
 	const stiffness = 0.08;
 	const damping = 0.88;
 
-	function animationLoop(now: number) {
-		if (!running) return;
-
-		// Throttle to ~30fps
-		if (now - lastFrame < 33) {
-			requestAnimationFrame(animationLoop);
-			return;
-		}
-		lastFrame = now;
-
+	function onTick(now: number) {
 		if (!startTime) startTime = now + swayDelay * 1000;
 
-		// Sway
 		const blendTarget = hovered ? 0 : 1;
 		swayBlend += (blendTarget - swayBlend) * 0.04;
 
+		let swayA = 0, keySwayA = 0;
 		if (now >= startTime) {
 			const t = (now - startTime) / 1000;
-			swayAngle = Math.sin(t * swaySpeed) * swayAmplitude * swayBlend;
-			keySwayAngle = Math.sin(t * keySwaySpeed + 1.2) * keySwayAmplitude * swayBlend;
+			swayA = Math.sin(t * swaySpeed) * swayAmplitude * swayBlend;
+			keySwayA = Math.sin(t * keySwaySpeed + 1.2) * keySwayAmplitude * swayBlend;
 		}
 
-		// Spring
 		const force = (target - angle) * stiffness;
 		velocity = (velocity + force) * damping;
 		angle += velocity;
-		pushAngle = angle;
+		let pushA = angle;
 
 		if (Math.abs(velocity) < 0.05 && Math.abs(target - angle) < 0.05) {
 			angle = target;
 			velocity = 0;
-			pushAngle = target;
+			pushA = target;
 		}
 
-		requestAnimationFrame(animationLoop);
+		const swayT = `rotate(${swayA.toFixed(3)}deg)`;
+		const pushT = `rotate(${pushA.toFixed(3)}deg)`;
+		if (backSwayEl) backSwayEl.style.transform = swayT;
+		if (backPushEl) backPushEl.style.transform = pushT;
+		if (frontSwayEl) frontSwayEl.style.transform = swayT;
+		if (frontPushEl) frontPushEl.style.transform = pushT;
+		if (keyImgEl) keyImgEl.style.transform = `rotate(${(keySwayA - pushA * 0.7).toFixed(3)}deg)`;
+		if (sheenEl) sheenEl.style.backgroundPosition = `${(50 + (swayA + pushA) * 3).toFixed(1)}% 0`;
 	}
 
 	$effect(() => {
-		running = true;
-		requestAnimationFrame(animationLoop);
-		return () => { running = false; };
+		addTicker(onTick);
+		return () => removeTicker(onTick);
 	});
 
 	function scrollToProject() {
@@ -134,11 +133,11 @@
 	style="left: {point.x}px; top: {topY}px; z-index: {zBack}; transform: translateX(-50%) scale({tagScale}); transform-origin: top center;"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
-		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
-			<div class="push-layer" style="transform: rotate({pushAngle}deg);">
+		<div class="sway-layer" bind:this={backSwayEl}>
+			<div class="push-layer" bind:this={backPushEl}>
 				<div class="tag-shell">
 					<img
-						src="{base}/images/keytags/Keytag_{variantPad}.png"
+						src="{base}/images/keytags/Keytag_{variantPad}.webp"
 						alt=""
 						class="tag-img ring-back"
 						style="clip-path: polygon(0 0, {splitBack}% 0, {splitBack}% {splitH}%, 0 26%);"
@@ -156,11 +155,8 @@
 	style="left: {point.x}px; top: {topY}px; z-index: {zFront}; pointer-events: none; transform: translateX(-50%) scale({tagScale}); transform-origin: top center;"
 >
 	<div class="fan-layer" style="transform: rotate({point.fanAngle ?? 0}deg);">
-		<div class="sway-layer" style="transform: rotate({swayAngle}deg);">
-			<div
-				class="push-layer"
-				style="transform: rotate({pushAngle}deg);"
-			>
+		<div class="sway-layer" bind:this={frontSwayEl}>
+			<div class="push-layer" bind:this={frontPushEl}>
 				<button
 					bind:this={pendulumEl}
 					onclick={scrollToProject}
@@ -172,29 +168,40 @@
 				>
 					<!-- Key dangling from the ring hole, behind everything -->
 					<img
-						src="{base}/images/key-01.png"
+						bind:this={keyImgEl}
+						src="{base}/images/key-01.webp"
 						alt=""
 						class="dangling-key"
-						style="transform: rotate({keySwayAngle - pushAngle * 0.7}deg);"
 						draggable="false"
 					/>
 					<!-- Right half of ring + full body (in front of the line) -->
 					<img
-						src="{base}/images/keytags/Keytag_{variantPad}.png"
+						src="{base}/images/keytags/Keytag_{variantPad}.webp"
 						alt=""
 						class="tag-img ring-front"
 						style="clip-path: polygon({splitFront}% 0, 100% 0, 100% 100%, 0 100%, 0 26%, {splitFront}% {splitH}%);"
 						draggable="false"
 					/>
 					<!-- Cover image visible through the transparent label window -->
-					<img
-						src="{base}{project.cover}"
-						alt={project.name}
-						class="tag-cover"
-						style={labelTransform}
-						draggable="false"
-					/>
-					<div class="tag-sheen" style="background-position: {sheenPos}% 0; {labelTransform}"></div>
+					{#if project.tagImage}
+						<div class="tag-cover tag-cover-logo" style={labelTransform}>
+							<img
+								src="{base}{project.tagImage}"
+								alt={project.name}
+								class="tag-logo-img"
+								draggable="false"
+							/>
+						</div>
+					{:else}
+						<img
+							src="{base}{project.cover}"
+							alt={project.name}
+							class="tag-cover"
+							style={labelTransform}
+							draggable="false"
+						/>
+					{/if}
+					<div class="tag-sheen" bind:this={sheenEl} style={labelTransform}></div>
 					<span class="tag-title" class:visible={hovered} style={labelTransform}>{project.name}</span>
 				</button>
 			</div>
@@ -215,6 +222,7 @@
 		transform-origin: 49.1% 13.7%;
 		pointer-events: none;
 		user-select: none;
+		will-change: transform;
 	}
 
 	.fan-layer {
@@ -223,10 +231,12 @@
 
 	.sway-layer {
 		transform-origin: calc(50% + 10px) 25px;
+		will-change: transform;
 	}
 
 	.push-layer {
 		transform-origin: calc(50% + 10px) 25px;
+		will-change: transform;
 	}
 
 	.tag-btn {
@@ -280,6 +290,23 @@
 		height: 44%;
 		object-fit: cover;
 		z-index: 2;
+		pointer-events: none;
+		user-select: none;
+	}
+
+	.tag-cover-logo {
+		object-fit: unset;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: white;
+		padding: 5%;
+	}
+
+	.tag-logo-img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 		pointer-events: none;
 		user-select: none;
 	}

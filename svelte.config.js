@@ -9,11 +9,17 @@ const config = {
 			pages: 'build',
 			assets: 'build',
 			fallback: undefined,
-			precompress: false,
+			precompress: true,
 			strict: true
 		}),
 		paths: {
 			base: process.env.BASE_PATH || ''
+		},
+		prerender: {
+			handleHttpError: ({ path, message }) => {
+				if (path.endsWith('.mp4') || path.endsWith('.webm')) return;
+				throw new Error(message);
+			}
 		}
 	}
 };

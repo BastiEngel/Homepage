@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { tick } from 'svelte';
-	import { generateGarlandPath, sampleFanPoints, getPathLength } from '$lib/utils/garlandPath';
+	import { tick, onMount } from 'svelte';
+	import { generateGarlandPath, sampleFanPoints } from '$lib/utils/garlandPath';
 	import type { GarlandPoint } from '$lib/types';
 
 	interface Props {
@@ -10,77 +10,247 @@
 
 	let { onpoints, featuredCount = 3 }: Props = $props();
 
+	// ── Module-level cache ────────────────────────────────────────────────────
+	// Survives component unmount/remount across SvelteKit navigations.
+	// On back-navigation the expensive LUT + char-width builds are skipped
+	// entirely when the viewport hasn't changed.
+	type LUTEntry = { x: number; y: number; cos: number; sin: number };
+	const _cache: {
+		pathD: string;
+		lut: LUTEntry[];
+		lutStep: number;
+		lutTotal: number;
+		charWidths: number[];
+		oneRepeatPx: number;
+		width: number;
+		height: number;
+		fontSize: number;
+	} = {
+		pathD: '', lut: [], lutStep: 2, lutTotal: 0,
+		charWidths: [], oneRepeatPx: 0,
+		width: 0, height: 0, fontSize: 0
+	};
+	// ─────────────────────────────────────────────────────────────────────────
+
 	let pathElement: SVGPathElement | undefined = $state();
+	let canvasEl: HTMLCanvasElement | undefined = $state();
 	let pathD = $state('');
 	let totalLength = $state(0);
 	let heroPathFraction = $state(0.15);
-	let dashOffset = $state(0);
 	let pageWidth = $state(1440);
 	let pageHeight = $state(0);
+	let heroHeight = $state(0);
+
 	let vwScale = $derived(Math.min(1, pageWidth / 1440));
 	let yShift = $derived(-80 * vwScale * vwScale);
 	let yScale = $derived(0.85 + 0.15 * vwScale);
-	let heroHeight = $state(0);
-	let textOffset = $state(0);
-	let textVisible = $state(false);
-	const marqueeText = '\u{1F44B} I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :)  \u00B7  ';
-	const repeatedText = marqueeText.repeat(60);
+	let strokeWidth = $derived(Math.max(18, 36 * Math.min(1, pageWidth / 1440)));
+	let fontSize = $derived(Math.max(12, (24 / 0.85) * vwScale));
 
-	// Cache layout values to avoid thrashing — updated on scroll/resize via passive listeners
+	const marqueeText = '  \u{1F44B} HEY I\'M BASTIAN. HAVE A LOOK AT MY PROJECTS THAT BRING PEOPLE TOGETHER. :) ';
+	const repeatCount = 40;
+	const fullText = marqueeText.repeat(repeatCount);
+	const chars = [...fullText]; // Unicode-aware split — emoji = 1 element
+
+	// Path lookup table — built once per path change, interpolated per-frame
+	let pathLUT: LUTEntry[] = [];
+	let pathLUTStep = 2;
+	let pathLUTTotal = 0;
+
+	// Character layout in CSS pixels
+	let charCumWidths: number[] = [];
+	let oneRepeatPx = 0;
+
+	function buildPathLUT(el: SVGPathElement) {
+		const total = el.getTotalLength();
+		if (total <= 0) return;
+		// Native getPointAtLength() on this many-segment path costs ~0.5ms/call —
+		// the old 4000-sample LUT made two calls per sample (8000 total, ~4s wall
+		// time). 600 samples is still finer than a marquee character (~25px) and
+		// needs only one call per sample (angle comes from consecutive points).
+		const SAMPLE_COUNT = 600;
+		const step = Math.max(1, total / SAMPLE_COUNT);
+		const raw: { x: number; y: number }[] = [];
+		for (let d = 0; d < total; d += step) {
+			raw.push(el.getPointAtLength(d));
+		}
+		raw.push(el.getPointAtLength(total));
+		const lut: LUTEntry[] = [];
+		for (let i = 0; i < raw.length; i++) {
+			const p1 = raw[i];
+			const p2 = raw[i + 1] ?? p1;
+			const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+			lut.push({ x: p1.x, y: p1.y, cos: Math.cos(angle), sin: Math.sin(angle) });
+		}
+		pathLUT = lut;
+		pathLUTStep = step;
+		pathLUTTotal = total;
+		// Persist to module cache
+		_cache.lut = lut;
+		_cache.lutStep = step;
+		_cache.lutTotal = total;
+	}
+
+	// The render loop only ever reads indices [0, charsPerRepeat) of charCumWidths
+	// (one repeat's worth) — measuring the other 39 repeats was pure waste.
+	const repeatChars = [...marqueeText];
+
+	function buildCharWidths(ctx: CanvasRenderingContext2D) {
+		// Skip if font size and canvas dimensions are unchanged (cache hit)
+		if (_cache.fontSize === fontSize && _cache.charWidths.length > 0) {
+			charCumWidths = _cache.charWidths;
+			oneRepeatPx = _cache.oneRepeatPx;
+			return;
+		}
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
+		const cumWidths: number[] = [];
+		let cum = 0;
+		for (const ch of repeatChars) {
+			cumWidths.push(cum);
+			cum += ctx.measureText(ch).width + (ch === ' ' ? 12 : 0);
+		}
+		charCumWidths = cumWidths;
+		oneRepeatPx = cum;
+		_cache.charWidths = cumWidths;
+		_cache.oneRepeatPx = oneRepeatPx;
+		_cache.fontSize = fontSize;
+	}
+
+	function lutPoint(dist: number) {
+		if (pathLUT.length === 0) return { x: 0, y: 0, cos: 1, sin: 0 };
+		const t = dist / pathLUTStep;
+		const i = Math.min(Math.floor(t), pathLUT.length - 2);
+		const frac = t - i;
+		const a = pathLUT[i];
+		const b = pathLUT[i + 1];
+		return {
+			x: a.x + (b.x - a.x) * frac,
+			y: a.y + (b.y - a.y) * frac,
+			cos: a.cos + (b.cos - a.cos) * frac,
+			sin: a.sin + (b.sin - a.sin) * frac
+		};
+	}
+
+	// Cached layout values — updated via passive scroll/resize listeners
 	let cachedScrollY = 0;
 	let cachedInnerH = 0;
 	let cachedPageH = 0;
 
 	function recalculate() {
 		if (typeof document === 'undefined') return;
-		pageWidth = window.innerWidth;
-		pageHeight = document.documentElement.scrollHeight;
+		const w = window.innerWidth;
+		const h = document.documentElement.scrollHeight;
 		cachedInnerH = window.innerHeight;
-		cachedPageH = pageHeight;
+		cachedPageH = h;
 		cachedScrollY = window.scrollY;
+
+		// Restore from cache if dimensions unchanged (back-navigation fast path)
+		if (_cache.pathD && _cache.width === w && Math.abs(_cache.height - h) < 8) {
+			pageWidth = w;
+			pageHeight = h;
+			heroHeight = cachedInnerH;
+			pathD = _cache.pathD;
+			if (_cache.lut.length > 0) {
+				pathLUT = _cache.lut;
+				pathLUTStep = _cache.lutStep;
+				pathLUTTotal = _cache.lutTotal;
+				charCumWidths = _cache.charWidths;
+				oneRepeatPx = _cache.oneRepeatPx;
+			}
+			return;
+		}
+
+		pageWidth = w;
+		pageHeight = h;
 		const heroEl = document.querySelector('section.relative[class*="h-"]');
 		heroHeight = heroEl ? heroEl.getBoundingClientRect().height : window.innerHeight;
-		const effectiveYScale = 0.85 + 0.15 * Math.min(1, pageWidth / 1440);
-		pathD = generateGarlandPath(pageWidth, pageHeight / effectiveYScale, heroHeight);
+		const effectiveYScale = 0.85 + 0.15 * Math.min(1, w / 1440);
+		const newPathD = generateGarlandPath(w, h / effectiveYScale, heroHeight);
+		pathD = newPathD;
+		_cache.pathD = newPathD;
+		_cache.width = w;
+		_cache.height = h;
 	}
 
 	$effect(() => {
-		recalculate();
+		// Defer first recalculate behind RAF so browser paints the page first
+		let rafId = requestAnimationFrame(() => recalculate());
 
 		let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 		const onResize = () => {
 			clearTimeout(resizeTimer);
-			resizeTimer = setTimeout(recalculate, 100);
+			// Invalidate cache on resize
+			_cache.width = 0;
+			resizeTimer = setTimeout(recalculate, 150);
 		};
-		const onScroll = () => { cachedScrollY = window.scrollY; };
+		window.addEventListener('resize', onResize, { passive: true });
 
-		window.addEventListener('resize', onResize);
-		window.addEventListener('scroll', onScroll, { passive: true });
-
-		const timers = [
-			setTimeout(() => recalculate(), 100),
-			setTimeout(() => recalculate(), 500)
-		];
+		// Deferred recalculate to catch late-loading fonts/images (only if needed)
+		const timer = setTimeout(() => {
+			if (_cache.width !== window.innerWidth) recalculate();
+		}, 400);
 
 		const ro = new ResizeObserver(() => {
 			clearTimeout(resizeTimer);
-			resizeTimer = setTimeout(recalculate, 100);
+			resizeTimer = setTimeout(recalculate, 150);
 		});
 		ro.observe(document.body);
 
 		return () => {
+			cancelAnimationFrame(rafId);
 			window.removeEventListener('resize', onResize);
-			window.removeEventListener('scroll', onScroll);
-			timers.forEach(clearTimeout);
+			clearTimeout(timer);
 			clearTimeout(resizeTimer);
 			ro.disconnect();
 		};
 	});
 
-	// Measure path and sample tag points after DOM flush
+	// Cached canvas context and DPR — avoid per-frame lookups
+	let cachedCtx: CanvasRenderingContext2D | null = null;
+	let cachedDpr = 1;
+
+	// Resize canvas to match layout — also rebuilds char widths on font-size change
+	$effect(() => {
+		if (!canvasEl || !pageWidth || !pageHeight) return;
+		cachedDpr = window.devicePixelRatio || 1;
+		const logicalH = Math.ceil(pageHeight / yScale);
+		canvasEl.width = Math.round(pageWidth * cachedDpr);
+		canvasEl.height = Math.round(logicalH * cachedDpr);
+		canvasEl.style.width = pageWidth + 'px';
+		canvasEl.style.height = logicalH + 'px';
+		cachedCtx = canvasEl.getContext('2d');
+		if (cachedCtx) buildCharWidths(cachedCtx);
+	});
+
+	// Measure path, build LUT, compute fan points after DOM flush
 	$effect(() => {
 		if (!pathElement || !pathD) return;
 		const hh = heroHeight;
+
+		// Fast path: if cache is warm (same dimensions), restore LUT immediately
+		if (_cache.lut.length > 0 && _cache.lutTotal > 0) {
+			pathLUT = _cache.lut;
+			pathLUTStep = _cache.lutStep;
+			pathLUTTotal = _cache.lutTotal;
+			totalLength = _cache.lutTotal;
+			if (canvasEl) {
+				const ctx = canvasEl.getContext('2d');
+				if (ctx) buildCharWidths(ctx);
+			}
+			if (onpoints && featuredCount > 0) {
+				tick().then(() => {
+					if (!pathElement) return;
+					const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth).map((p) => ({
+						...p,
+						x: p.x,
+						y: p.y * yScale + yShift
+					}));
+					onpoints(points);
+				});
+			}
+			return;
+		}
 
 		tick().then(() => {
 			if (!pathElement) return;
@@ -98,63 +268,153 @@
 				if (i === 100) heroPathFraction = 1;
 			}
 
+			buildPathLUT(pathElement);
+
+			if (canvasEl) {
+				const ctx = canvasEl.getContext('2d');
+				if (ctx) buildCharWidths(ctx);
+			}
+
 			if (onpoints && featuredCount > 0) {
-				const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth)
-					.map(p => ({ ...p, x: p.x, y: p.y * yScale + yShift }));
+				const points = sampleFanPoints(pathElement, featuredCount, hh, pageWidth).map((p) => ({
+					...p,
+					x: p.x,
+					y: p.y * yScale + yShift
+				}));
 				onpoints(points);
 			}
 		});
 	});
 
-	// Single unified RAF loop for both marquee text and scroll-driven draw animation
-	$effect(() => {
-		if (!totalLength) return;
+	// Unified animation loop — direct DOM + Canvas writes, no Svelte state touched per frame
+	onMount(() => {
 		let running = true;
 		let rafId: number;
 		let lastTime = 0;
-
-		// Scroll animation state
-		let currentOffset = totalLength * (1 - heroPathFraction);
-
-		// Start marquee off-screen
-		textOffset = -5;
-		textVisible = true;
+		let currentOffset = -1;
+		let prevTotalLength = 0;
+		let textStart = 0;
+		let lastWrittenOffset = '';
+		let canvasAccum = 0;
 
 		function loop(now: number) {
 			if (!running) return;
 
-			const dt = now - lastTime;
-			// Throttle to ~40fps (25ms between frames) for Safari perf
-			if (dt < 25) {
+			const dt = lastTime === 0 ? 16.667 : Math.min(now - lastTime, 50);
+			lastTime = now;
+
+			const tl = totalLength;
+			if (tl <= 0) {
 				rafId = requestAnimationFrame(loop);
 				return;
 			}
-			lastTime = now;
 
-			// --- Marquee ---
-			textOffset += 0.005 * (dt / 16.67) * 0.67;
-			if (textOffset > 300) textOffset = -5;
+			// Proportional re-init on resize
+			if (tl !== prevTotalLength) {
+				currentOffset =
+					prevTotalLength > 0
+						? currentOffset * (tl / prevTotalLength)
+						: tl * (1 - heroPathFraction);
+				prevTotalLength = tl;
+			}
 
-			// --- Scroll draw ---
+			// Time-based lerp — consistent at any refresh rate
+			const lerpT = 1 - Math.pow(0.88, dt / 16.667);
+
 			const viewBottom = cachedScrollY + cachedInnerH;
 			const scrollFraction = cachedPageH > 0 ? Math.min(1, viewBottom / cachedPageH) : 0;
 			const ahead = 1.0 + 0.3 * (1 - vwScale);
 			const revealed = Math.max(heroPathFraction, Math.min(1, scrollFraction * ahead));
-			const targetOffset = totalLength * (1 - revealed);
+			const targetOffset = tl * (1 - revealed);
+			currentOffset += (targetOffset - currentOffset) * lerpT;
+			if (Math.abs(currentOffset - targetOffset) < 0.5) currentOffset = targetOffset;
 
-			currentOffset += (targetOffset - currentOffset) * 0.12;
-			if (Math.abs(currentOffset - targetOffset) < 0.5) {
-				currentOffset = targetOffset;
+			// Path draw — direct setAttribute, bypasses Svelte scheduler.
+			// Skip the write once settled at the same value — avoids forcing a
+			// style/layout recalc every frame once the user stops scrolling.
+			const offsetStr = currentOffset.toFixed(1);
+			if (pathElement && offsetStr !== lastWrittenOffset) {
+				pathElement.setAttribute('stroke-dashoffset', offsetStr);
+				lastWrittenOffset = offsetStr;
 			}
-			dashOffset = currentOffset;
+
+			// Canvas text draw — skip entirely when path not yet visible
+			const revealedLength = tl - currentOffset;
+			canvasAccum += dt;
+			// fillText() with a heavy custom webfont rasterizes on the compositor/raster
+			// thread, not the JS main thread — performance.now() around this block reads
+			// near-zero even though it was the dominant driver of ~80% renderer CPU at a
+			// 120Hz display's native rate. Throttling the redraw to ~30fps (matching the
+			// GarlandTag ticker convention) cuts the raster workload 4x with no visible
+			// difference for a continuously-scrolling marquee.
+			if (cachedCtx && revealedLength > 1 && pathLUTTotal > 0 && oneRepeatPx > 0 && charCumWidths.length > 0 && canvasAccum >= 33) {
+				const speedPx = pathLUTTotal * 0.00005 * (canvasAccum / 16.667);
+				canvasAccum = 0;
+				textStart = ((textStart - speedPx) % oneRepeatPx + oneRepeatPx) % oneRepeatPx;
+
+				const dpr = cachedDpr;
+				const ctx = cachedCtx;
+
+				// Only the viewport (plus a small buffer) needs actual canvas draws — text
+				// above/below it is still "revealed" but invisible. Skipping the expensive
+				// setTransform+fillText for those chars keeps per-frame cost bounded to
+				// ~1 viewport instead of growing with scroll depth (was O(revealedLength)).
+				const viewMargin = 300;
+				const viewTopY = (cachedScrollY - viewMargin - yShift) / yScale;
+				const viewBottomY = (cachedScrollY + cachedInnerH + viewMargin - yShift) / yScale;
+
+				// Clearing the whole page-length canvas every frame (regardless of scroll
+				// position) was the dominant per-frame cost — clear only the same
+				// viewport-sized band we're about to draw into.
+				const clearTopPx = Math.max(0, Math.floor(viewTopY * dpr));
+				const clearBottomPx = Math.min(canvasEl!.height, Math.ceil(viewBottomY * dpr));
+
+				ctx.setTransform(1, 0, 0, 1, 0, 0);
+				ctx.clearRect(0, clearTopPx, canvasEl!.width, clearBottomPx - clearTopPx);
+
+				ctx.font = `900 ${fontSize}px 'area-inktrap', sans-serif`;
+				ctx.fillStyle = '#ffffff';
+				ctx.textBaseline = 'middle';
+
+				const charsPerRepeat = Math.round(chars.length / repeatCount);
+				const repeatsNeeded = Math.ceil((revealedLength + textStart) / oneRepeatPx) + 1;
+				outerLoop: for (let r = 0; r < repeatsNeeded; r++) {
+					const repOffset = r * oneRepeatPx - textStart;
+					for (let j = 0; j < charsPerRepeat; j++) {
+						const pathDist = repOffset + charCumWidths[j];
+						if (pathDist < 0) continue;
+						if (pathDist > revealedLength || pathDist >= pathLUTTotal) break outerLoop;
+						const { x, y, cos, sin } = lutPoint(pathDist);
+						if (y < viewTopY || y > viewBottomY) continue;
+						ctx.setTransform(dpr * cos, dpr * sin, -dpr * sin, dpr * cos, x * dpr, y * dpr);
+						ctx.fillText(chars[j], 0, 4);
+					}
+				}
+			}
 
 			rafId = requestAnimationFrame(loop);
 		}
 
+		const onScroll = () => {
+			cachedScrollY = window.scrollY;
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+
 		rafId = requestAnimationFrame(loop);
-		return () => { running = false; cancelAnimationFrame(rafId); };
+		return () => {
+			running = false;
+			cancelAnimationFrame(rafId);
+			window.removeEventListener('scroll', onScroll);
+		};
 	});
 </script>
+
+<canvas
+	bind:this={canvasEl}
+	class="pointer-events-none absolute left-0 z-[6]"
+	style="top: {yShift}px; transform: scaleY({yScale}); transform-origin: top center;"
+	aria-hidden="true"
+></canvas>
 
 <svg
 	class="pointer-events-none absolute left-0 z-[5]"
@@ -170,39 +430,8 @@
 		d={pathD}
 		fill="none"
 		stroke="var(--color-line)"
-		stroke-width={Math.max(18, 36 * Math.min(1, pageWidth / 1440))}
+		stroke-width={strokeWidth}
 		stroke-linecap="round"
-		stroke-dasharray={totalLength}
-		stroke-dashoffset={dashOffset}
+		stroke-dasharray={totalLength > 0 ? totalLength : '0 999999'}
 	/>
-	{#if totalLength > 0 && textVisible}
-		<defs>
-			<mask id="path-reveal-mask">
-				<path
-					d={pathD}
-					fill="none"
-					stroke="white"
-					stroke-width={Math.max(18, 36 * Math.min(1, pageWidth / 1440)) + 20}
-					stroke-linecap="round"
-					stroke-dasharray={totalLength}
-					stroke-dashoffset={dashOffset + totalLength * 0.001}
-				/>
-			</mask>
-		</defs>
-		<text
-			fill="#ffffff"
-			font-size={Math.max(12, (24 / 0.85) * vwScale)}
-			font-weight="700"
-			font-family="'Sligoil Micro', sans-serif"
-			dominant-baseline="central"
-			mask="url(#path-reveal-mask)"
-		>
-			<textPath
-				href="#garland-path"
-				startOffset="{textOffset}%"
-			>
-				{repeatedText}
-			</textPath>
-		</text>
-	{/if}
 </svg>

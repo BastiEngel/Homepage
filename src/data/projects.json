@@ -1,216 +1,500 @@
 [
 	{
-		"id": "brand-refresh",
-		"name": "Brand Refresh",
-		"description": "Complete visual identity overhaul for a fintech startup, including logo redesign, color system, typography, and comprehensive brand guidelines.",
-		"role": "Lead Brand Designer",
-		"year": "2024",
-		"client": "FinFlow",
-		"tags": ["Branding", "Visual Identity", "Design Systems"],
-		"cover": "/images/projects/brand-refresh/cover.webp",
-		"images": [
-			{
-				"src": "/images/projects/brand-refresh/detail-01.webp",
-				"alt": "Logo variations and usage guidelines",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/brand-refresh/detail-02.webp",
-				"alt": "Color palette and typography system",
-				"tileSize": "small"
-			},
-			{
-				"src": "/images/projects/brand-refresh/detail-03.webp",
-				"alt": "Brand collateral mockups",
-				"tileSize": "small"
-			}
-		],
-		"externalUrl": "https://behance.net/gallery/brand-refresh",
-		"featured": true,
-		"lineColor": "#e8a87c",
-		"detailImages": [
-			{
-				"src": "/images/projects/brand-refresh/detail-01.webp",
-				"alt": "Logo variations and usage guidelines",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/brand-refresh/detail-02.webp",
-				"alt": "Color palette and typography system",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/brand-refresh/detail-03.webp",
-				"alt": "Brand collateral mockups",
-				"tileSize": "medium"
-			}
-		]
-	},
-	{
-		"id": "mobile-banking",
-		"name": "Mobile Banking App",
-		"description": "End-to-end UX/UI design for a next-generation mobile banking experience, focused on simplifying complex financial tasks for everyday users.",
-		"role": "Senior Product Designer",
-		"year": "2024",
-		"client": "NeoBank",
-		"tags": ["UX Design", "Mobile App", "Fintech"],
-		"cover": "/images/projects/mobile-banking/cover.webp",
-		"images": [
-			{
-				"src": "/images/projects/mobile-banking/detail-01.webp",
-				"alt": "App home screen with account overview",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/mobile-banking/detail-02.webp",
-				"alt": "Transaction history and categorization",
-				"tileSize": "medium"
-			}
-		],
-		"externalUrl": "https://behance.net/gallery/mobile-banking",
-		"featured": true,
-		"lineColor": "#85cdca",
-		"detailImages": [
-			{
-				"src": "/images/projects/mobile-banking/detail-01.webp",
-				"alt": "App home screen with account overview",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/mobile-banking/detail-02.webp",
-				"alt": "Transaction history and categorization",
-				"tileSize": "medium"
-			}
-		]
-	},
-	{
-		"id": "ecommerce-redesign",
-		"name": "E-Commerce Redesign",
-		"description": "Redesigned the shopping experience for a luxury fashion retailer, increasing conversion by 34% through streamlined checkout and improved product discovery.",
-		"role": "Product Designer",
-		"year": "2023",
-		"client": "Maison Luxe",
-		"tags": ["E-Commerce", "UX Research", "UI Design"],
-		"cover": "/images/projects/ecommerce-redesign/cover.webp",
-		"images": [
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-01.webp",
-				"alt": "Product listing page with filtering",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-02.webp",
-				"alt": "Product detail page",
-				"tileSize": "small"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-03.webp",
-				"alt": "Checkout flow redesign",
-				"tileSize": "small"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-04.webp",
-				"alt": "Mobile responsive views",
-				"tileSize": "large"
-			}
-		],
-		"featured": true,
-		"lineColor": "#d4a5a5",
-		"detailImages": [
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-01.webp",
-				"alt": "Product listing page with filtering",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-02.webp",
-				"alt": "Product detail page",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-03.webp",
-				"alt": "Checkout flow redesign",
-				"tileSize": "medium"
-			},
-			{
-				"src": "/images/projects/ecommerce-redesign/detail-04.webp",
-				"alt": "Mobile responsive views",
-				"tileSize": "large"
-			}
-		]
-	},
-	{
-		"id": "health-dashboard",
-		"name": "Health Dashboard",
-		"description": "Data visualization dashboard for healthcare professionals, turning complex patient data into actionable insights with an intuitive interface.",
-		"role": "UX/UI Designer",
-		"year": "2023",
-		"client": "MedViz",
-		"tags": ["Dashboard", "Data Viz", "Healthcare"],
-		"cover": "/images/projects/health-dashboard/cover.webp",
-		"images": [
-			{
-				"src": "/images/projects/health-dashboard/detail-01.webp",
-				"alt": "Main dashboard overview with patient metrics",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/health-dashboard/detail-02.webp",
-				"alt": "Detailed patient timeline view",
-				"tileSize": "medium"
-			}
-		],
-		"featured": true,
-		"lineColor": "#a8d8ea",
-		"detailImages": [
-			{
-				"src": "/images/projects/health-dashboard/detail-01.webp",
-				"alt": "Main dashboard overview with patient metrics",
-				"tileSize": "large"
-			},
-			{
-				"src": "/images/projects/health-dashboard/detail-02.webp",
-				"alt": "Detailed patient timeline view",
-				"tileSize": "medium"
-			}
-		]
-	},
-	{
-		"id": "design-system",
-		"name": "Design System",
-		"description": "Built a comprehensive, token-based design system powering multiple product teams with consistent components, accessibility standards, and detailed documentation.",
-		"role": "Design Systems Lead",
-		"year": "2023",
-		"client": "ScaleUp",
-		"tags": ["Design Systems", "Components", "Documentation"],
-		"cover": "/images/projects/health-dashboard/cover.webp",
-		"images": [],
-		"featured": true,
-		"lineColor": "#c3aed6"
-	},
-	{
-		"id": "travel-platform",
-		"name": "Travel Platform",
-		"description": "Designed an immersive travel booking platform combining AI-powered recommendations with stunning visual storytelling to inspire and simplify trip planning.",
-		"role": "Product Designer",
-		"year": "2022",
-		"client": "Wanderlust",
-		"tags": ["Travel", "AI", "UX Design"],
-		"cover": "/images/projects/mobile-banking/cover.webp",
-		"images": [],
-		"featured": true,
-		"lineColor": "#f6d186"
-	},
-	{
-		"id": "about",
-		"name": "About Me",
-		"description": "I'm a product designer with a passion for creating intuitive, beautiful digital experiences. With over 5 years of experience spanning UX research, interface design, and brand identity, I help companies turn complex problems into elegant solutions.",
+		"id": "kick-and-vote",
+		"name": "Kick & Vote",
+		"description": "How can soccer function as a participatory framework for negotiating and experiencing democratic rule- and decision-making among young people?",
+		"subtitle": "Social Design Project | 2025/26\nKristina Keil · Benjamin Amiel · Markus Feifel Pargas · Bastian Engel\nProject Management | Concept Development | Workshop Design",
 		"role": "",
 		"year": "",
 		"client": "",
 		"tags": [],
+		"cover": "/images/projects/kick-and-vote/20260117_Turnier_Video_1_web.mp4",
+		"coverType": "video",
+		"tagImage": "/images/projects/kick-and-vote/260115_K&V_Logo_final.svg",
+		"tileImage": "/images/projects/kick-and-vote/kickandvote_26.webp",
+		"heroPathSrc": "/images/paths/Path_Kich_and_Vote.svg",
+		"featured": true,
+		"lineColor": "#e8a87c",
+		"contentBlocks": [
+			{
+				"image": "/images/projects/kick-and-vote/kickandvote_18.jpg",
+				"text": "Kick & Vote is a participatory youth project initiated by the Cultural Association 1210 in Vienna's 21st district and funded by the European Capital of Democracy. The project focused on young people aged 14 to 21 in an area with low political engagement and limited access to cultural activities.\n\nSoccer offers low-threshold access and immediate participation across backgrounds and languages. Kick & Vote created an open, playful, low-threshold space where young people could take the initiative, explore political participation, actively shape their environment by creating their own rules, make collective decisions, and experience empowerment through interaction, soccer, and joy."
+			},
+			{
+				"image": "/images/projects/kick-and-vote/kickandvote_08.jpg",
+				"text": "We created and facilitated a series of hands-on workshops combining soccer, creative activities such as graffiti and poster-making, and activities for creating rules and decisions together. Participants were invited to experiment with new rules, negotiate outcomes, and reflect on their experiences in a supportive environment.\n\nOur team worked closely with local youth centers to engage participants, build trust, and ensure accessibility across different backgrounds and languages. The project culminated in two public soccer tournaments, providing participants the opportunity to apply the rules and decisions they created together in practice."
+			},
+			{
+				"image": "/images/projects/kick-and-vote/kickandvote_10.jpg",
+				"text": "The project helped young people form new peer groups and friendships, encouraging collaboration across diverse backgrounds. Participants actively shaped rules, made collective decisions, and learned to respect different perspectives. Workshops and tournaments provided spaces for discussion, co-creation, and inclusive participation, empowering young people to experience their own agency and influence within the group."
+			},
+			{
+				"image": "/images/projects/kick-and-vote/kickandvote_34.jpg",
+				"text": "Key learnings emphasized the importance of flexibility, close collaboration with youth workers, and creating a supportive environment where all voices are heard and valued."
+			}
+		],
+		"credits": "Partner: Cultural Association 1210 Vienna\nFunding: European Capital of Democracy Vienna 2025/26\nSocial Design Project at the University of Applied Arts Vienna",
+		"gallery": [
+			"/images/projects/kick-and-vote/kickandvote_01.jpg",
+			"/images/projects/kick-and-vote/kickandvote_02.jpg",
+			"/images/projects/kick-and-vote/kickandvote_03.jpg",
+			"/images/projects/kick-and-vote/kickandvote_04.jpg",
+			"/images/projects/kick-and-vote/kickandvote_05.jpg",
+			"/images/projects/kick-and-vote/kickandvote_06.jpg",
+			"/images/projects/kick-and-vote/kickandvote_07.jpg",
+			"/images/projects/kick-and-vote/kickandvote_09.jpg",
+			"/images/projects/kick-and-vote/kickandvote_11.jpg",
+			"/images/projects/kick-and-vote/kickandvote_12.jpg",
+			"/images/projects/kick-and-vote/kickandvote_13.jpg",
+			"/images/projects/kick-and-vote/kickandvote_14.jpg",
+			"/images/projects/kick-and-vote/kickandvote_15.jpg",
+			"/images/projects/kick-and-vote/kickandvote_16.jpg",
+			"/images/projects/kick-and-vote/kickandvote_17.jpg",
+			"/images/projects/kick-and-vote/kickandvote_19.jpg",
+			"/images/projects/kick-and-vote/kickandvote_20.jpg",
+			"/images/projects/kick-and-vote/kickandvote_21.jpg",
+			"/images/projects/kick-and-vote/kickandvote_22.jpg",
+			"/images/projects/kick-and-vote/kickandvote_23.jpg",
+			"/images/projects/kick-and-vote/kickandvote_24.jpg",
+			"/images/projects/kick-and-vote/kickandvote_25.jpg",
+			"/images/projects/kick-and-vote/kickandvote_26.jpg",
+			"/images/projects/kick-and-vote/kickandvote_27.jpg",
+			"/images/projects/kick-and-vote/kickandvote_28.jpg",
+			"/images/projects/kick-and-vote/kickandvote_29.jpg",
+			"/images/projects/kick-and-vote/kickandvote_30.jpg",
+			"/images/projects/kick-and-vote/kickandvote_31.jpg",
+			"/images/projects/kick-and-vote/kickandvote_32.jpg",
+			"/images/projects/kick-and-vote/kickandvote_33.jpg",
+			"/images/projects/kick-and-vote/kickandvote_35.jpg",
+			"/images/projects/kick-and-vote/kickandvote_36.jpg",
+			"/images/projects/kick-and-vote/kickandvote_37.jpg",
+			"/images/projects/kick-and-vote/kickandvote_38.jpg",
+			"/images/projects/kick-and-vote/kickandvote_39.jpg",
+			"/images/projects/kick-and-vote/kickandvote_40.jpg",
+			"/images/projects/kick-and-vote/kickandvote_41.jpg",
+			"/images/projects/kick-and-vote/kickandvote_42.jpg",
+			"/images/projects/kick-and-vote/Poster_KickandVote.jpg"
+		]
+	},
+	{
+		"id": "binvisible",
+		"name": "Binvisible",
+		"heroPathSrc": "/images/paths/Path_binvisible.svg",
+		"heroPathTopOffset": -450,
+		"heroPathScale": 0.99,
+		"heroPathText": "“Multidisciplinary concept for promoting responsible public behaviour regarding environmental pollution and resource cycles through participatory methods”  ",
+		"description": "\"Multidisciplinary concept for promoting responsible public behaviour regarding environmental pollution and resource cycles through participatory methods\"",
+		"subtitle": "Bachelor Thesis | Product Design | 2024\nSupervisors: Prof. Dr. Bianca Herlo, Kristin Dolz\nSocial Design | Urban Hacking | Eco Design",
+		"cover": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-26.jpg",
+		"coverType": "image",
+		"tagImage": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-01.webp",
+		"tileImage": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-01.webp",
+		"featured": true,
+		"lineColor": "#6ba3d4",
+		"contentBlocks": [
+			{
+				"image": "/images/projects/binvisible/Binvisible_giff_alpha.mov",
+				"imageFallback": "/images/projects/binvisible/Binvisible_giff_alpha.webm",
+				"text": "",
+				"fullWidthBg": true
+			},
+			{
+				"image": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-18.jpg",
+				"imageFit": "contain",
+				"heading": "WHAT IS WASTE?",
+				"textBefore": "\"Trash\" is the colloquial term for what is old, used up, and unwanted — everything that no longer holds any personal value or function for us. The act of throwing things away is often perceived as unpleasant, repulsive, and bothersome. As a result, the pragmatic routine of disposal receives little conscious attention.",
+				"text": "The problem becomes visible when waste is carelessly discarded in public spaces and the natural environment. This process of improper disposal is known as littering. Littering has significant ecological, aesthetic, and economic consequences. Properly disposed waste, by contrast, is largely invisible: it does not disturb, and thus escapes our perception. This invisibility makes it difficult for individuals to grasp how much waste they actually generate.\n\nIn contemporary society, a selective perception has developed that causes both waste production and disposal to occur largely unconsciously. The bachelor project \"Binvisible\" addresses this issue by making the processes of disposal and the resulting volumes of waste visible. It is crucial to recognize, however, that the responsibility for tackling the waste problem does not rest solely with consumers — the problem must be addressed at its source."
+			},
+			{
+				"image": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-25.jpg",
+				"postHeading": "URBAN HACKING",
+				"text": "Existing municipal waste bins are adapted and their function extended with blue powder-coated steel structures mounted on concrete bollards, enabling flexible, rapid, and location-independent placement in public spaces.\n\nThe five waste bin interventions disrupt the routinized act of disposal, prompting users to engage more consciously and responsibly with their own waste practices. Beyond this immediate effect, the interventions draw attention to patterns of consumption, prevailing packaging solutions, and the broader question of responsibility."
+			},
+			{
+				"image": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-22.jpg",
+				"layout": "image-left",
+				"postHeading": "HIGHPOINT",
+				"text": "The elevated placement of the bins makes them highly visible and turns the act of disposal into a noticeable public gesture. Their height motivates users to aim and throw their waste into the bins, transforming what is usually a quiet, discreet act into a loud and playful interaction."
+			},
+			{
+				"image": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-19.jpg",
+				"layout": "image-left",
+				"postHeading": "WEIGH",
+				"text": "The construction tilts toward the side with the heavier waste bin, making the difference in weight and volume visible. The installation encourages users to actively participate by disposing of their waste in a way that shifts the balance and restores equilibrium."
+			},
+			{
+				"image": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-21.jpg",
+				"layout": "image-left",
+				"postHeading": "SIGNATURE",
+				"text": "The installation draws attention to those who regularly empty the waste bins, a form of labor that usually remains invisible. The sign indicating the time of the last collection allows anyone to estimate how much waste has accumulated since the last emptying, prompting reflection and fostering a sense of appreciation."
+			},
+			{
+				"image": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-23.jpg",
+				"layout": "image-left",
+				"postHeading": "TRACE",
+				"text": "Five waste bins labeled \"Where is your trash from?\" and marked with different supermarket names make the origin of waste tangible for passers-by. The installation points to the responsibility of retailers and encourages reflection on personal consumption patterns and packaging practices."
+			},
+			{
+				"image": "/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-24.jpg",
+				"layout": "image-left",
+				"postHeading": "ECHO",
+				"text": "The colorful packaging waste thrown into the bin is mirrored by three reflective surfaces, creating vibrant visual patterns. This makes both the act of disposal and the waste itself more visible, interrupting the habitual, unconscious gesture of throwing something away."
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"galleryImages": [
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-28.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-29.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-30.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-31.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-32.jpg"
+				]
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"heading": "FIELD TEST",
+				"textBefore": "The five developed concepts for waste-bin interventions are designed to motivate individuals to dispose of both their own and others' waste properly. A field test demonstrated that the concepts were generally accepted, resulting in a measurable reduction of littering at the test site. Moreover, the installations prompted reflection on personal consumption habits and stimulated discussion about waste more broadly.",
+				"galleryImages": [
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-15.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-05.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-09.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-10.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-12.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-02.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-03.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-04.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-06.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-07.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-08.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-11.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-13.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-14.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-16.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-17.jpg",
+					"/images/projects/binvisible/Binvisible_Bastian_Engel_Final_Web_ 2048x1365px_-27.jpg"
+				]
+			}
+		],
+		"credits": "Supported by: Stadtreinigung Braunschweig | Trash-Tracker | CleanUpDay\nBachelor Thesis — Hochschule für bildende Künste Braunschweig",
+		"gallery": []
+	},
+	{
+		"id": "myzelfusion",
+		"name": "MyzelFusion",
+		"heroPathSrc": "/images/paths/Path_myzelfusion.svg",
+		"heroPathTopOffset": -150,
+		"heroPathScale": 1,
+		"heroPathScaleY": 0.995,
+		"description": "Can fungal growth be locally controlled to fabricate three-dimensional objects?",
+		"subtitle": "Bio Lab Residency | 2024/25\nBiomaterial Research | Eco Design | Sustainable Design",
+		"role": "",
+		"year": "2024/25",
+		"client": "",
+		"tags": [],
+		"cover": "/images/projects/Myzelfusion/myzelfusion_printer.mp4",
+		"coverType": "video",
+		"tagImage": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_1.webp",
+		"tileImage": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_1.webp",
+		"heroPathText": "Can fungal growth be locally controlled to fabricate three-dimensional objects?  ",
+		"featured": true,
+		"lineColor": "#d4b896",
+		"contentBlocks": [
+			{
+				"image": "/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-28.jpg"
+			},
+			{
+				"image": "/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-30.jpg",
+				"imageAspect": "2/1",
+				"imagePosition": "center bottom",
+				"textBefore": "This research project explores the potential of mycelium in additive manufacturing, inspired by the \"Binder-Jetting\" process. The base material is made up of organic and mineral powders, which are selectively inoculated with mycelium in the form of liquid cultures."
+			},
+			{
+				"image": "/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-29.jpg",
+				"imageAspect": "auto",
+				"stackBelow": true,
+				"text": "As the mycelium grows, it bonds the particles, forming stable geometric shapes, including overhangs and undercuts, without additional support structures. This eliminates conventional moulding constraints and enables greater design flexibility."
+			},
+			{
+				"image": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_11.jpg"
+			},
+			{
+				"image": "/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_9.jpg",
+				"postHeading": "THE PRINTER",
+				"text": "A 3D-printer was modified to produce simple three-dimensional objects. A custom extruder was designed, capable of holding 20 mL syringes. This allows controlled application of liquid onto the powder bed. A custom slicer profile was created, enabling rapid adjustments of various parameters. The result was a simple mushroom shaped object and other test objects."
+			},
+			{
+				"image": "",
+				"layout": "portrait-pair",
+				"galleryImages": [
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_25.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_26.jpg"
+				]
+			},
+			{
+				"image": "/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-32.jpg",
+				"layout": "image-left",
+				"postHeading": "INCUBATION",
+				"text": "After one week of incubation, the objects can be removed from the remaining loose coffee grounds. The objects are then placed back in the incubator for additional days, allowing the mycelium to grow over them, strengthening the structure and forming a white outer layer. Finally, the objects are dried to complete the process."
+			},
+			{
+				"image": "/images/projects/Myzelfusion/Myzelfusion_poster.webp",
+				"imageAspect": "auto",
+				"lightbox": true,
+				"textBefore": "During development, many different parameters were tested, harmonised and documented in a structured manner as well as illustrated on a poster for viewers to understand.\nThe research results obtained so far from the 'Myzelfusion' project show the initial possibilities and potential of this process for various areas of application, including product design, trade fair booth and interior design.\nThey provide a scientific basis for the further development of bio-based additive manufacturing technologies and open up new perspectives for the use of mycelium in materials science."
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"sectionStyle": "padding-top: 2rem",
+				"galleryImages": [
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_10.jpg",
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_12.jpg",
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_13.jpg",
+					"/images/projects/Myzelfusion/MYZELFUSION_Bastian_Engel_Final_Web_ 2048x1365px_14.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_19.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_21.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_22.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_23.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_24.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px_27.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-31.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-33.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-34.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-35.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-36.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-37.jpg",
+					"/images/projects/Myzelfusion/Myzelfusion_Bastian_Engel_Final_Web_ 2048x1365px-38.jpg"
+				]
+			}
+		],
+		"credits": "Supported by: SBYD (Sustainability by Design) Bio Lab Residency · Fraunhofer UMSICHT\nFolkwang Universität der Künste Essen",
+		"gallery": []
+	},
+	{
+		"id": "peebee",
+		"name": "PeeBee",
+		"description": "Autonomous Toilet Delivery Robot Service",
+		"subtitle": "Individual work | WS 2024/25\nSpeculative Design | Biodesign | Transformation Design",
+		"cover": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Medien.mp4",
+		"coverType": "video",
+		"tagImage": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-1.webp",
+		"tileImage": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-1.webp",
+		"featured": true,
+		"lineColor": "#e8d870",
+		"heroPathSrc": "/images/paths/Path_PeeBee.svg",
+		"heroPathTopOffset": 150,
+		"heroPathScale": 0.85,
+		"heroPathScaleX": 1.1,
+		"heroPathRevealSpeed": 1.05,
+		"heroPathWave": true,
+		"heroPathText": "PeeBee is a speculative design project that highlights the scarcity of free and accessible public toilets in cities  ",
+		"contentBlocks": [
+			{
+				"image": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-32.jpg"
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"gallerySize": "large",
+				"textBefore": "PeeBee is a speculative design concept for a network of autonomous toilet vehicles that reimagines the provision of public sanitation facilities in cities. In light of the shortage of free, accessible toilets in German cities, PeeBee offers a mobile, on-demand solution. The vehicles are distributed across the city and can be used directly or requested via an app. Usage is free of charge and is funded through public subsidies as well as the sale of recycled urine and humus, which are applied directly to fields by the vehicles themselves as fertiliser.",
+				"galleryImages": [
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-37.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-30.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-34.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-25.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-26.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-27.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-35.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-24.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-23.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-28.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-29.jpg"
+				]
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"textBefore": "Each vehicle contains a separating toilet that divides urine and faeces. In the rear section of the vehicle the collected urine is processed into natural fertiliser in three steps: nitrogen fixation by microorganisms in a bioreactor, removal of hormones and pharmaceutical residues using a charcoal filter and lastly sanitisation. This process is visible to users, highlighting the potential for sustainable nutrient recycling. Once the vehicle's storage is full, the collected and processed urine is autonomously applied to peri-urban fields.",
+				"galleryImages": [
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-14.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-15.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-16.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-17.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-18.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-19.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-20.jpg",
+						"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-22.jpg",
+					"/images/projects/PeeBee/PeeBee_Bastian_Engel_Final_Web_ 2048x1365px_-40.jpg",
+					"/images/projects/PeeBee/PeeBee_Bastian_Engel_Final_Web_ 2048x1365px_-41.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-5.jpg",
+						"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-10.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-11.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-36.jpg",
+					"/images/projects/PeeBee/PeeBee_Bastian_Engel_Final_Web_ 2048x1365px_-38.jpg",
+					"/images/projects/PeeBee/PeeBee_Bastian_Engel_Final_Web_ 2048x1365px_-39.jpg"
+				]
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"textBefore": "Once the vehicle's storage is full, the collected and processed urine is autonomously applied to peri-urban fields. The concept aims to draw attention to the lack of public toilets and the absence of gender-inclusive sanitation. Furthermore, it encourages people to view human waste as a resource and to critically examine existing wastewater infrastructures."
+			},
+			{
+				"image": "",
+				"layout": "portrait-pair",
+				"galleryImages": [
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-31.jpg",
+					"/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-33.jpg"
+				]
+			},
+			{
+				"image": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Final_Web-32.jpg"
+			}
+		],
+		"credits": "Supported by: SBYD (Sustainability by Design) · Fraunhofer UMSICHT\nFolkwang Universität der Künste Essen",
+		"gallery": []
+	},
+	{
+		"id": "pivot",
+		"name": "Pivot",
+		"description": "A stool for active sitting that adapts to you.",
+		"subtitle": "Individual work | 2025\nIndustrial design | Ergonomics | Human-centered design",
+		"role": "",
+		"year": "2025",
+		"client": "Knipex",
+		"tags": [],
+		"cover": "/images/projects/Pivot/Pivot_Bastian_Engel_VideoClip.mp4",
+		"coverType": "video",
+		"tagImage": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.webp",
+		"tileImage": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.webp",
+		"featured": true,
+		"lineColor": "#90c4a0",
+		"heroPathSrc": "/images/paths/Path_pivot.svg",
+		"heroPathScale": 1.03,
+		"heroPathTopOffset": -225,
+		"contentBlocks": [
+			{
+				"image": "/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-33.jpg"
+			},
+			{
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-2.jpg",
+				"textBefore": "Pivot is an ergonomic stool conceived as a dynamic seating solution, where movement and postural variation are central to its design philosophy. By facilitating spontaneous shifts in seating position, the stool integrates dynamic sitting into everyday work life, thereby counteracting the rigidity of prolonged static postures. \"Having held any posture for a while, the best posture is always the next one.\" (Opsvik, 1979)"
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"textBefore": "The seat, crafted from shaped plywood, rotates via a pivot mechanism into four distinct configurations: as a saddle stool, angled like a riding seat, oblique as a reclining stool, or flat like a conventional chair."
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"gallerySize": "large",
+				"galleryImages": [
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-5.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-7.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-4.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-27.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-3.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-26.jpg"
+				]
+			},
+			{
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-12.jpg",
+				"textBefore": "Pivot is available in three base variants to suit diverse functional requirements. The fixed base ensures stability and secure support, while the classic model with castors enables mobility within the workspace. The sprung base combines stability with controlled movement: upon slight weight redistribution, it allows subtle shifts in position without necessitating standing."
+			},
+			{
+				"image": "",
+				"layout": "landscape-pair",
+				"galleryImages": [
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-1.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-6.jpg"
+				]
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"textBefore": "Designed to adapt to both individual ergonomic needs and varying occupational contexts, Pivot offers versatility for a broad spectrum of users and usage scenarios. The promotion of postural variation alleviates physical strain, enhances circulatory function, and encourages mindful movement. In doing so, the stool actively contributes to the prevention of common musculoskeletal disorders associated with sedentary work."
+			},
+			{
+				"image": "/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-11.jpg",
+				"imageAspect": "auto",
+				"lightbox": true
+			},
+			{
+				"image": "",
+				"layout": "gallery",
+				"sectionStyle": "padding-top: 2rem",
+				"textBefore": "The Pivot stool was developed in collaboration with Knipex. The goal was for the stool to be adaptable across a wide range of workspaces and user profiles.",
+				"galleryImages": [
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-8.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-9.jpg",
+					"/images/projects/Pivot/Pivot_Bastian_Engel_Bilder_web-10.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-1.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-4.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker-6.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker--46.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker--47.jpg",
+					"/images/projects/Pivot/Bilder_bearbeitet_Knipex-Hocker--48.jpg"
+				]
+			}
+		],
+		"credits": "Supported by: Knipex\nFolkwang Universität der Künste Essen",
+		"gallery": []
+	},
+	{
+		"id": "archive",
+		"name": "Archive",
+		"description": "Placeholder — wird mit echtem Content ersetzt.",
+		"subtitle": "Placeholder | Jahr",
+		"cover": "/images/projects/Archive/cover.webp",
+		"coverType": "image",
+		"tagImage": "/images/projects/Archive/cover.webp",
+		"tileImage": "/images/projects/Archive/cover.webp",
+		"featured": true,
+		"lineColor": "#a0a8b0",
+		"contentBlocks": [
+			{
+				"image": "/images/projects/Archive/detail-01.webp",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			},
+			{
+				"image": "/images/projects/Archive/detail-02.webp",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			}
+		],
+		"gallery": [
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg",
+			"/images/placeholder.svg"
+		]
+	},
+	{
+		"id": "about",
+		"name": "About Me",
+		"description": "Placeholder — wird mit echtem Content ersetzt.",
+		"subtitle": "",
 		"cover": "/images/projects/about/cover.webp",
-		"images": [],
-		"featured": true
+		"coverType": "image",
+		"tagImage": "/images/projects/about/cover.webp",
+		"tileImage": "/images/projects/about/cover.webp",
+		"featured": true,
+		"lineColor": "#d4b8a0",
+		"contentBlocks": [
+			{
+				"image": "/images/placeholder.svg",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			},
+			{
+				"image": "/images/placeholder.svg",
+				"text": "Placeholder — wird mit echtem Content ersetzt."
+			}
+		]
 	}
 ]

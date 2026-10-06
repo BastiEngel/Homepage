@@ -2,12 +2,17 @@
 	import Nav from '$lib/components/Nav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import ProjectHeroPath from '$lib/components/ProjectHeroPath.svelte';
+	import MyzelfusionHeroPath from '$lib/components/MyzelfusionHeroPath.svelte';
 	import GalleryCarousel from '$lib/components/GalleryCarousel.svelte';
+	import GrassGrowth from '$lib/components/GrassGrowth.svelte';
 	import { scrollReveal, revealCard } from '$lib/utils/scrollAnimation';
+	import { lazyAutoplay } from '$lib/utils/lazyVideo';
 	import { base } from '$app/paths';
 
 	let { data } = $props();
 	const project = data.project;
+
+	let lightboxSrc = $state('');
 
 	const coverSrc = `${base}${project.cover}`;
 	const isVideo = project.coverType === 'video';
@@ -23,8 +28,10 @@
 <Nav />
 
 <main class="relative pt-16">
-	{#if project.heroPathSrc}
-		<ProjectHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} marqueeText={project.heroPathText} />
+	{#if project.id === 'myzelfusion' && project.heroPathSrc}
+		<MyzelfusionHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} pathScaleY={project.heroPathScaleY ?? 1} />
+	{:else if project.heroPathSrc}
+		<ProjectHeroPath src={project.heroPathSrc} topOffset={project.heroPathTopOffset} pathScale={project.heroPathScale} pathScaleX={project.heroPathScaleX ?? 1} revealSpeed={project.heroPathRevealSpeed ?? 1} wave={project.heroPathWave ?? false} />
 	{/if}
 	<!-- Hero + GIF: outside z-[2] so mix-blend-mode blends with body background -->
 	<div class="hero-gif-wrapper">
@@ -32,10 +39,12 @@
 			{#if isVideo}
 				<video
 					src={coverSrc}
-					autoplay
+					use:lazyAutoplay
+					preload="none"
 					loop
 					muted
 					playsinline
+					poster={project.tileImage ? `${base}${project.tileImage}` : undefined}
 					class="hero-cover"
 				></video>
 			{:else}
@@ -49,15 +58,13 @@
 
 		{#each contentBlocks.filter(b => b.fullWidthBg) as block}
 			<div class="fullwidth-bg-section">
-				{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm')}
-					<video
-						src="{base}{block.image}"
-						autoplay
-						loop
-						muted
-						playsinline
-						class="fullwidth-bg-img"
-					></video>
+				{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm') || block.image.endsWith('.mov')}
+					<video use:lazyAutoplay preload="none" loop muted playsinline class="fullwidth-bg-img">
+						<source src="{base}{block.image}" type={block.image.endsWith('.mov') ? 'video/mp4; codecs=hvc1' : 'video/mp4'} />
+						{#if block.imageFallback}
+							<source src="{base}{block.imageFallback}" type="video/webm; codecs=vp9" />
+						{/if}
+					</video>
 				{:else}
 					<img
 						src="{base}{block.image}"
@@ -71,9 +78,9 @@
 	</div>
 
 	<!-- Content: z-[2] renders above GIF -->
-	<div class="relative z-[2]">
+	<div class="relative z-[2]" class:has-fullwidth-bg={hasFullWidthBg}>
 	<!-- Project info -->
-	<section class="relative px-6 pt-12 pb-16 md:px-12 lg:pt-20 lg:pb-24">
+	<section class="relative px-6 pt-12 pb-6 md:px-12 lg:pt-20 lg:pb-10">
 		<div class="mx-auto max-w-4xl" use:scrollReveal>
 			<h1 class="text-text project-heading">
 				{project.name}
@@ -111,22 +118,37 @@
 		</div>
 	</section>
 
+	<!-- Mobile: fullWidthBg inline between header and first content block -->
+	{#each contentBlocks.filter(b => b.fullWidthBg) as block}
+		<div class="mobile-fullwidth-bg">
+			{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm') || block.image.endsWith('.mov')}
+				<video autoplay loop muted playsinline class="fullwidth-bg-img">
+					<source src="{base}{block.image}" type={block.image.endsWith('.mov') ? 'video/mp4; codecs=hvc1' : 'video/mp4'} />
+					{#if block.imageFallback}
+						<source src="{base}{block.imageFallback}" type="video/webm; codecs=vp9" />
+					{/if}
+				</video>
+			{:else}
+				<img src="{base}{block.image}" alt={block.alt || ''} loading="lazy" class="fullwidth-bg-img" />
+			{/if}
+		</div>
+	{/each}
+
 	<!-- Content blocks — image + text -->
 	{#each contentBlocks as block, i}
 		{#if !block.fullWidthBg}
 			{#if block.layout === 'image-left'}
 				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
 					<div class="mx-auto max-w-4xl">
-						<div class="image-left-grid mb-8">
-							<div class="content-tile" use:revealCard>
+						<div class="image-left-grid mb-16">
+							<div class="content-tile" use:revealCard style={block.imageAspect ? `aspect-ratio: ${block.imageAspect}` : ""}>
 								<img
 									src="{base}{block.image}"
 									alt={block.alt || `${project.name} detail ${i + 1}`}
 									loading="lazy"
-									class="content-img"
+									class={block.imageAspect ? "content-img no-parallax" : "content-img"}
 									style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
 								/>
-								<div class="bevel-edge"></div>
 							</div>
 							<div class="image-left-text" use:scrollReveal={{ delay: 180 }}>
 								{#if block.postHeading}
@@ -139,10 +161,34 @@
 						</div>
 					</div>
 				</section>
+			{:else if block.layout === 'portrait-pair'}
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+					<div class="mx-auto max-w-4xl">
+						<div class="portrait-pair-grid mb-8">
+							{#each (block.galleryImages ?? []).slice(0, 2) as img, j}
+								<div class="content-tile portrait-tile" use:revealCard>
+									<img src="{base}{img}" alt="{project.name} portrait {j + 1}" loading="lazy" decoding="async" class="content-img" />
+								</div>
+							{/each}
+						</div>
+					</div>
+				</section>
+		{:else if block.layout === 'landscape-pair'}
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+					<div class="mx-auto max-w-4xl">
+						<div class="portrait-pair-grid mb-8">
+							{#each (block.galleryImages ?? []).slice(0, 2) as img, j}
+								<div class="content-tile landscape-tile" use:revealCard>
+									<img src="{base}{img}" alt="{project.name} landscape {j + 1}" loading="lazy" decoding="async" class="content-img" />
+								</div>
+							{/each}
+						</div>
+					</div>
+				</section>
 			{:else if block.layout === 'gallery'}
-				<section class="content-block-section relative" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex} style={block.sectionStyle ?? ''}>
 					{#if block.heading || block.textBefore}
-						<div class="mx-auto mb-8 max-w-4xl px-6 md:px-12" use:scrollReveal={{ delay: 180 }}>
+						<div class="mx-auto max-w-4xl" class:mb-24={(block.galleryImages ?? []).length > 0} class:mb-8={(block.galleryImages ?? []).length === 0} use:scrollReveal={{ delay: 180 }}>
 							{#if block.heading}
 								<p class="text-text text-base lg:text-lg" style="font-weight: 900;">{block.heading}</p>
 							{/if}
@@ -151,10 +197,14 @@
 							{/if}
 						</div>
 					{/if}
-					<GalleryCarousel images={block.galleryImages ?? []} projectName={project.name} />
+					{#if (block.galleryImages ?? []).length > 0}
+						<div class="-mx-6 md:-mx-12" style="margin-bottom: -40px">
+							<GalleryCarousel images={block.galleryImages ?? []} projectName={project.name} size={block.gallerySize ?? 'default'} />
+						</div>
+					{/if}
 				</section>
 		{:else}
-				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex}>
+				<section class="content-block-section relative px-6 md:px-12" class:first-content-block={hasFullWidthBg && i === firstContentBlockIndex} style={block.stackBelow ? 'margin-top: -1rem' : ''}>
 					<div class="mx-auto max-w-4xl">
 						{#if block.heading || block.textBefore}
 							<div class="mx-auto mb-8 max-w-4xl" use:scrollReveal={{ delay: 180 }}>
@@ -166,15 +216,21 @@
 								{/if}
 							</div>
 						{/if}
-						<div class="content-tile" use:revealCard>
-							<img
-								src="{base}{block.image}"
-								alt={block.alt || `${project.name} detail ${i + 1}`}
-								loading="lazy"
-								class="content-img"
-								style={block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}
-							/>
-							<div class="bevel-edge"></div>
+						<div class="content-tile" use:revealCard style={block.imageAspect ? `aspect-ratio: ${block.imageAspect}` : ""}>
+							{#if block.image.endsWith('.mp4') || block.image.endsWith('.webm')}
+								<video src="{base}{block.image}" use:lazyAutoplay preload="none" loop muted playsinline class="content-img"></video>
+							{:else}
+								<img
+									src="{base}{block.image}"
+									alt={block.alt || `${project.name} detail ${i + 1}`}
+									loading="lazy"
+									decoding="async"
+									class={block.imageAspect === "auto" ? "content-img natural" + (block.lightbox ? " lightbox-trigger" : "") : block.imageAspect ? "content-img no-parallax" : "content-img"}
+									style="{block.imageFit === 'contain' ? 'object-fit: contain; object-position: center 77%;' : ''}{block.imagePosition ? `object-position: ${block.imagePosition};` : ''}"
+									onclick={block.lightbox ? () => lightboxSrc = base + block.image : undefined}
+
+								/>
+							{/if}
 						</div>
 						{#if block.postHeading || block.text}
 							<div class="mx-auto mt-8 mb-8 max-w-4xl" use:scrollReveal={{ delay: 180 }}>
@@ -206,7 +262,6 @@
 							loading="lazy"
 							class="content-img"
 						/>
-						<div class="bevel-edge"></div>
 					</div>
 				{/if}
 				<p class="text-text mx-auto mt-8 mb-8 max-w-4xl text-base lg:text-lg">{project.learnings}</p>
@@ -242,7 +297,17 @@
 		</a>
 	</div>
 	</div><!-- /z-[2] over GIF -->
+
+	{#if project.id === 'peebee'}
+		<GrassGrowth />
+	{/if}
 </main>
+
+{#if lightboxSrc}
+	<div class="lightbox-overlay" role="button" tabindex="0" onclick={() => lightboxSrc = ''} onkeydown={(e) => e.key === 'Escape' && (lightboxSrc = '')}>
+		<img src={lightboxSrc} alt="fullscreen" class="lightbox-img" />
+	</div>
+{/if}
 
 <Footer />
 
@@ -310,6 +375,32 @@
 		}
 	}
 
+	@supports (animation-timeline: view()) {
+		.content-img.no-parallax {
+			height: 100%;
+			margin-top: 0;
+			animation: none;
+		}
+	}
+
+	/* Natural aspect ratio — image determines tile height, no crop */
+	.content-tile:has(.natural) {
+		aspect-ratio: auto;
+	}
+
+	.content-img.natural {
+		height: auto;
+		object-fit: initial;
+	}
+
+	@supports (animation-timeline: view()) {
+		.content-img.natural {
+			height: auto;
+			margin-top: 0;
+			animation: none;
+		}
+	}
+
 	@keyframes parallax-img {
 		from { transform: translateY(10%); }
 		to   { transform: translateY(-10%); }
@@ -331,14 +422,6 @@
 
 	.back-pill:hover {
 		opacity: 0.6;
-	}
-
-	.bevel-edge {
-		position: absolute;
-		inset: 0;
-		border-radius: inherit;
-		pointer-events: none;
-		border: 2px solid rgba(255, 255, 255, 0.35);
 	}
 
 	.hero-gif-wrapper {
@@ -378,6 +461,20 @@
 		align-items: start;
 	}
 
+	.portrait-pair-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2rem;
+	}
+
+	.portrait-tile {
+		aspect-ratio: 2/3;
+	}
+
+	.landscape-tile {
+		aspect-ratio: 3/2;
+	}
+
 	.image-left-text {
 		display: flex;
 		flex-direction: column;
@@ -391,6 +488,28 @@
 		}
 	}
 
+	.lightbox-trigger {
+		cursor: zoom-in;
+	}
+
+	.lightbox-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		background: rgba(0, 0, 0, 0.9);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: zoom-out;
+	}
+
+	.lightbox-img {
+		max-width: 95vw;
+		max-height: 95vh;
+		object-fit: contain;
+		border-radius: 0.5rem;
+	}
+
 	.project-heading {
 		font-family: 'area-inktrap', sans-serif;
 		font-weight: 900;
@@ -401,5 +520,26 @@
 	.project-light {
 		font-family: 'area-inktrap-light', sans-serif;
 		font-style: italic;
+	}
+
+	.mobile-fullwidth-bg {
+		display: none;
+	}
+
+	@media (max-width: 767px) {
+		.has-fullwidth-bg {
+			padding-top: 0;
+		}
+		.fullwidth-bg-section {
+			display: none;
+		}
+		.mobile-fullwidth-bg {
+			display: block;
+			width: 85%;
+			margin: -3rem auto 2rem;
+		}
+		.first-content-block {
+			margin-top: 0;
+		}
 	}
 </style>

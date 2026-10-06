@@ -62,16 +62,19 @@ body {
 	isolation: isolate;
 }
 
-body::before {
-	content: '';
-	position: fixed;
-	inset: 0;
-	z-index: -1;
-	pointer-events: none;
-	opacity: 0.08;
-	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='discrete' tableValues='0 0 0.4 1'/%3E%3CfeFuncG type='discrete' tableValues='0 0 0.4 1'/%3E%3CfeFuncB type='discrete' tableValues='0 0 0.4 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
-	background-repeat: repeat;
-	background-size: 512px 512px;
+/* View Transitions — smooth cross-page fade */
+@keyframes vt-fade-out {
+	to { opacity: 0; }
+}
+@keyframes vt-fade-in {
+	from { opacity: 0; }
+}
+
+::view-transition-old(root) {
+	animation: 150ms ease both vt-fade-out;
+}
+::view-transition-new(root) {
+	animation: 250ms ease both vt-fade-in;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -86,5 +89,10 @@ body::before {
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
+	}
+
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none;
 	}
 }

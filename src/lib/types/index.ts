@@ -60,10 +60,18 @@ export interface ProjectContentBlock {
 	textBefore?: string;
 	text?: string;
 	postHeading?: string;
-	layout?: 'default' | 'image-left' | 'gallery';
+	layout?: 'default' | 'image-left' | 'gallery' | 'portrait-pair';
 	galleryImages?: string[];
+	gallerySize?: 'default' | 'large';
 	fullWidthBg?: boolean;
+	imageFallback?: string;
 	imageFit?: 'cover' | 'contain';
+	imagePosition?: string;
+	imageAspect?: string;
+	imageScale?: number;
+	stackBelow?: boolean;
+	lightbox?: boolean;
+	sectionStyle?: string;
 }
 
 export interface Project {
@@ -93,7 +101,12 @@ export interface Project {
 	heroPathSrc?: string;
 	heroPathTopOffset?: number;
 	heroPathScale?: number;
+	heroPathScaleX?: number;
+	heroPathScaleY?: number;
+	heroPathRevealSpeed?: number;
+	heroPathWave?: boolean;
 	heroPathText?: string;
+	hideDescription?: boolean;
 }
 
 export interface GarlandPoint {

@@ -2,11 +2,23 @@
 	import '../app.css';
 	import { generateCssVars, getConfig } from '$lib/utils/theme';
 	import { base } from '$app/paths';
+	import { onNavigate } from '$app/navigation';
 
 	let { children } = $props();
 
 	const config = getConfig();
 	const cssVars = generateCssVars();
+
+	// View Transitions API — instant-feeling page navigation
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 </script>
 
 <svelte:head>

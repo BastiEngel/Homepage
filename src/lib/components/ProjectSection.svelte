@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Project } from '$lib/types';
 	import { scrollReveal } from '$lib/utils/scrollAnimation';
+	import { registerScaleTile } from '$lib/utils/tileScaleEffect';
 	import { base } from '$app/paths';
 
 	interface Props {
@@ -11,62 +12,56 @@
 	let { project, index = 0 }: Props = $props();
 
 	const reversed = index % 2 === 0;
-	const coverSrc = `${base}${project.cover}`;
+	const coverSrc = `${base}${project.tileImage ?? project.cover}`;
 	const isGif = project.cover.endsWith('.gif');
 
 	let imgEl: HTMLImageElement | undefined = $state();
-	let visible = $state(false);
 	let tileEl: HTMLElement | undefined = $state();
-	let tileVisible = $state(false);
-	const fromRight = index % 2 === 0;
+	let visible = $state(false);
 
+	// Only needed to lazily swap in GIF sources once they're actually on screen
 	$effect(() => {
-		if (!tileEl) return;
-		const observer = new IntersectionObserver(
-			([entry]) => { if (entry.isIntersecting) { tileVisible = true; observer.disconnect(); } },
-			{ threshold: 0.05 }
-		);
-		observer.observe(tileEl);
+		if (!imgEl || !isGif) return;
+		const observer = new IntersectionObserver((entries) => {
+			for (const entry of entries) {
+				if (entry.target === imgEl) visible = entry.isIntersecting;
+			}
+		}, { threshold: 0.05 });
+		observer.observe(imgEl);
 		return () => observer.disconnect();
 	});
 
-	// For GIFs: only set src when in viewport so they play on scroll
+	// Continuous scroll-linked scale (see tileScaleEffect.ts) — all project
+	// tiles share ONE batched read/write loop instead of each running its
+	// own, which was causing layout-thrashing stutter (every tile's rAF
+	// callback read its own rect then wrote its own transform, interleaved
+	// with every other tile's read/write in the same frame).
 	$effect(() => {
-		if (!imgEl || !isGif) return;
-
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				visible = entry.isIntersecting;
-			},
-			{ threshold: 0.1 }
-		);
-
-		observer.observe(imgEl);
-		return () => observer.disconnect();
+		if (!tileEl) return;
+		return registerScaleTile(tileEl);
 	});
 </script>
 
 <section id={project.id} class="relative z-[6] px-6 py-10 md:px-12 lg:py-16">
 	<div
-		class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-10 lg:gap-16"
-		style="--cols: {reversed ? '2fr 3fr' : '3fr 2fr'};"
+		class="mx-auto grid max-w-3xl grid-cols-1 items-start gap-10 lg:max-w-5xl lg:gap-16"
+		style="--cols: {reversed ? '1fr 1.28fr' : '1.28fr 1fr'};"
 	>
 		<!-- Image -->
 		<div
 			bind:this={tileEl}
-			class="project-tile overflow-hidden rounded-xl"
+			class="project-tile overflow-hidden rounded-2xl"
 			class:lg:order-2={reversed}
-			class:tile-visible={tileVisible}
-			style="--fan-origin: {fromRight ? 'right bottom' : 'left bottom'}; --fan-rotate: {fromRight ? '2deg' : '-2deg'};"
 		>
 			{#if project.id !== 'about'}
-				<a href="{base}/projects/{project.id}">
+				<a href="{base}/projects/{project.id}" data-sveltekit-reload>
 					<img
 						bind:this={imgEl}
 						src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
 						alt="{project.name} cover"
 						loading="lazy"
-						class="aspect-4/3 w-full object-cover"
+						decoding="async"
+						class="aspect-[3/2] w-full object-cover"
 					/>
 				</a>
 			{:else}
@@ -75,7 +70,8 @@
 					src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
 					alt="{project.name} cover"
 					loading="lazy"
-					class="aspect-4/3 w-full object-cover"
+					decoding="async"
+					class="aspect-[3/2] w-full object-cover"
 				/>
 			{/if}
 			<div class="bevel-edge"></div>
@@ -83,13 +79,20 @@
 
 		<!-- Text column -->
 		<div class="flex flex-col justify-start" class:lg:order-1={reversed} use:scrollReveal>
-			<h2 class="font-heading text-text font-bold leading-relaxed" style="font-size: calc(1em * 1.618); margin-top: -0.55em;">
-				{project.name}
-			</h2>
-			<p class="text-text text-base leading-relaxed lg:text-lg">
-				{project.description}
-			</p>
-			</div>
+			{#if project.id !== 'about'}
+				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="project-text-link text-text no-underline">
+					<h2 class="project-title">{project.name}</h2>
+					<p class="text-text text-base lg:text-lg">
+						{project.description}
+					</p>
+				</a>
+			{:else}
+				<h2 class="text-text project-title">{project.name}</h2>
+				<p class="text-text text-base lg:text-lg">
+					{project.description}
+				</p>
+			{/if}
+		</div>
 	</div>
 </section>
 
@@ -103,26 +106,22 @@
 	.project-tile {
 		position: relative;
 		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
-		transform-origin: var(--fan-origin);
-		transform: rotate(var(--fan-rotate)) scale(0.97);
-		opacity: 0;
-		transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		transform-origin: top center;
+		will-change: transform;
+		/* Align to the x-height of the adjacent title. Verified visually in
+		   the browser by overlaying marker lines against the rendered glyphs
+		   (an inline-span bounding rect reflects the line box, not the glyph
+		   ink, so that approach gave a false reading) — 17px below the
+		   heading's own box top lines up with the top of its lowercase
+		   letters. */
+		margin-top: 17px;
 	}
 
-	.project-tile.tile-visible {
-		transform: rotate(0deg) scale(1);
-		opacity: 1;
-	}
-
-	@media (max-width: 1023px) {
-		.project-tile {
-			transform-origin: center center;
-			transform: perspective(800px) rotateY(var(--fan-rotate)) scale(0.98);
-		}
-
-		.project-tile.tile-visible {
-			transform: perspective(800px) rotateY(0deg) scale(1);
-		}
+	.project-title {
+		font-family: 'area-inktrap', sans-serif;
+		font-weight: 900;
+		font-size: 32.36px;
+		line-height: 48.54px; /* 1.5 × 32.36px */
 	}
 
 	.bevel-edge {
@@ -130,6 +129,15 @@
 		inset: 0;
 		border-radius: inherit;
 		pointer-events: none;
-		border: 2px solid rgba(255, 255, 255, 0.35);
+		border: none;
+	}
+
+	.project-text-link {
+		display: block;
+		transition: opacity 0.2s;
+	}
+
+	.project-text-link:hover {
+		opacity: 0.7;
 	}
 </style>

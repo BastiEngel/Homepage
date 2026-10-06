@@ -22,15 +22,17 @@
 			status = 'idle';
 		}, 3000);
 	}
+
+	const buttonActive = $derived(status === 'sending' || status === 'sent');
 </script>
 
 <section id="contact" class="relative z-[6] px-6 py-16 md:px-12 lg:py-24">
 	<div class="mx-auto max-w-2xl" use:scrollReveal>
-		<h2 class="font-heading text-text text-center text-2xl font-bold sm:text-3xl lg:text-4xl">
+		<h2 class="section-title text-text text-center">
 			get in touch
 		</h2>
 
-		<form onsubmit={handleSubmit} class="mt-10 space-y-5">
+		<form onsubmit={handleSubmit} class="mt-5 space-y-5">
 			<div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 				<div>
 					<label for="name" class="text-text mb-1.5 block text-sm font-medium">name</label>
@@ -73,9 +75,10 @@
 					type="submit"
 					disabled={status === 'sending'}
 					class="btn-submit"
+					class:is-active={buttonActive}
 				>
 					{#if status === 'sent'}
-						sent!
+						thanks :)
 					{:else if status === 'sending'}
 						sending...
 					{:else}
@@ -88,16 +91,25 @@
 </section>
 
 <style>
+	.section-title {
+		font-family: 'area-inktrap', sans-serif;
+		font-weight: 900;
+		font-size: 32.36px;
+		line-height: 48.54px; /* 1.5 × 32.36px */
+	}
+
 	.form-input {
 		width: 100%;
 		padding: 10px 14px;
 		border-radius: 10px;
 		border: 1px solid var(--color-border);
-		background: var(--color-surface);
+		background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 		color: var(--color-text);
 		font-size: 15px;
 		font-family: var(--font-body);
-		transition: border-color 0.2s, box-shadow 0.2s;
+		transition: border-color 0.25s ease, background-color 0.25s ease;
 		outline: none;
 		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
 	}
@@ -108,7 +120,7 @@
 
 	.form-input:focus {
 		border-color: var(--color-line);
-		box-shadow: 0 0 0 3px rgba(114, 107, 255, 0.15);
+		background-color: color-mix(in srgb, var(--color-line) 6%, color-mix(in srgb, var(--color-bg) 80%, transparent) 94%);
 	}
 
 	.btn-submit {
@@ -117,23 +129,30 @@
 		justify-content: center;
 		padding: 12px 32px;
 		border-radius: 10px;
-		border: none;
-		background: var(--color-line);
-		color: #fff;
+		border: 1px solid var(--color-border);
+		background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		color: var(--color-text);
 		font-size: 15px;
 		font-weight: 600;
 		font-family: var(--font-body);
 		cursor: pointer;
-		transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+		transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
 	}
 
 	.btn-submit:hover {
-		background: var(--color-primary-hover);
+		border-color: var(--color-line);
 		box-shadow: 0 4px 14px rgba(114, 107, 255, 0.3);
 		transform: translateY(-1px);
 	}
 
-	.btn-submit:active {
+	.btn-submit:active,
+	.btn-submit.is-active {
+		background-color: var(--color-line);
+		border-color: var(--color-line);
+		color: #fff;
 		transform: translateY(0);
 	}
 
