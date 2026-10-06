@@ -30,14 +30,18 @@
 		return () => observer.disconnect();
 	});
 
-	// Continuous scroll-linked scale: the tile is smaller the further its
-	// center sits from the viewport center, full size (1, its original,
-	// unscaled size/position) around the middle, and shrinks again as it
-	// scrolls past — only runs the rAF loop while the tile is near the
-	// viewport.
+	// Continuous scroll-linked scale: full size (1, the original, unscaled
+	// size/position) for the whole middle stretch of the viewport, easing
+	// down to MIN_SCALE over a window straddling each edge — weighted mostly
+	// OUTSIDE the viewport (RAMP_OUTSIDE) so growth is clearly already under
+	// way well before the tile becomes visible, finishing quickly over just
+	// RAMP_INSIDE once it's crossed in. The plateau covers most of the
+	// viewport, not just a narrow band around its center. Only runs the rAF
+	// loop while the tile is near the viewport.
 	const MIN_SCALE = 0.94; // smaller size difference than the original (was 0.85), but still visible
-	const PLATEAU = 0.15; // fraction of the ramp that stays at full size around center
-	const EXTRA_RANGE = 0.15; // small head start before the tile is visible — 0.8 stretched the whole ramp so thin it was barely visible
+	const RAMP_OUTSIDE = 300; // px below/above the edge where the transition starts
+	const RAMP_INSIDE = 60; // px past the edge where it's already finished
+	const RAMP_TOTAL = RAMP_OUTSIDE + RAMP_INSIDE;
 
 	// Smooth, monotonic ease (exponential in/out — an even more extreme
 	// slow/fast/slow curve than quintic: nearly flat at both ends, steep
@@ -53,23 +57,22 @@
 	$effect(() => {
 		if (!tileEl) return;
 		let rafId = 0;
-		// Measured once via offsetHeight (layout size, unaffected by our own
-		// `transform: scale()`), so the distance calc below never reads back
-		// its own previous output — using the live, already-scaled
-		// getBoundingClientRect().height here would feed the curve's output
-		// into its own input and blunt the eased shape.
-		const naturalHeight = tileEl.offsetHeight;
 
 		function update() {
 			if (!tileEl) return;
 			const rect = tileEl.getBoundingClientRect();
-			const elCenter = rect.top + naturalHeight / 2;
-			const viewportCenter = window.innerHeight / 2;
-			const maxDist = window.innerHeight * (0.5 + EXTRA_RANGE) + naturalHeight / 2;
-			const rawT = maxDist > 0 ? Math.min(Math.abs(elCenter - viewportCenter) / maxDist, 1) : 0;
-			const plateaued = rawT <= PLATEAU ? 0 : (rawT - PLATEAU) / (1 - PLATEAU);
-			const eased = easeInOutExpo(Math.min(plateaued, 1));
-			const scale = 1 - eased * (1 - MIN_SCALE);
+			const vh = window.innerHeight;
+
+			// 0 at RAMP_OUTSIDE below the bottom edge (still off-screen), 1 by
+			// RAMP_INSIDE past it (entering from below)
+			const enterT = Math.min(Math.max((vh - rect.top + RAMP_OUTSIDE) / RAMP_TOTAL, 0), 1);
+			// 0 at RAMP_OUTSIDE above the top edge (already off-screen), 1 at
+			// RAMP_INSIDE short of it (exiting past the top)
+			const exitT = Math.min(Math.max((rect.top + RAMP_OUTSIDE) / RAMP_TOTAL, 0), 1);
+
+			const inside = Math.min(enterT, exitT);
+			const eased = easeInOutExpo(inside);
+			const scale = MIN_SCALE + eased * (1 - MIN_SCALE);
 			tileEl.style.transform = `scale(${scale.toFixed(4)})`;
 			rafId = requestAnimationFrame(update);
 		}
