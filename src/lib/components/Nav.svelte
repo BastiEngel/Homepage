@@ -8,6 +8,7 @@ import projectsData from '../../data/projects.json';
 	let scrolled = $state(false);
 	let menuOpen = $state(false);
 	let projectsOpen = $state(false);
+	let closingProjects = $state(false);
 	let mobileProjectsOpen = $state(false);
 	let hoveredIdx = $state(-1);
 
@@ -146,7 +147,7 @@ import projectsData from '../../data/projects.json';
 	$effect(() => {
 		if (!projectsOpen) return;
 		function onClickOutside(e: MouseEvent) {
-			if (!(e.target as Element).closest('.projects-dropdown-wrapper')) projectsOpen = false;
+			if (!(e.target as Element).closest('.projects-dropdown-wrapper')) requestCloseProjects();
 		}
 		window.addEventListener('click', onClickOutside);
 		return () => window.removeEventListener('click', onClickOutside);
@@ -155,14 +156,27 @@ import projectsData from '../../data/projects.json';
 	// Close the keyring dropdown shortly after the page is scrolled
 	$effect(() => {
 		if (!projectsOpen) return;
-		let closeTimer = 0;
+		let scrollDebounce = 0;
 		function onScroll() {
-			clearTimeout(closeTimer);
-			closeTimer = window.setTimeout(() => { projectsOpen = false; }, 150);
+			clearTimeout(scrollDebounce);
+			scrollDebounce = window.setTimeout(requestCloseProjects, 150);
 		}
 		window.addEventListener('scroll', onScroll, { passive: true });
-		return () => { window.removeEventListener('scroll', onScroll); clearTimeout(closeTimer); };
+		return () => { window.removeEventListener('scroll', onScroll); clearTimeout(scrollDebounce); };
 	});
+
+	// Animate the keyring out (mirrors the drop-in) before unmounting it
+	const PROJECTS_EXIT_MS = 220;
+	let exitTimer = 0;
+	function requestCloseProjects() {
+		if (!projectsOpen || closingProjects) return;
+		closingProjects = true;
+		clearTimeout(exitTimer);
+		exitTimer = window.setTimeout(() => {
+			projectsOpen = false;
+			closingProjects = false;
+		}, PROJECTS_EXIT_MS);
+	}
 
 	const tagRects: (DOMRect | undefined)[] = [];
 
@@ -198,7 +212,7 @@ import projectsData from '../../data/projects.json';
 
 	<div class="desktop-links">
 		<div class="projects-dropdown-wrapper">
-			<button onclick={() => isHomepage ? window.scrollTo({ top: 0, behavior: 'smooth' }) : (projectsOpen = !projectsOpen)} class="nav-link projects-btn" class:active={projectsOpen && !isHomepage}>
+			<button onclick={() => isHomepage ? window.scrollTo({ top: 0, behavior: 'smooth' }) : (projectsOpen ? requestCloseProjects() : (projectsOpen = true))} class="nav-link projects-btn" class:active={projectsOpen && !isHomepage}>
 				projects
 				{#if !isHomepage}
 				<svg class="chevron" class:rotated={projectsOpen} width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -208,7 +222,7 @@ import projectsData from '../../data/projects.json';
 			</button>
 
 			{#if projectsOpen}
-				<div class="keyring-drop">
+				<div class="keyring-drop" class:closing={closingProjects}>
 					<div class="bundle-sway" bind:this={bundleSwayEl}>
 
 					<!-- PASS 1: back ring halves (behind keyring, z-index auto) -->
@@ -349,6 +363,26 @@ import projectsData from '../../data/projects.json';
 		width: 0;
 		height: 0;
 		overflow: visible;
+		transform-origin: 50% 0;
+	}
+
+	.keyring-drop.closing {
+		animation: keyringRetract 0.22s ease both;
+		pointer-events: none;
+	}
+	@keyframes keyringRetract {
+		from { opacity: 1; transform: translateY(0) scale(1); }
+		to   { opacity: 0; transform: translateY(-16px) scale(0.92); }
+	}
+
+	/* Mirror the drop-in stagger on the way out */
+	.keyring-drop.closing .drop-anim {
+		animation: dropFadeOut 0.16s ease both;
+		animation-delay: var(--drop-delay);
+	}
+	@keyframes dropFadeOut {
+		from { opacity: 1; }
+		to   { opacity: 0; }
 	}
 
 	.nav-keyring {
