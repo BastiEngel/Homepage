@@ -152,6 +152,18 @@ import projectsData from '../../data/projects.json';
 		return () => window.removeEventListener('click', onClickOutside);
 	});
 
+	// Close the keyring dropdown shortly after the page is scrolled
+	$effect(() => {
+		if (!projectsOpen) return;
+		let closeTimer = 0;
+		function onScroll() {
+			clearTimeout(closeTimer);
+			closeTimer = window.setTimeout(() => { projectsOpen = false; }, 150);
+		}
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => { window.removeEventListener('scroll', onScroll); clearTimeout(closeTimer); };
+	});
+
 	const tagRects: (DOMRect | undefined)[] = [];
 
 	function handleMouseEnter(i: number) {
