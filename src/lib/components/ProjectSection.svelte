@@ -146,11 +146,13 @@
 		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
 		transform-origin: top center;
 		will-change: transform;
-		/* Align to the x-height of the adjacent title. Measured directly in
-		   the browser (DOM probe glyph, not a guess): the title's own
-		   font overflows its CSS line-box, so the x-height sits ~2.5px
-		   ABOVE the heading's box top, not below it. */
-		margin-top: -2.5px;
+		/* Align to the x-height of the adjacent title. Verified visually in
+		   the browser by overlaying marker lines against the rendered glyphs
+		   (an inline-span bounding rect reflects the line box, not the glyph
+		   ink, so that approach gave a false reading) — 17px below the
+		   heading's own box top lines up with the top of its lowercase
+		   letters. */
+		margin-top: 17px;
 	}
 
 	.project-title {
