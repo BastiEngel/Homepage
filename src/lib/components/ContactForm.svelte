@@ -111,7 +111,10 @@
 		font-family: var(--font-body);
 		transition: border-color 0.25s ease, box-shadow 0.25s ease;
 		outline: none;
-		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+		/* Third shadow layer present (but invisible) at rest, so the focus
+		   ring can fade its spread/alpha in smoothly instead of popping in —
+		   browsers only interpolate box-shadow lists of matching length. */
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06), 0 0 0 0 rgba(114, 107, 255, 0);
 	}
 
 	.form-input::placeholder {
