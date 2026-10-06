@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Project } from '$lib/types';
 	import { scrollReveal } from '$lib/utils/scrollAnimation';
+	import { registerScaleTile } from '$lib/utils/tileScaleEffect';
 	import { base } from '$app/paths';
 
 	interface Props {
@@ -30,66 +31,14 @@
 		return () => observer.disconnect();
 	});
 
-	// Continuous scroll-linked scale: full size (1, the original, unscaled
-	// size/position) for the whole middle stretch of the viewport, easing
-	// down to MIN_SCALE over a window straddling each edge — weighted mostly
-	// OUTSIDE the viewport (RAMP_OUTSIDE) so growth is clearly already under
-	// way well before the tile becomes visible, finishing quickly over just
-	// RAMP_INSIDE once it's crossed in. The plateau covers most of the
-	// viewport, not just a narrow band around its center. Only runs the rAF
-	// loop while the tile is near the viewport.
-	const MIN_SCALE = 0.94; // smaller size difference than the original (was 0.85), but still visible
-	const RAMP_OUTSIDE = 0; // px below/above the edge where the transition starts — right at the edge
-	const RAMP_INSIDE = 250; // px past the edge over which it eases in — 60 was so short it read as a snap/jump instead of a visible animation
-	const RAMP_TOTAL = RAMP_OUTSIDE + RAMP_INSIDE;
-
-	// Smooth, monotonic ease (exponential in/out — an even more extreme
-	// slow/fast/slow curve than quintic: nearly flat at both ends, steep
-	// through the middle, so the non-linearity reads clearly even over a
-	// small scale range) — never overshoots past 1 or below MIN_SCALE, so
-	// the "biggest" state always matches the original pre-effect size exactly.
-	function easeInOutExpo(x: number): number {
-		if (x <= 0) return 0;
-		if (x >= 1) return 1;
-		return x < 0.5 ? Math.pow(2, 20 * x - 10) / 2 : (2 - Math.pow(2, -20 * x + 10)) / 2;
-	}
-
+	// Continuous scroll-linked scale (see tileScaleEffect.ts) — all project
+	// tiles share ONE batched read/write loop instead of each running its
+	// own, which was causing layout-thrashing stutter (every tile's rAF
+	// callback read its own rect then wrote its own transform, interleaved
+	// with every other tile's read/write in the same frame).
 	$effect(() => {
 		if (!tileEl) return;
-		let rafId = 0;
-
-		function update() {
-			if (!tileEl) return;
-			const rect = tileEl.getBoundingClientRect();
-			const vh = window.innerHeight;
-
-			// 0 at RAMP_OUTSIDE below the bottom edge (still off-screen), 1 by
-			// RAMP_INSIDE past it (entering from below)
-			const enterT = Math.min(Math.max((vh - rect.top + RAMP_OUTSIDE) / RAMP_TOTAL, 0), 1);
-			// 0 at RAMP_OUTSIDE above the top edge (already off-screen), 1 at
-			// RAMP_INSIDE short of it (exiting past the top)
-			const exitT = Math.min(Math.max((rect.top + RAMP_OUTSIDE) / RAMP_TOTAL, 0), 1);
-
-			const inside = Math.min(enterT, exitT);
-			const eased = easeInOutExpo(inside);
-			const scale = MIN_SCALE + eased * (1 - MIN_SCALE);
-			tileEl.style.transform = `scale(${scale.toFixed(4)})`;
-			rafId = requestAnimationFrame(update);
-		}
-
-		const io = new IntersectionObserver(
-			([entry]) => {
-				cancelAnimationFrame(rafId);
-				if (entry.isIntersecting) rafId = requestAnimationFrame(update);
-			},
-			{ rootMargin: '100% 0px 100% 0px' }
-		);
-		if (tileEl) io.observe(tileEl);
-
-		return () => {
-			io.disconnect();
-			cancelAnimationFrame(rafId);
-		};
+		return registerScaleTile(tileEl);
 	});
 </script>
 
