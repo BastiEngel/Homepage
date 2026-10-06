@@ -31,10 +31,21 @@
 	});
 
 	// Continuous scroll-linked scale: the tile is smaller the further its
-	// center sits from the viewport center, full size (1) right in the
-	// middle, and shrinks again as it scrolls past — only runs the rAF loop
-	// while the tile is actually near the viewport.
-	const MIN_SCALE = 0.85;
+	// center sits from the viewport center, full size (1, its original,
+	// unscaled size/position) around the middle, and shrinks again as it
+	// scrolls past — only runs the rAF loop while the tile is near the
+	// viewport.
+	const MIN_SCALE = 0.93; // smaller size difference than before (was 0.85)
+	const PLATEAU = 0.18; // fraction of the ramp that stays at full size around center
+	const EXTRA_RANGE = 0.8; // extends the ramp this many extra viewport-heights beyond each edge, so it's already under way before the tile is visible
+
+	// Smooth, monotonic ease (cubic in/out) — never overshoots past 1 or
+	// below MIN_SCALE, so the "biggest" state always matches the original
+	// pre-effect size exactly.
+	function easeInOutCubic(x: number): number {
+		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+	}
+
 	$effect(() => {
 		if (!tileEl) return;
 		let rafId = 0;
@@ -44,9 +55,11 @@
 			const rect = tileEl.getBoundingClientRect();
 			const elCenter = rect.top + rect.height / 2;
 			const viewportCenter = window.innerHeight / 2;
-			const maxDist = window.innerHeight / 2 + rect.height / 2;
-			const t = maxDist > 0 ? Math.min(Math.abs(elCenter - viewportCenter) / maxDist, 1) : 0;
-			const scale = 1 - t * (1 - MIN_SCALE);
+			const maxDist = window.innerHeight * (0.5 + EXTRA_RANGE) + rect.height / 2;
+			const rawT = maxDist > 0 ? Math.min(Math.abs(elCenter - viewportCenter) / maxDist, 1) : 0;
+			const plateaued = rawT <= PLATEAU ? 0 : (rawT - PLATEAU) / (1 - PLATEAU);
+			const eased = easeInOutCubic(Math.min(plateaued, 1));
+			const scale = 1 - eased * (1 - MIN_SCALE);
 			tileEl.style.transform = `scale(${scale.toFixed(4)})`;
 			rafId = requestAnimationFrame(update);
 		}
@@ -56,7 +69,7 @@
 				cancelAnimationFrame(rafId);
 				if (entry.isIntersecting) rafId = requestAnimationFrame(update);
 			},
-			{ rootMargin: '50% 0px 50% 0px' }
+			{ rootMargin: '100% 0px 100% 0px' }
 		);
 		if (tileEl) io.observe(tileEl);
 
