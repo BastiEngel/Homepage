@@ -26,7 +26,7 @@
 
 <section id="contact" class="relative z-[6] px-6 py-16 md:px-12 lg:py-24">
 	<div class="mx-auto max-w-2xl" use:scrollReveal>
-		<h2 class="font-heading text-text text-center text-2xl font-bold sm:text-3xl lg:text-4xl">
+		<h2 class="section-title text-text text-center">
 			get in touch
 		</h2>
 
@@ -88,6 +88,13 @@
 </section>
 
 <style>
+	.section-title {
+		font-family: 'area-inktrap', sans-serif;
+		font-weight: 900;
+		font-size: 32.36px;
+		line-height: 48.54px; /* 1.5 × 32.36px */
+	}
+
 	.form-input {
 		width: 100%;
 		padding: 10px 14px;
