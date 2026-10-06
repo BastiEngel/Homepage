@@ -35,7 +35,7 @@
 	// unscaled size/position) around the middle, and shrinks again as it
 	// scrolls past — only runs the rAF loop while the tile is near the
 	// viewport.
-	const MIN_SCALE = 0.88; // smaller size difference than the original (was 0.85), but still visible
+	const MIN_SCALE = 0.91; // smaller size difference than the original (was 0.85), but still visible
 	const PLATEAU = 0.15; // fraction of the ramp that stays at full size around center
 	const EXTRA_RANGE = 0.15; // small head start before the tile is visible — 0.8 stretched the whole ramp so thin it was barely visible
 
