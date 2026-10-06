@@ -68,9 +68,11 @@ import projectsData from '../../data/projects.json';
 	let rafId = 0;
 	let lastFrame = 0;
 
-	// Swing-in spring state — large initial angle that decays to 0
+	// Swing spring state — large initial angle that decays to 0 on open;
+	// on close the target is pushed back out, so the same spring runs in reverse.
 	let introAngle = 0;
 	let introVel = 0;
+	let introTarget = 0;
 
 	function rafLoop(now: number) {
 		if (now - lastFrame < 33) { rafId = requestAnimationFrame(rafLoop); return; }
@@ -79,11 +81,11 @@ import projectsData from '../../data/projects.json';
 		if (!bundleT0) bundleT0 = now;
 		const bt = (now - bundleT0) / 1000;
 
-		// Intro spring: decays from large starting angle toward 0
-		const iF = (0 - introAngle) * 0.07;
+		// Spring toward introTarget (0 while open, swung back out while closing)
+		const iF = (introTarget - introAngle) * 0.07;
 		introVel = (introVel + iF) * 0.87;
 		introAngle += introVel;
-		if (Math.abs(introAngle) < 0.05 && Math.abs(introVel) < 0.05) introAngle = 0;
+		if (introTarget === 0 && Math.abs(introAngle) < 0.05 && Math.abs(introVel) < 0.05) introAngle = 0;
 
 		// Gentle idle sway (sine), blends in as intro settles
 		const sineIdle = 8 * Math.sin(bt * 0.65);
@@ -130,6 +132,7 @@ import projectsData from '../../data/projects.json';
 			bundleT0 = 0;
 			introAngle = -70;
 			introVel = 0;
+			introTarget = 0;
 			masterAngle = -70;
 			physics.forEach(p => { p.angle = 0; p.velocity = 0; p.target = 0; p.swayBlend = 1; p.t0 = 0; });
 			rafId = requestAnimationFrame(rafLoop);
@@ -165,12 +168,14 @@ import projectsData from '../../data/projects.json';
 		return () => { window.removeEventListener('scroll', onScroll); clearTimeout(scrollDebounce); };
 	});
 
-	// Animate the keyring out (mirrors the drop-in) before unmounting it
+	// Close the keyring by reversing the same intro spring: push its target
+	// back out so it swings away exactly like it swung in, just backwards.
 	const PROJECTS_EXIT_MS = 650;
 	let exitTimer = 0;
 	function requestCloseProjects() {
 		if (!projectsOpen || closingProjects) return;
 		closingProjects = true;
+		introTarget = -70;
 		clearTimeout(exitTimer);
 		exitTimer = window.setTimeout(() => {
 			projectsOpen = false;
@@ -363,18 +368,16 @@ import projectsData from '../../data/projects.json';
 		width: 0;
 		height: 0;
 		overflow: visible;
-		transform-origin: 50% 0;
 	}
 
+	/* The swing itself is the same spring that drives the drop-in, just run
+	   in reverse (see requestCloseProjects) — only fade it out right at the
+	   end, once it's swung back out of the way. */
 	.keyring-drop.closing {
-		animation: keyringSwingAway 0.65s both;
 		pointer-events: none;
-	}
-	@keyframes keyringSwingAway {
-		0%   { opacity: 1; transform: rotate(0deg);   animation-timing-function: ease-in-out; }
-		28%  { opacity: 1; transform: rotate(-24deg); animation-timing-function: ease-in; }       /* small swing right: bigger amplitude, slow, build momentum */
-		65%  { opacity: 1; transform: rotate(55deg);  animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.3); } /* big swing left, accelerating, far past where it came to rest */
-		100% { opacity: 0; transform: rotate(92deg); } /* swing carries it up and away — no separate translate, the rotation itself is the "upward" motion */
+		transition: opacity 0.15s ease;
+		transition-delay: 0.45s;
+		opacity: 0;
 	}
 
 	.nav-keyring {
