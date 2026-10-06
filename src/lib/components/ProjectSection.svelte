@@ -82,15 +82,18 @@
 		<!-- Text column -->
 		<div class="flex flex-col justify-start" class:lg:order-1={reversed} use:scrollReveal>
 			{#if project.id !== 'about'}
-				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="text-text no-underline hover:opacity-70 transition-opacity">
+				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="project-text-link text-text no-underline">
 					<h2 class="project-title">{project.name}</h2>
+					<p class="text-text text-base lg:text-lg">
+						{project.description}
+					</p>
 				</a>
 			{:else}
 				<h2 class="text-text project-title">{project.name}</h2>
+				<p class="text-text text-base lg:text-lg">
+					{project.description}
+				</p>
 			{/if}
-			<p class="text-text text-base lg:text-lg">
-				{project.description}
-			</p>
 		</div>
 	</div>
 </section>
@@ -140,5 +143,14 @@
 		border-radius: inherit;
 		pointer-events: none;
 		border: 2px solid rgba(255, 255, 255, 0.35);
+	}
+
+	.project-text-link {
+		display: block;
+		transition: opacity 0.2s;
+	}
+
+	.project-text-link:hover {
+		opacity: 0.7;
 	}
 </style>
