@@ -2,6 +2,7 @@
 	{
 		"id": "kick-and-vote",
 		"name": "Kick & Vote",
+		"tagEmoji": "⚽️",
 		"description": "How can soccer function as a participatory framework for negotiating and experiencing democratic rule- and decision-making among young people?",
 		"subtitle": "Social Design Project | 2025/26\nKristina Keil · Benjamin Amiel · Markus Feifel Pargas · Bastian Engel\nProject Management | Concept Development | Workshop Design",
 		"role": "",
@@ -79,6 +80,7 @@
 	{
 		"id": "binvisible",
 		"name": "Binvisible",
+		"tagEmoji": "🗑️",
 		"heroPathSrc": "/images/paths/Path_binvisible.svg",
 		"heroPathTopOffset": -450,
 		"heroPathScale": 0.99,
@@ -183,6 +185,7 @@
 	{
 		"id": "myzelfusion",
 		"name": "MyzelFusion",
+		"tagEmoji": "🍄‍🟫",
 		"heroPathSrc": "/images/paths/Path_myzelfusion.svg",
 		"heroPathTopOffset": -150,
 		"heroPathScale": 1,
@@ -275,6 +278,7 @@
 	{
 		"id": "peebee",
 		"name": "PeeBee",
+		"tagEmoji": "💩",
 		"description": "Autonomous Toilet Delivery Robot Service",
 		"subtitle": "Individual work | WS 2024/25\nSpeculative Design | Biodesign | Transformation Design",
 		"cover": "/images/projects/PeeBee/PEEBEE_Bastian_Engel_Medien.mp4",
@@ -359,6 +363,7 @@
 	{
 		"id": "pivot",
 		"name": "Pivot",
+		"tagEmoji": "🪑",
 		"description": "A stool for active sitting that adapts to you.",
 		"subtitle": "Individual work | 2025\nIndustrial design | Ergonomics | Human-centered design",
 		"role": "",
@@ -446,6 +451,7 @@
 	{
 		"id": "archive",
 		"name": "Archive",
+		"tagEmoji": "📦",
 		"description": "Placeholder — wird mit echtem Content ersetzt.",
 		"subtitle": "Placeholder | Jahr",
 		"cover": "/images/projects/Archive/cover.webp",
@@ -478,6 +484,7 @@
 	{
 		"id": "about",
 		"name": "About Me",
+		"tagEmoji": "👋",
 		"description": "Placeholder — wird mit echtem Content ersetzt.",
 		"subtitle": "",
 		"cover": "/images/projects/about/cover.webp",

@@ -182,27 +182,12 @@
 						style="clip-path: polygon({splitFront}% 0, 100% 0, 100% 100%, 0 100%, 0 26%, {splitFront}% {splitH}%);"
 						draggable="false"
 					/>
-					<!-- Cover image visible through the transparent label window -->
-					{#if project.tagImage}
-						<div class="tag-cover tag-cover-logo" style={labelTransform}>
-							<img
-								src="{base}{project.tagImage}"
-								alt={project.name}
-								class="tag-logo-img"
-								draggable="false"
-							/>
-						</div>
-					{:else}
-						<img
-							src="{base}{project.cover}"
-							alt={project.name}
-							class="tag-cover"
-							style={labelTransform}
-							draggable="false"
-						/>
-					{/if}
+					<!-- Text label visible through the transparent label window -->
+					<div class="tag-cover tag-cover-text" style={labelTransform}>
+						<span class="tag-emoji">{project.tagEmoji}</span>
+						<span class="tag-name">{project.name}</span>
+					</div>
 					<div class="tag-sheen" bind:this={sheenEl} style={labelTransform}></div>
-					<span class="tag-title" class:visible={hovered} style={labelTransform}>{project.name}</span>
 				</button>
 			</div>
 		</div>
@@ -288,57 +273,36 @@
 		left: 39%;
 		width: 20%;
 		height: 44%;
-		object-fit: cover;
 		z-index: 2;
 		pointer-events: none;
 		user-select: none;
 	}
 
-	.tag-cover-logo {
-		object-fit: unset;
+	.tag-cover-text {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 4px;
 		background: white;
-		padding: 5%;
-	}
-
-	.tag-logo-img {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		pointer-events: none;
-		user-select: none;
-	}
-
-	.tag-title {
-		position: absolute;
-		top: 34%;
-		left: 39%;
-		width: 20%;
-		height: 44%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 4;
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
-		font-size: 14px;
-		font-weight: 700;
-		color: #fff;
 		text-align: center;
-		line-height: 1.2;
-		padding: 4px;
-		background: rgba(0, 0, 0, 0.55);
-		opacity: 0;
-		pointer-events: none;
-		transition: opacity 0.25s ease;
-		word-break: break-word;
+		line-height: 1.15;
+		padding: 6px 4px;
 		overflow: hidden;
 	}
 
-	.tag-title.visible {
-		opacity: 1;
+	.tag-emoji {
+		font-size: 20px;
+		line-height: 1;
+	}
+
+	.tag-name {
+		font-size: 13px;
+		font-weight: 700;
+		color: #1a1a2e;
+		word-break: break-word;
 	}
 
 	.tag-sheen {

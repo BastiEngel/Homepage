@@ -97,6 +97,7 @@ export interface Project {
 	learningsImage?: string;
 	credits?: string;
 	tagImage?: string;
+	tagEmoji?: string;
 	tileImage?: string;
 	heroPathSrc?: string;
 	heroPathTopOffset?: number;

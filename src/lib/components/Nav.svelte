@@ -26,7 +26,7 @@ import projectsData from '../../data/projects.json';
 		3: [54, 50, 24.5, 4, 0, 0, 0], 4: [54, 50, 24.5, 4, 0, 0, 0], 5: [57, 53, 24, 0, 0, 0, 0],  6: [57, 53, 24.5, 0, 0, 0, 0],
 	};
 
-	type NavProject = { id: string; name: string; tagImage?: string; cover: string };
+	type NavProject = { id: string; name: string; tagImage?: string; tagEmoji?: string; cover: string };
 	const navProjects = (projectsData as NavProject[]).filter((p) => p.id !== 'about');
 
 	const tagData = navProjects.map((project, i) => {
@@ -292,15 +292,11 @@ import projectsData from '../../data/projects.json';
 										>
 											<img bind:this={keyImgEls[i]} src="{base}/images/key-01.webp" alt="" class="dangling-key" draggable="false"/>
 											<img src="{base}/images/keytags/Keytag_{td.pad}.webp" alt="" class="tag-img ring-front" style="clip-path: {td.clipFront};" draggable="false"/>
-											{#if td.project.tagImage}
-												<div class="tag-cover tag-cover-logo" style={td.labelTransform}>
-													<img src="{base}{td.project.tagImage}" alt={td.project.name} class="tag-logo-img" draggable="false"/>
-												</div>
-											{:else}
-												<img src="{base}{td.project.cover}" alt={td.project.name} class="tag-cover" style={td.labelTransform} draggable="false"/>
-											{/if}
+											<div class="tag-cover tag-cover-text" style={td.labelTransform}>
+												<span class="tag-emoji">{td.project.tagEmoji}</span>
+												<span class="tag-name">{td.project.name}</span>
+											</div>
 											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.labelTransform}></div>
-											<span class="tag-title">{td.project.name}</span>
 										</a>
 									</div>
 								</div>
@@ -480,30 +476,20 @@ import projectsData from '../../data/projects.json';
 	.tag-cover {
 		position: absolute;
 		top: 34%; left: 39%; width: 20%; height: 44%;
-		object-fit: cover; z-index: 2;
+		z-index: 2;
 		pointer-events: none; user-select: none;
 	}
-	.tag-cover-logo {
-		object-fit: unset; display: flex;
+	.tag-cover-text {
+		display: flex; flex-direction: column;
 		align-items: center; justify-content: center;
-		background: white; padding: 5%;
-	}
-	.tag-logo-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
-
-	.tag-title {
-		position: absolute;
-		top: 34%; left: 39%; width: 20%; height: 44%;
-		display: flex; align-items: center; justify-content: center;
-		z-index: 4;
+		gap: 4px;
+		background: white;
 		writing-mode: vertical-rl; text-orientation: mixed;
-		font-size: 14px; font-weight: 700; color: #fff;
-		text-align: center; line-height: 1.2; padding: 4px;
-		background: rgba(0,0,0,0.55);
-		opacity: 0; pointer-events: none;
-		transition: opacity 0.25s ease;
-		word-break: break-word; overflow: hidden;
+		text-align: center; line-height: 1.15; padding: 6px 4px;
+		overflow: hidden;
 	}
-	.tag-btn:hover .tag-title { opacity: 1; }
+	.tag-emoji { font-size: 20px; line-height: 1; }
+	.tag-name { font-size: 13px; font-weight: 700; color: #1a1a2e; word-break: break-word; }
 
 	.tag-sheen {
 		position: absolute;
