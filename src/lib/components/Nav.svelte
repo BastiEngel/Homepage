@@ -484,8 +484,13 @@ import projectsData from '../../data/projects.json';
 		display: flex; flex-direction: row;
 		align-items: center; justify-content: center;
 		gap: 4px;
-		background: linear-gradient(160deg, #f0efec 0%, #dedcd6 100%);
-		box-shadow: inset 0 2px 3px rgba(0,0,0,0.22), inset 0 -1px 1px rgba(255,255,255,0.5);
+		background: linear-gradient(160deg, #f6f5f2 0%, #eae8e3 100%);
+		box-shadow:
+			inset 0 3px 4px rgba(0,0,0,0.16),
+			inset 0 -3px 4px rgba(0,0,0,0.16),
+			inset 3px 0 4px rgba(0,0,0,0.1),
+			inset -3px 0 4px rgba(0,0,0,0.1),
+			inset 0 -1px 1px rgba(255,255,255,0.5);
 		writing-mode: vertical-rl; text-orientation: mixed;
 		text-align: center; line-height: 1.15; padding: 6px 4px;
 		overflow: hidden;
