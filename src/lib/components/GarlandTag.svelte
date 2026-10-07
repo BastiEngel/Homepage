@@ -53,25 +53,10 @@
 		6: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
 		7: '0% 0%, 100% 0%, 100% 100%, 0% 100%'
 	};
-	// TEMP DEBUG: only the top edge (TL→TR) and left edge (TL→BL), as a
-	// two-segment SVG path, to draw a visible outline for verification.
-	// Remove once confirmed.
-	const WINDOW_DEBUG_PATHS: Record<number, string> = {
-		1: 'M15.9,0 L100,2.7 M15.9,0 L0,97.3',
-		2: 'M0,0 L100,0 M0,0 L0,100',
-		3: 'M0,0 L100,0 M0,0 L0,100',
-		4: 'M0,0 L100,0 M0,0 L0,100',
-		5: 'M0,0.2 L98.6,0 M0,0.2 L1.4,100',
-		6: 'M0,0 L100,0 M0,0 L0,100',
-		7: 'M0,0 L100,0 M0,0 L0,100'
-	};
 	const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
 	const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
-	const winDebugPath = WINDOW_DEBUG_PATHS[variant] ?? WINDOW_DEBUG_PATHS[1];
 	const windowRectStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip});`;
 	const windowStyle = `${windowRectStyle} ${labelTransform}`;
-	// TEMP DEBUG: position only, no clip — so the outline itself isn't cut off
-	const windowDebugStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
 	let tagScale = $derived(Math.max(0.4, Math.min(0.9, (viewportWidth || 1440) / 1440 * 0.9)));
 	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale - 12 * tagScale);
 
@@ -236,10 +221,6 @@
 					</div>
 					<div class="tag-plastic" style={windowStyle}></div>
 					<div class="tag-sheen" bind:this={sheenEl} style={windowStyle}></div>
-					<!-- TEMP DEBUG: top+left edges of the measured window, 2px red. Remove after verifying. -->
-					<svg class="tag-debug-outline" style={windowDebugStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
-						<path d={winDebugPath} fill="none" stroke="red" stroke-width="2" vector-effect="non-scaling-stroke" />
-					</svg>
 				</button>
 			</div>
 		</div>
@@ -339,10 +320,7 @@
 		background: linear-gradient(90deg, #e9e8e5 0%, #ffffff 100%);
 		box-shadow:
 			inset 0 10px 12px rgba(0, 0, 0, 0.5),
-			inset 0 -3px 4px rgba(0, 0, 0, 0.16),
-			inset 3px 0 4px rgba(0, 0, 0, 0.1),
-			inset -10px 0 12px rgba(0, 0, 0, 0.5),
-			inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+			inset 10px 0 12px rgba(0, 0, 0, 0.5);
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
 		text-align: center;
@@ -388,14 +366,6 @@
 		font-weight: 700;
 		color: #1a1a2e;
 		word-break: break-word;
-	}
-
-	/* TEMP DEBUG: remove this rule together with the <svg> once verified */
-	.tag-debug-outline {
-		position: absolute;
-		z-index: 4;
-		pointer-events: none;
-		overflow: visible;
 	}
 
 	.tag-sheen {
