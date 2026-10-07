@@ -20,7 +20,7 @@
 
 	// Per-variant config: [splitBack, splitFront, splitH%, yOffset, labelRotDeg, labelShiftY, labelShiftX]
 	const SPLITS: Record<number, number[]> = {
-		1: [60, 56, 24.5, 0, 3, -4, 0], 2: [57, 53, 24.5, 4, 0, 0, 8], 7: [57, 53, 24.5, 0, 0, 0, 0],
+		1: [60, 56, 24.5, 0, 0, 0, 0], 2: [57, 53, 24.5, 4, 0, 0, 0], 7: [57, 53, 24.5, 0, 0, 0, 0],
 		3: [54, 50, 24.5, 4, 0, 0, 0], 4: [54, 50, 24.5, 4, 0, 0, 0], 5: [57, 53, 24, 0, 0, 0, 0], 6: [57, 53, 24.5, 0, 0, 0, 0],
 	};
 	const s = SPLITS[variant] ?? [60, 56, 24.5, 0, 0, 0, 0];
