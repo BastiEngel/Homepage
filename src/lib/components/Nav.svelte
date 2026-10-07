@@ -497,10 +497,10 @@ import projectsData from '../../data/projects.json';
 		z-index: 3; pointer-events: none; overflow: hidden;
 		background: linear-gradient(
 			110deg,
-			rgba(255,255,255,0) 0%, rgba(255,255,255,0) 35%,
-			rgba(255,255,255,0.15) 47%, rgba(255,255,255,0.2) 50%,
-			rgba(255,255,255,0.15) 53%, rgba(255,255,255,0) 65%,
-			rgba(255,255,255,0) 100%
+			rgba(0,0,0,0) 0%, rgba(0,0,0,0) 35%,
+			rgba(0,0,0,0.1) 47%, rgba(0,0,0,0.14) 50%,
+			rgba(0,0,0,0.1) 53%, rgba(0,0,0,0) 65%,
+			rgba(0,0,0,0) 100%
 		);
 		background-size: 300% 100%;
 		will-change: background-position;
