@@ -292,12 +292,14 @@ import projectsData from '../../data/projects.json';
 										>
 											<img bind:this={keyImgEls[i]} src="{base}/images/key-01.webp" alt="" class="dangling-key" draggable="false"/>
 											<img src="{base}/images/keytags/Keytag_{td.pad}.webp" alt="" class="tag-img ring-front" style="clip-path: {td.clipFront};" draggable="false"/>
-											<div class="tag-cover tag-cover-text" style={td.labelTransform}>
-												<span class="tag-name">{td.project.name}</span>
-												<span class="tag-emoji">{td.project.tagEmoji}</span>
+											<div class="tag-paper-group" style="transform: rotate({(-td.fanRot).toFixed(2)}deg);">
+												<div class="tag-cover tag-cover-text" style={td.labelTransform}>
+													<span class="tag-name">{td.project.name}</span>
+													<span class="tag-emoji">{td.project.tagEmoji}</span>
+												</div>
+												<div class="tag-plastic" style={td.labelTransform}></div>
+												<div bind:this={sheenEls[i]} class="tag-sheen" style={td.labelTransform}></div>
 											</div>
-											<div class="tag-plastic" style={td.labelTransform}></div>
-											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.labelTransform}></div>
 										</a>
 									</div>
 								</div>
@@ -474,6 +476,12 @@ import projectsData from '../../data/projects.json';
 		clip-path: polygon(30% 0%, 70% 0%, 72% 22%, 75% 30%, 75% 90%, 65% 97%, 32% 97%, 22% 90%, 22% 30%, 25% 22%);
 	}
 
+	.tag-paper-group {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
 	.tag-cover {
 		position: absolute;
 		top: 34%; left: 39%; width: 20%; height: 44%;
@@ -486,10 +494,10 @@ import projectsData from '../../data/projects.json';
 		gap: 4px;
 		background: linear-gradient(90deg, #e9e8e5 0%, #ffffff 100%);
 		box-shadow:
-			inset 0 5px 6px rgba(0,0,0,0.26),
+			inset 0 8px 10px rgba(0,0,0,0.45),
 			inset 0 -3px 4px rgba(0,0,0,0.16),
 			inset 3px 0 4px rgba(0,0,0,0.1),
-			inset -5px 0 6px rgba(0,0,0,0.26),
+			inset -8px 0 10px rgba(0,0,0,0.45),
 			inset 0 -1px 1px rgba(255,255,255,0.5);
 		writing-mode: vertical-rl; text-orientation: mixed;
 		text-align: center; line-height: 1.15; padding: 6px 4px;
