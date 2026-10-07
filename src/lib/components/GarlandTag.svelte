@@ -285,7 +285,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: 4px;
-		background: linear-gradient(160deg, #f8f4ea 0%, #ece5d3 100%);
+		background: linear-gradient(160deg, #f0efec 0%, #dedcd6 100%);
 		box-shadow:
 			inset 0 2px 3px rgba(0, 0, 0, 0.22),
 			inset 0 -1px 1px rgba(255, 255, 255, 0.5);
