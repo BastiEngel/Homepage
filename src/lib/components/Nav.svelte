@@ -32,37 +32,37 @@ import projectsData from '../../data/projects.json';
 	// variants are photographed at a slight tilt, so the window isn't
 	// axis-aligned. This is the AABB of that rotated rect.
 	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
-		1: [35.69, 40.0, 16.83, 39.73],
-		2: [35.94, 43.26, 13.77, 41.11],
-		3: [36.13, 39.94, 18.95, 41.80],
-		4: [36.04, 40.33, 18.36, 41.11],
-		5: [35.96, 41.90, 15.19, 40.23],
-		6: [36.04, 42.38, 15.33, 40.62],
-		7: [36.52, 42.38, 14.26, 39.26]
+		1: [35.93, 39.28, 17.79, 39.73],
+		2: [35.70, 43.26, 13.77, 41.35],
+		3: [36.13, 40.18, 18.71, 42.28],
+		4: [36.04, 40.33, 18.36, 41.35],
+		5: [35.96, 42.14, 14.95, 40.47],
+		6: [36.04, 42.38, 15.57, 40.62],
+		7: [36.52, 42.38, 14.50, 39.51]
 	};
 	// Corners (TL, TR, BR, BL) as % within that AABB — plain rect for the
 	// mostly-untilted variants, an actual quadrilateral for 1 and 5 which are
 	// visibly rotated/skewed in the source photo.
 	const WINDOW_CLIPS: Record<number, string> = {
-		1: '12.3% 0%, 100% 2.7%, 83.4% 100%, 0% 93.7%',
-		2: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
-		3: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		1: '15.7% 0%, 100% 2.7%, 84.3% 100%, 0% 93.2%',
+		2: '0% 0.6%, 100% 0%, 100% 100%, 0% 97.0%',
+		3: '0% 0%, 100% 0%, 100% 98.9%, 1.3% 100%',
 		4: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
-		5: '0% 0.2%, 98.6% 0%, 100% 99.8%, 1.4% 100%',
-		6: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
-		7: '0% 0%, 100% 0%, 100% 100%, 0% 100%'
+		5: '0% 0.2%, 98.6% 0%, 100% 98.6%, 1.4% 100%',
+		6: '0% 0%, 100% 0%, 100% 98.2%, 0% 100%',
+		7: '0% 0%, 100% 0%, 100% 95.8%, 0% 100%'
 	};
 	// TEMP DEBUG: 1px red outline of the paper insert's own box (all 4
 	// edges), raised above the ring-front img so it isn't covered, to compare
 	// the insert against the real window cutout. Remove once fixed.
 	const WINDOW_DEBUG_PATHS: Record<number, string> = {
-		1: 'M12.3,0 L100,2.7 L83.4,100 L0,93.7 Z',
-		2: 'M0,0 L100,0 L100,100 L0,100 Z',
-		3: 'M0,0 L100,0 L100,100 L0,100 Z',
+		1: 'M15.7,0 L100,2.7 L84.3,100 L0,93.2 Z',
+		2: 'M0,0.6 L100,0 L100,100 L0,97.0 Z',
+		3: 'M0,0 L100,0 L100,98.9 L1.3,100 Z',
 		4: 'M0,0 L100,0 L100,100 L0,100 Z',
-		5: 'M0,0.2 L98.6,0 L100,99.8 L1.4,100 Z',
-		6: 'M0,0 L100,0 L100,100 L0,100 Z',
-		7: 'M0,0 L100,0 L100,100 L0,100 Z'
+		5: 'M0,0.2 L98.6,0 L100,98.6 L1.4,100 Z',
+		6: 'M0,0 L100,0 L100,98.2 L0,100 Z',
+		7: 'M0,0 L100,0 L100,95.8 L0,100 Z'
 	};
 	type NavProject = { id: string; name: string; tagImage?: string; tagEmoji?: string; cover: string };
 	const navProjects = (projectsData as NavProject[]).filter((p) => p.id !== 'about');
