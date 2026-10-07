@@ -44,7 +44,7 @@ import projectsData from '../../data/projects.json';
 	// mostly-untilted variants, an actual quadrilateral for 1 and 5 which are
 	// visibly rotated/skewed in the source photo.
 	const WINDOW_CLIPS: Record<number, string> = {
-		1: '12.3% 0%, 100% 2.7%, 83.4% 100%, 0% 95.5%',
+		1: '12.3% 0%, 100% 2.7%, 83.4% 100%, 0% 93.7%',
 		2: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
 		3: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
 		4: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
@@ -56,7 +56,7 @@ import projectsData from '../../data/projects.json';
 	// edges), raised above the ring-front img so it isn't covered, to compare
 	// the insert against the real window cutout. Remove once fixed.
 	const WINDOW_DEBUG_PATHS: Record<number, string> = {
-		1: 'M12.3,0 L100,2.7 L83.4,100 L0,95.5 Z',
+		1: 'M12.3,0 L100,2.7 L83.4,100 L0,93.7 Z',
 		2: 'M0,0 L100,0 L100,100 L0,100 Z',
 		3: 'M0,0 L100,0 L100,100 L0,100 Z',
 		4: 'M0,0 L100,0 L100,100 L0,100 Z',
