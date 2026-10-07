@@ -26,6 +26,25 @@
 	const s = SPLITS[variant] ?? [60, 56, 24.5, 0, 0, 0, 0];
 	const [splitBack, splitFront, splitH, yOff, labelRot, labelShiftY, labelShiftX] = s;
 	const labelTransform = (labelRot || labelShiftY || labelShiftX) ? `transform: rotate(${labelRot}deg) translate(${labelShiftX}px, ${labelShiftY}px);` : '';
+
+	// Per-variant label-window rect: [top%, left%, width%, height%] — measured
+	// directly from each Keytag_XX.webp's transparent cutout (flood-filled
+	// alpha hole, isolated from the ring hole), since the window's position
+	// and size differ noticeably between variants. A single shared rect
+	// (the old approach) only matched variant 1 and left the others visibly
+	// offset, which is why the edge-shadow looked wrong on most tags.
+	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
+		1: [35.8, 39.6, 17.0, 39.6],
+		2: [35.9, 43.3, 13.8, 41.1],
+		3: [36.1, 39.9, 19.0, 41.8],
+		4: [36.0, 40.3, 18.4, 41.1],
+		5: [36.0, 42.0, 15.0, 40.1],
+		6: [36.0, 42.4, 15.3, 40.6],
+		7: [36.5, 42.4, 14.3, 39.3]
+	};
+	const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
+	const windowRectStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%;`;
+	const windowStyle = `${windowRectStyle} ${labelTransform}`;
 	let tagScale = $derived(Math.max(0.4, Math.min(0.9, (viewportWidth || 1440) / 1440 * 0.9)));
 	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale - 12 * tagScale);
 
@@ -184,12 +203,12 @@
 						draggable="false"
 					/>
 					<!-- Text label visible through the transparent label window -->
-					<div class="tag-cover tag-cover-text" class:tag-cover-text-reversed={reverseGradient} style={labelTransform}>
+					<div class="tag-cover tag-cover-text" class:tag-cover-text-reversed={reverseGradient} style={windowStyle}>
 						<span class="tag-name">{project.name}</span>
 						<span class="tag-emoji">{project.tagEmoji}</span>
 					</div>
-					<div class="tag-plastic" style={labelTransform}></div>
-					<div class="tag-sheen" bind:this={sheenEl} style={labelTransform}></div>
+					<div class="tag-plastic" style={windowStyle}></div>
+					<div class="tag-sheen" bind:this={sheenEl} style={windowStyle}></div>
 				</button>
 			</div>
 		</div>

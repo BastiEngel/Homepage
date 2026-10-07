@@ -26,6 +26,20 @@ import projectsData from '../../data/projects.json';
 		3: [54, 50, 24.5, 4, 0, 0, 0], 4: [54, 50, 24.5, 4, 0, 0, 0], 5: [57, 53, 24, 0, 0, 0, 0],  6: [57, 53, 24.5, 0, 0, 0, 0],
 	};
 
+	// Per-variant label-window rect: [top%, left%, width%, height%] — measured
+	// directly from each Keytag_XX.webp's transparent cutout (same source
+	// images as GarlandTag.svelte), since the window's position/size differ
+	// between variants and a single shared rect only matched variant 1.
+	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
+		1: [35.8, 39.6, 17.0, 39.6],
+		2: [35.9, 43.3, 13.8, 41.1],
+		3: [36.1, 39.9, 19.0, 41.8],
+		4: [36.0, 40.3, 18.4, 41.1],
+		5: [36.0, 42.0, 15.0, 40.1],
+		6: [36.0, 42.4, 15.3, 40.6],
+		7: [36.5, 42.4, 14.3, 39.3]
+	};
+
 	type NavProject = { id: string; name: string; tagImage?: string; tagEmoji?: string; cover: string };
 	const navProjects = (projectsData as NavProject[]).filter((p) => p.id !== 'about');
 
@@ -42,9 +56,11 @@ import projectsData from '../../data/projects.json';
 		const labelTransform = (labelRot || labelShiftY || labelShiftX)
 			? `transform: rotate(${labelRot}deg) translate(${labelShiftX}px, ${labelShiftY}px);`
 			: '';
+		const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
+		const windowStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
 		const dropDelay = `${(i * 0.02).toFixed(3)}s`;
 		const zFront = 8 + i;
-		return { project, fanRot, pad, clipBack, clipFront, labelTransform, dropDelay, zFront };
+		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, dropDelay, zFront };
 	});
 
 	// ── RAF physics (same as GarlandTag) ─────────────────────────────────────
@@ -292,12 +308,12 @@ import projectsData from '../../data/projects.json';
 										>
 											<img bind:this={keyImgEls[i]} src="{base}/images/key-01.webp" alt="" class="dangling-key" draggable="false"/>
 											<img src="{base}/images/keytags/Keytag_{td.pad}.webp" alt="" class="tag-img ring-front" style="clip-path: {td.clipFront};" draggable="false"/>
-											<div class="tag-cover tag-cover-text" style={td.labelTransform}>
+											<div class="tag-cover tag-cover-text" style={td.windowStyle}>
 												<span class="tag-name">{td.project.name}</span>
 												<span class="tag-emoji">{td.project.tagEmoji}</span>
 											</div>
-											<div class="tag-plastic" style={td.labelTransform}></div>
-											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.labelTransform}></div>
+											<div class="tag-plastic" style={td.windowStyle}></div>
+											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.windowStyle}></div>
 										</a>
 									</div>
 								</div>
