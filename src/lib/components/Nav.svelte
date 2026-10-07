@@ -57,18 +57,6 @@ import projectsData from '../../data/projects.json';
 		6: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
 		7: '0% 0%, 100% 0%, 100% 100%, 0% 100%'
 	};
-	// TEMP DEBUG: same corner points, in SVG "x,y x,y ..." form, to draw a
-	// visible outline for verification. Remove once confirmed.
-	const WINDOW_CLIP_SVG_POINTS: Record<number, string> = {
-		1: '15.9,0 100,2.7 84.1,100 0,97.3',
-		2: '0,0 100,0 100,100 0,100',
-		3: '0,0 100,0 100,100 0,100',
-		4: '0,0 100,0 100,100 0,100',
-		5: '0,0.2 98.6,0 100,99.8 1.4,100',
-		6: '0,0 100,0 100,100 0,100',
-		7: '0,0 100,0 100,100 0,100'
-	};
-
 	type NavProject = { id: string; name: string; tagImage?: string; tagEmoji?: string; cover: string };
 	const navProjects = (projectsData as NavProject[]).filter((p) => p.id !== 'about');
 
@@ -87,13 +75,10 @@ import projectsData from '../../data/projects.json';
 			: '';
 		const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
 		const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
-		const winClipSvgPoints = WINDOW_CLIP_SVG_POINTS[variant] ?? WINDOW_CLIP_SVG_POINTS[1];
 		const windowStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip}); ${labelTransform}`;
-		// TEMP DEBUG: position only, no clip — so the outline itself isn't cut off
-		const windowDebugStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
 		const dropDelay = `${(i * 0.02).toFixed(3)}s`;
 		const zFront = 8 + i;
-		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, windowDebugStyle, winClipSvgPoints, dropDelay, zFront };
+		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, dropDelay, zFront };
 	});
 
 	// ── RAF physics (same as GarlandTag) ─────────────────────────────────────
@@ -347,10 +332,6 @@ import projectsData from '../../data/projects.json';
 											</div>
 											<div class="tag-plastic" style={td.windowStyle}></div>
 											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.windowStyle}></div>
-											<!-- TEMP DEBUG: outlines the measured window polygon, 2px red. Remove after verifying. -->
-											<svg class="tag-debug-outline" style={td.windowDebugStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
-												<polygon points={td.winClipSvgPoints} fill="none" stroke="red" stroke-width="2" vector-effect="non-scaling-stroke" />
-											</svg>
 										</a>
 									</div>
 								</div>
@@ -565,14 +546,6 @@ import projectsData from '../../data/projects.json';
 			rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%
 		);
 		box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
-	}
-
-	/* TEMP DEBUG: remove this rule together with the <svg> once verified */
-	.tag-debug-outline {
-		position: absolute;
-		z-index: 4;
-		pointer-events: none;
-		overflow: visible;
 	}
 
 	.tag-sheen {

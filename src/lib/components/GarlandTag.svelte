@@ -58,24 +58,10 @@
 		6: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
 		7: '0% 0%, 100% 0%, 100% 100%, 0% 100%'
 	};
-	// TEMP DEBUG: same corner points as WINDOW_CLIPS, in SVG "x,y x,y ..."
-	// form, to draw a visible outline for verification. Remove once confirmed.
-	const WINDOW_CLIP_SVG_POINTS: Record<number, string> = {
-		1: '15.9,0 100,2.7 84.1,100 0,97.3',
-		2: '0,0 100,0 100,100 0,100',
-		3: '0,0 100,0 100,100 0,100',
-		4: '0,0 100,0 100,100 0,100',
-		5: '0,0.2 98.6,0 100,99.8 1.4,100',
-		6: '0,0 100,0 100,100 0,100',
-		7: '0,0 100,0 100,100 0,100'
-	};
 	const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
 	const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
-	const winClipSvgPoints = WINDOW_CLIP_SVG_POINTS[variant] ?? WINDOW_CLIP_SVG_POINTS[1];
 	const windowRectStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip});`;
 	const windowStyle = `${windowRectStyle} ${labelTransform}`;
-	// TEMP DEBUG: position only, no clip — so the outline itself isn't cut off
-	const windowDebugStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
 	let tagScale = $derived(Math.max(0.4, Math.min(0.9, (viewportWidth || 1440) / 1440 * 0.9)));
 	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale - 12 * tagScale);
 
@@ -240,10 +226,6 @@
 					</div>
 					<div class="tag-plastic" style={windowStyle}></div>
 					<div class="tag-sheen" bind:this={sheenEl} style={windowStyle}></div>
-					<!-- TEMP DEBUG: outlines the measured window polygon, 2px red. Remove after verifying. -->
-					<svg class="tag-debug-outline" style={windowDebugStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
-						<polygon points={winClipSvgPoints} fill="none" stroke="red" stroke-width="2" vector-effect="non-scaling-stroke" />
-					</svg>
 				</button>
 			</div>
 		</div>
@@ -392,14 +374,6 @@
 		font-weight: 700;
 		color: #1a1a2e;
 		word-break: break-word;
-	}
-
-	/* TEMP DEBUG: remove this rule together with the <svg> once verified */
-	.tag-debug-outline {
-		position: absolute;
-		z-index: 4;
-		pointer-events: none;
-		overflow: visible;
 	}
 
 	.tag-sheen {
