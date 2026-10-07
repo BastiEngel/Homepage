@@ -561,7 +561,7 @@ import projectsData from '../../data/projects.json';
 	/* TEMP DEBUG: z-index 15 clears the ring-front img (z-index 10). Remove once fixed. */
 	.tag-debug-outline {
 		position: absolute;
-		z-index: 15;
+		z-index: 3;
 		pointer-events: none;
 		overflow: visible;
 	}
