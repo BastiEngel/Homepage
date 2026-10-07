@@ -30,20 +30,15 @@ import projectsData from '../../data/projects.json';
 	// minimum-area ROTATED rectangle fit to each Keytag_XX.webp's transparent
 	// cutout (same source images as GarlandTag.svelte), since several
 	// variants are photographed at a slight tilt, so the window isn't
-	// axis-aligned. The exact alpha-hole fit left a visible gap at some
-	// corners because the frame's glossy inner-bevel highlight reads as
-	// near-white to the eye, so it looks like part of the window even though
-	// it's technically opaque — these rects are the fit scaled up 12% from
-	// its own center to cover that highlight band. WINDOW_CLIPS below is
-	// unaffected since scaling about the center preserves relative corner %.
+	// axis-aligned. This is the AABB of that rotated rect.
 	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
-		1: [33.31, 38.23, 19.66, 44.5],
-		2: [33.47, 42.43, 15.42, 46.04],
-		3: [33.62, 38.8, 21.22, 46.82],
-		4: [33.57, 39.23, 20.56, 46.04],
-		5: [33.55, 40.99, 17.01, 45.06],
-		6: [33.6, 41.46, 17.17, 45.49],
-		7: [34.16, 41.52, 15.97, 43.97]
+		1: [35.69, 39.28, 17.55, 39.73],
+		2: [35.94, 43.26, 13.77, 41.11],
+		3: [36.13, 39.94, 18.95, 41.80],
+		4: [36.04, 40.33, 18.36, 41.11],
+		5: [35.96, 41.90, 15.19, 40.23],
+		6: [36.04, 42.38, 15.33, 40.62],
+		7: [36.52, 42.38, 14.26, 39.26]
 	};
 	// Corners (TL, TR, BR, BL) as % within that AABB — plain rect for the
 	// mostly-untilted variants, an actual quadrilateral for 1 and 5 which are
@@ -57,16 +52,18 @@ import projectsData from '../../data/projects.json';
 		6: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
 		7: '0% 0%, 100% 0%, 100% 100%, 0% 100%'
 	};
-	// TEMP DEBUG: all four edges, closed polygon. Remove once verified.
-	const WINDOW_DEBUG_PATHS: Record<number, string> = {
-		1: 'M15.9,0 L100,2.7 L84.1,100 L0,97.3 Z',
-		2: 'M0,0 L100,0 L100,100 L0,100 Z',
-		3: 'M0,0 L100,0 L100,100 L0,100 Z',
-		4: 'M0,0 L100,0 L100,100 L0,100 Z',
-		5: 'M0,0.2 L98.6,0 L100,99.8 L1.4,100 Z',
-		6: 'M0,0 L100,0 L100,100 L0,100 Z',
-		7: 'M0,0 L100,0 L100,100 L0,100 Z'
+	// TEMP DEBUG: same corner points, in SVG "x,y x,y ..." form, to draw a
+	// visible outline for verification. Remove once confirmed.
+	const WINDOW_CLIP_SVG_POINTS: Record<number, string> = {
+		1: '15.9,0 100,2.7 84.1,100 0,97.3',
+		2: '0,0 100,0 100,100 0,100',
+		3: '0,0 100,0 100,100 0,100',
+		4: '0,0 100,0 100,100 0,100',
+		5: '0,0.2 98.6,0 100,99.8 1.4,100',
+		6: '0,0 100,0 100,100 0,100',
+		7: '0,0 100,0 100,100 0,100'
 	};
+
 	type NavProject = { id: string; name: string; tagImage?: string; tagEmoji?: string; cover: string };
 	const navProjects = (projectsData as NavProject[]).filter((p) => p.id !== 'about');
 
@@ -85,12 +82,13 @@ import projectsData from '../../data/projects.json';
 			: '';
 		const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
 		const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
+		const winClipSvgPoints = WINDOW_CLIP_SVG_POINTS[variant] ?? WINDOW_CLIP_SVG_POINTS[1];
 		const windowStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip}); ${labelTransform}`;
-		const winDebugPath = WINDOW_DEBUG_PATHS[variant] ?? WINDOW_DEBUG_PATHS[1];
+		// TEMP DEBUG: position only, no clip — so the outline itself isn't cut off
 		const windowDebugStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
 		const dropDelay = `${(i * 0.02).toFixed(3)}s`;
 		const zFront = 8 + i;
-		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, windowDebugStyle, winDebugPath, dropDelay, zFront };
+		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, windowDebugStyle, winClipSvgPoints, dropDelay, zFront };
 	});
 
 	// ── RAF physics (same as GarlandTag) ─────────────────────────────────────
@@ -344,10 +342,10 @@ import projectsData from '../../data/projects.json';
 											</div>
 											<div class="tag-plastic" style={td.windowStyle}></div>
 											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.windowStyle}></div>
-										<!-- TEMP DEBUG: thick black line on the top+left window edges. Remove after verifying. -->
-										<svg class="tag-debug-outline" style={td.windowDebugStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
-											<path d={td.winDebugPath} fill="none" stroke="black" stroke-width="6" vector-effect="non-scaling-stroke" />
-										</svg>
+											<!-- TEMP DEBUG: outlines the measured window polygon, 2px red. Remove after verifying. -->
+											<svg class="tag-debug-outline" style={td.windowDebugStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
+												<polygon points={td.winClipSvgPoints} fill="none" stroke="red" stroke-width="2" vector-effect="non-scaling-stroke" />
+											</svg>
 										</a>
 									</div>
 								</div>
@@ -536,10 +534,10 @@ import projectsData from '../../data/projects.json';
 		gap: 4px;
 		background: linear-gradient(90deg, #e9e8e5 0%, #ffffff 100%);
 		box-shadow:
-			inset 0 5px 6px rgba(0,0,0,0.26),
+			inset 0 10px 12px rgba(0,0,0,0.5),
 			inset 0 -3px 4px rgba(0,0,0,0.16),
 			inset 3px 0 4px rgba(0,0,0,0.1),
-			inset -5px 0 6px rgba(0,0,0,0.26),
+			inset -10px 0 12px rgba(0,0,0,0.5),
 			inset 0 -1px 1px rgba(255,255,255,0.5);
 		writing-mode: vertical-rl; text-orientation: mixed;
 		text-align: center; line-height: 1.15; padding: 6px 4px;
@@ -564,10 +562,10 @@ import projectsData from '../../data/projects.json';
 		box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
 	}
 
-	/* TEMP DEBUG: z-index 15 clears the ring-front img (z-index 10). Remove once verified. */
+	/* TEMP DEBUG: remove this rule together with the <svg> once verified */
 	.tag-debug-outline {
 		position: absolute;
-		z-index: 15;
+		z-index: 4;
 		pointer-events: none;
 		overflow: visible;
 	}
