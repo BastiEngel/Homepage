@@ -32,7 +32,7 @@ import projectsData from '../../data/projects.json';
 	// variants are photographed at a slight tilt, so the window isn't
 	// axis-aligned. This is the AABB of that rotated rect.
 	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
-		1: [35.69, 39.28, 17.55, 39.73],
+		1: [33.31, 38.23, 19.66, 44.5],
 		2: [35.94, 43.26, 13.77, 41.11],
 		3: [36.13, 39.94, 18.95, 41.80],
 		4: [36.04, 40.33, 18.36, 41.11],
