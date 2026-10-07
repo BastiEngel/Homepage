@@ -184,8 +184,8 @@
 					/>
 					<!-- Text label visible through the transparent label window -->
 					<div class="tag-cover tag-cover-text" style={labelTransform}>
-						<span class="tag-emoji">{project.tagEmoji}</span>
 						<span class="tag-name">{project.name}</span>
+						<span class="tag-emoji">{project.tagEmoji}</span>
 					</div>
 					<div class="tag-sheen" bind:this={sheenEl} style={labelTransform}></div>
 				</button>

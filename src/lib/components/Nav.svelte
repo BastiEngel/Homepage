@@ -293,8 +293,8 @@ import projectsData from '../../data/projects.json';
 											<img bind:this={keyImgEls[i]} src="{base}/images/key-01.webp" alt="" class="dangling-key" draggable="false"/>
 											<img src="{base}/images/keytags/Keytag_{td.pad}.webp" alt="" class="tag-img ring-front" style="clip-path: {td.clipFront};" draggable="false"/>
 											<div class="tag-cover tag-cover-text" style={td.labelTransform}>
-												<span class="tag-emoji">{td.project.tagEmoji}</span>
 												<span class="tag-name">{td.project.name}</span>
+												<span class="tag-emoji">{td.project.tagEmoji}</span>
 											</div>
 											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.labelTransform}></div>
 										</a>
