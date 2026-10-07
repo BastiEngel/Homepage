@@ -32,33 +32,43 @@ function clamp01(v: number): number {
 	return v < 0 ? 0 : v > 1 ? 1 : v;
 }
 
-const tiles = new Set<HTMLElement>();
+// A group is one scroll position (the driver, e.g. the image) driving the
+// scale for itself plus any linked elements (e.g. the text column) — they
+// all receive the exact same computed scale each frame, so they move in
+// perfect sync instead of each computing a slightly different value from
+// their own (slightly different) position.
+interface ScaleGroup {
+	driver: HTMLElement;
+	targets: HTMLElement[];
+}
+const groups = new Set<ScaleGroup>();
 
 function update() {
 	const vh = window.innerHeight;
+	const list = [...groups];
 
-	// READ phase — every tile's layout first, before any writes.
-	const tops: number[] = [];
-	for (const el of tiles) tops.push(el.getBoundingClientRect().top);
+	// READ phase — every driver's layout first, before any writes.
+	const tops: number[] = list.map((g) => g.driver.getBoundingClientRect().top);
 
 	// WRITE phase — only style writes from here on.
-	let i = 0;
-	for (const el of tiles) {
-		const top = tops[i++];
+	list.forEach((g, i) => {
+		const top = tops[i];
 		const enterT = clamp01((vh - top + RAMP_OUTSIDE) / RAMP_TOTAL);
 		const exitT = clamp01((top + RAMP_OUTSIDE) / RAMP_TOTAL);
 		const inside = Math.min(enterT, exitT);
 		const eased = easeInOutSine(inside);
 		const scale = MIN_SCALE + eased * (1 - MIN_SCALE);
-		el.style.transform = `scale(${scale.toFixed(4)})`;
-	}
+		const transform = `scale(${scale.toFixed(4)})`;
+		for (const el of g.targets) el.style.transform = transform;
+	});
 }
 
-export function registerScaleTile(el: HTMLElement): () => void {
-	tiles.add(el);
+export function registerScaleTile(driver: HTMLElement, extraTargets: HTMLElement[] = []): () => void {
+	const group: ScaleGroup = { driver, targets: [driver, ...extraTargets] };
+	groups.add(group);
 	addTicker(update);
 	return () => {
-		tiles.delete(el);
-		if (tiles.size === 0) removeTicker(update);
+		groups.delete(group);
+		if (groups.size === 0) removeTicker(update);
 	};
 }

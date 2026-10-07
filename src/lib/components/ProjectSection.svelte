@@ -16,6 +16,7 @@
 
 	let imgEl: HTMLImageElement | undefined = $state();
 	let tileEl: HTMLElement | undefined = $state();
+	let textColEl: HTMLElement | undefined = $state();
 	let visible = $state(false);
 
 	// Only needed to lazily swap in GIF sources once they're actually on screen
@@ -34,10 +35,12 @@
 	// tiles share ONE batched read/write loop instead of each running its
 	// own, which was causing layout-thrashing stutter (every tile's rAF
 	// callback read its own rect then wrote its own transform, interleaved
-	// with every other tile's read/write in the same frame).
+	// with every other tile's read/write in the same frame). The text
+	// column is registered as an extra target so it scales in exact sync
+	// with the image, both driven off the image's own position.
 	$effect(() => {
 		if (!tileEl) return;
-		return registerScaleTile(tileEl);
+		return registerScaleTile(tileEl, textColEl ? [textColEl] : []);
 	});
 </script>
 
@@ -77,7 +80,7 @@
 		</div>
 
 		<!-- Text column -->
-		<div class="flex flex-col justify-start" class:lg:order-1={reversed}>
+		<div bind:this={textColEl} class="project-text-col flex flex-col justify-start" class:lg:order-1={reversed}>
 			{#if project.id !== 'about'}
 				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="project-text-link text-text no-underline">
 					<h2 class="project-title">{project.name}</h2>
@@ -114,6 +117,11 @@
 		   heading's own box top lines up with the top of its lowercase
 		   letters. */
 		margin-top: 17px;
+	}
+
+	.project-text-col {
+		transform-origin: top center;
+		will-change: transform;
 	}
 
 	.project-title {
