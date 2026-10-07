@@ -183,20 +183,13 @@
 						style="clip-path: polygon({splitFront}% 0, 100% 0, 100% 100%, 0 100%, 0 26%, {splitFront}% {splitH}%);"
 						draggable="false"
 					/>
-					<!-- Text label visible through the transparent label window.
-					     Counter-rotates the static fan angle so the paper's
-					     top/right directional shadow stays screen-aligned
-					     regardless of how far this tag is fanned out — without
-					     it, each tag's shadow would land on a different edge
-					     depending on its fan angle. -->
-					<div class="tag-paper-group" style="transform: rotate({-(point.fanAngle ?? 0)}deg);">
-						<div class="tag-cover tag-cover-text" class:tag-cover-text-reversed={reverseGradient} style={labelTransform}>
-							<span class="tag-name">{project.name}</span>
-							<span class="tag-emoji">{project.tagEmoji}</span>
-						</div>
-						<div class="tag-plastic" style={labelTransform}></div>
-						<div class="tag-sheen" bind:this={sheenEl} style={labelTransform}></div>
+					<!-- Text label visible through the transparent label window -->
+					<div class="tag-cover tag-cover-text" class:tag-cover-text-reversed={reverseGradient} style={labelTransform}>
+						<span class="tag-name">{project.name}</span>
+						<span class="tag-emoji">{project.tagEmoji}</span>
 					</div>
+					<div class="tag-plastic" style={labelTransform}></div>
+					<div class="tag-sheen" bind:this={sheenEl} style={labelTransform}></div>
 				</button>
 			</div>
 		</div>
@@ -276,12 +269,6 @@
 		z-index: 10;
 	}
 
-	.tag-paper-group {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-	}
-
 	.tag-cover {
 		position: absolute;
 		top: 34%;
@@ -301,10 +288,10 @@
 		gap: 4px;
 		background: linear-gradient(90deg, #e9e8e5 0%, #ffffff 100%);
 		box-shadow:
-			inset 0 8px 10px rgba(0, 0, 0, 0.45),
+			inset 0 5px 6px rgba(0, 0, 0, 0.26),
 			inset 0 -3px 4px rgba(0, 0, 0, 0.16),
 			inset 3px 0 4px rgba(0, 0, 0, 0.1),
-			inset -8px 0 10px rgba(0, 0, 0, 0.45),
+			inset -5px 0 6px rgba(0, 0, 0, 0.26),
 			inset 0 -1px 1px rgba(255, 255, 255, 0.5);
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
