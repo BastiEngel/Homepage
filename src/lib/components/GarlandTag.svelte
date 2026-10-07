@@ -62,6 +62,23 @@
 	const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
 	const windowRectStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip});`;
 	const windowStyle = `${windowRectStyle} ${labelTransform}`;
+	// TEMP DEBUG: thick black line centered on the measured edge, to check
+	// placement. Own <svg> (not clip-path/outline on tag-cover-text) because
+	// outline-offset negative gets suppressed by that element's own
+	// overflow:hidden, and z-index is raised above ring-front so the frame
+	// image doesn't cover the outward half. Remove after verifying.
+	// All four edges, closed polygon (TL→TR→BR→BL→TL).
+	const WINDOW_DEBUG_PATHS: Record<number, string> = {
+		1: 'M15.9,0 L100,2.7 L84.1,100 L0,97.3 Z',
+		2: 'M0,0 L100,0 L100,100 L0,100 Z',
+		3: 'M0,0 L100,0 L100,100 L0,100 Z',
+		4: 'M0,0 L100,0 L100,100 L0,100 Z',
+		5: 'M0,0.2 L98.6,0 L100,99.8 L1.4,100 Z',
+		6: 'M0,0 L100,0 L100,100 L0,100 Z',
+		7: 'M0,0 L100,0 L100,100 L0,100 Z'
+	};
+	const winDebugPath = WINDOW_DEBUG_PATHS[variant] ?? WINDOW_DEBUG_PATHS[1];
+	const windowDebugStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
 	let tagScale = $derived(Math.max(0.4, Math.min(0.9, (viewportWidth || 1440) / 1440 * 0.9)));
 	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale - 12 * tagScale);
 
@@ -226,6 +243,10 @@
 					</div>
 					<div class="tag-plastic" style={windowStyle}></div>
 					<div class="tag-sheen" bind:this={sheenEl} style={windowStyle}></div>
+					<!-- TEMP DEBUG: thick black line centered on the window edge. Remove after verifying. -->
+					<svg class="tag-debug-outline" style={windowDebugStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
+						<path d={winDebugPath} fill="none" stroke="black" stroke-width="6" vector-effect="non-scaling-stroke" />
+					</svg>
 				</button>
 			</div>
 		</div>
@@ -374,6 +395,15 @@
 		font-weight: 700;
 		color: #1a1a2e;
 		word-break: break-word;
+	}
+
+	/* TEMP DEBUG: z-index 15 clears the ring-front img (z-index 10) so the
+	   frame doesn't cover the outward half of the line. Remove once verified. */
+	.tag-debug-outline {
+		position: absolute;
+		z-index: 15;
+		pointer-events: none;
+		overflow: visible;
 	}
 
 	.tag-sheen {
