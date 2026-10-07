@@ -12,7 +12,7 @@
 // entirely, which is what was causing the visible stutter/snap.
 import { addTicker, removeTicker } from './sharedTicker';
 
-const MIN_SCALE = 0.96; // very subtle size difference
+const MIN_SCALE = 0.97; // very subtle size difference
 const RAMP_OUTSIDE = 0; // px below/above the edge where the transition starts — right at the edge
 const RAMP_INSIDE = 350; // px past the edge over which it eases in — bigger than before so the static "parked at full size" middle stretch is shorter (it was eating most of the viewport, which read as snap-static-static-snap rather than one continuous motion)
 const RAMP_TOTAL = RAMP_OUTSIDE + RAMP_INSIDE;
