@@ -319,8 +319,8 @@
 		gap: 4px;
 		background: linear-gradient(90deg, #e9e8e5 0%, #ffffff 100%);
 		box-shadow:
-			inset 0 10px 12px rgba(0, 0, 0, 0.5),
-			inset 10px 0 12px rgba(0, 0, 0, 0.5);
+			inset 0 7px 8px rgba(0, 0, 0, 0.62),
+			inset 7px 0 8px rgba(0, 0, 0, 0.62);
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
 		text-align: center;
