@@ -30,15 +30,20 @@ import projectsData from '../../data/projects.json';
 	// minimum-area ROTATED rectangle fit to each Keytag_XX.webp's transparent
 	// cutout (same source images as GarlandTag.svelte), since several
 	// variants are photographed at a slight tilt, so the window isn't
-	// axis-aligned. This is the AABB of that rotated rect.
+	// axis-aligned. The exact alpha-hole fit left a visible gap at some
+	// corners because the frame's glossy inner-bevel highlight reads as
+	// near-white to the eye, so it looks like part of the window even though
+	// it's technically opaque — these rects are the fit scaled up 12% from
+	// its own center to cover that highlight band. WINDOW_CLIPS below is
+	// unaffected since scaling about the center preserves relative corner %.
 	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
-		1: [35.69, 39.28, 17.55, 39.73],
-		2: [35.94, 43.26, 13.77, 41.11],
-		3: [36.13, 39.94, 18.95, 41.80],
-		4: [36.04, 40.33, 18.36, 41.11],
-		5: [35.96, 41.90, 15.19, 40.23],
-		6: [36.04, 42.38, 15.33, 40.62],
-		7: [36.52, 42.38, 14.26, 39.26]
+		1: [33.31, 38.23, 19.66, 44.5],
+		2: [33.47, 42.43, 15.42, 46.04],
+		3: [33.62, 38.8, 21.22, 46.82],
+		4: [33.57, 39.23, 20.56, 46.04],
+		5: [33.55, 40.99, 17.01, 45.06],
+		6: [33.6, 41.46, 17.17, 45.49],
+		7: [34.16, 41.52, 15.97, 43.97]
 	};
 	// Corners (TL, TR, BR, BL) as % within that AABB — plain rect for the
 	// mostly-untilted variants, an actual quadrilateral for 1 and 5 which are
