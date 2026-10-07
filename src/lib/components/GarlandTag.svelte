@@ -27,23 +27,35 @@
 	const [splitBack, splitFront, splitH, yOff, labelRot, labelShiftY, labelShiftX] = s;
 	const labelTransform = (labelRot || labelShiftY || labelShiftX) ? `transform: rotate(${labelRot}deg) translate(${labelShiftX}px, ${labelShiftY}px);` : '';
 
-	// Per-variant label-window rect: [top%, left%, width%, height%] — measured
-	// directly from each Keytag_XX.webp's transparent cutout (flood-filled
-	// alpha hole, isolated from the ring hole), since the window's position
-	// and size differ noticeably between variants. A single shared rect
-	// (the old approach) only matched variant 1 and left the others visibly
-	// offset, which is why the edge-shadow looked wrong on most tags.
+	// Per-variant label-window rect: [top%, left%, width%, height%] — the
+	// minimum-area ROTATED rectangle fit to each Keytag_XX.webp's transparent
+	// cutout (flood-filled alpha hole, isolated from the ring hole), since
+	// several variants are photographed at a slight tilt, so the window isn't
+	// axis-aligned. This is the AABB of that rotated rect.
 	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
-		1: [35.8, 39.6, 17.0, 39.6],
-		2: [35.9, 43.3, 13.8, 41.1],
-		3: [36.1, 39.9, 19.0, 41.8],
-		4: [36.0, 40.3, 18.4, 41.1],
-		5: [36.0, 42.0, 15.0, 40.1],
-		6: [36.0, 42.4, 15.3, 40.6],
-		7: [36.5, 42.4, 14.3, 39.3]
+		1: [35.69, 39.28, 17.55, 39.73],
+		2: [35.94, 43.26, 13.77, 41.11],
+		3: [36.13, 39.94, 18.95, 41.80],
+		4: [36.04, 40.33, 18.36, 41.11],
+		5: [35.96, 41.90, 15.19, 40.23],
+		6: [36.04, 42.38, 15.33, 40.62],
+		7: [36.52, 42.38, 14.26, 39.26]
+	};
+	// Corners (TL, TR, BR, BL) as % within that AABB — plain rect for the
+	// mostly-untilted variants, an actual quadrilateral for 1 and 5 which are
+	// visibly rotated/skewed in the source photo.
+	const WINDOW_CLIPS: Record<number, string> = {
+		1: '15.9% 0%, 100% 2.7%, 84.1% 100%, 0% 97.3%',
+		2: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		3: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		4: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		5: '0% 0.2%, 98.6% 0%, 100% 99.8%, 1.4% 100%',
+		6: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		7: '0% 0%, 100% 0%, 100% 100%, 0% 100%'
 	};
 	const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
-	const windowRectStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%;`;
+	const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
+	const windowRectStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip});`;
 	const windowStyle = `${windowRectStyle} ${labelTransform}`;
 	let tagScale = $derived(Math.max(0.4, Math.min(0.9, (viewportWidth || 1440) / 1440 * 0.9)));
 	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale - 12 * tagScale);

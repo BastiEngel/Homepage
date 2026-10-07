@@ -26,18 +26,31 @@ import projectsData from '../../data/projects.json';
 		3: [54, 50, 24.5, 4, 0, 0, 0], 4: [54, 50, 24.5, 4, 0, 0, 0], 5: [57, 53, 24, 0, 0, 0, 0],  6: [57, 53, 24.5, 0, 0, 0, 0],
 	};
 
-	// Per-variant label-window rect: [top%, left%, width%, height%] — measured
-	// directly from each Keytag_XX.webp's transparent cutout (same source
-	// images as GarlandTag.svelte), since the window's position/size differ
-	// between variants and a single shared rect only matched variant 1.
+	// Per-variant label-window rect: [top%, left%, width%, height%] — the
+	// minimum-area ROTATED rectangle fit to each Keytag_XX.webp's transparent
+	// cutout (same source images as GarlandTag.svelte), since several
+	// variants are photographed at a slight tilt, so the window isn't
+	// axis-aligned. This is the AABB of that rotated rect.
 	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
-		1: [35.8, 39.6, 17.0, 39.6],
-		2: [35.9, 43.3, 13.8, 41.1],
-		3: [36.1, 39.9, 19.0, 41.8],
-		4: [36.0, 40.3, 18.4, 41.1],
-		5: [36.0, 42.0, 15.0, 40.1],
-		6: [36.0, 42.4, 15.3, 40.6],
-		7: [36.5, 42.4, 14.3, 39.3]
+		1: [35.69, 39.28, 17.55, 39.73],
+		2: [35.94, 43.26, 13.77, 41.11],
+		3: [36.13, 39.94, 18.95, 41.80],
+		4: [36.04, 40.33, 18.36, 41.11],
+		5: [35.96, 41.90, 15.19, 40.23],
+		6: [36.04, 42.38, 15.33, 40.62],
+		7: [36.52, 42.38, 14.26, 39.26]
+	};
+	// Corners (TL, TR, BR, BL) as % within that AABB — plain rect for the
+	// mostly-untilted variants, an actual quadrilateral for 1 and 5 which are
+	// visibly rotated/skewed in the source photo.
+	const WINDOW_CLIPS: Record<number, string> = {
+		1: '15.9% 0%, 100% 2.7%, 84.1% 100%, 0% 97.3%',
+		2: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		3: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		4: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		5: '0% 0.2%, 98.6% 0%, 100% 99.8%, 1.4% 100%',
+		6: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
+		7: '0% 0%, 100% 0%, 100% 100%, 0% 100%'
 	};
 
 	type NavProject = { id: string; name: string; tagImage?: string; tagEmoji?: string; cover: string };
@@ -57,7 +70,8 @@ import projectsData from '../../data/projects.json';
 			? `transform: rotate(${labelRot}deg) translate(${labelShiftX}px, ${labelShiftY}px);`
 			: '';
 		const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
-		const windowStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
+		const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
+		const windowStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip}); ${labelTransform}`;
 		const dropDelay = `${(i * 0.02).toFixed(3)}s`;
 		const zFront = 8 + i;
 		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, dropDelay, zFront };
