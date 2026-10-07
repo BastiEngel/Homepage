@@ -15,8 +15,7 @@
 	const isGif = project.cover.endsWith('.gif');
 
 	let imgEl: HTMLImageElement | undefined = $state();
-	let tileEl: HTMLElement | undefined = $state();
-	let textColEl: HTMLElement | undefined = $state();
+	let rowEl: HTMLElement | undefined = $state();
 	let visible = $state(false);
 
 	// Only needed to lazily swap in GIF sources once they're actually on screen
@@ -35,23 +34,24 @@
 	// tiles share ONE batched read/write loop instead of each running its
 	// own, which was causing layout-thrashing stutter (every tile's rAF
 	// callback read its own rect then wrote its own transform, interleaved
-	// with every other tile's read/write in the same frame). The text
-	// column is registered as an extra target so it scales in exact sync
-	// with the image, both driven off the image's own position.
+	// with every other tile's read/write in the same frame). Image and text
+	// are scaled as a single rigid unit (the whole row, not each child
+	// separately) so the gap between them stays visually constant instead
+	// of growing as each shrinks toward its own center.
 	$effect(() => {
-		if (!tileEl) return;
-		return registerScaleTile(tileEl, textColEl ? [textColEl] : []);
+		if (!rowEl) return;
+		return registerScaleTile(rowEl);
 	});
 </script>
 
 <section id={project.id} class="relative z-[6] px-6 py-10 md:px-12 lg:py-16">
 	<div
-		class="mx-auto grid max-w-3xl grid-cols-1 items-start gap-10 lg:max-w-5xl lg:gap-16"
+		bind:this={rowEl}
+		class="project-row mx-auto grid max-w-3xl grid-cols-1 items-start gap-10 lg:max-w-5xl lg:gap-16"
 		style="--cols: {reversed ? '1fr 1.28fr' : '1.28fr 1fr'};"
 	>
 		<!-- Image -->
 		<div
-			bind:this={tileEl}
 			class="project-tile overflow-hidden rounded-2xl"
 			class:lg:order-2={reversed}
 		>
@@ -80,7 +80,7 @@
 		</div>
 
 		<!-- Text column -->
-		<div bind:this={textColEl} class="project-text-col flex flex-col justify-start" class:lg:order-1={reversed}>
+		<div class="flex flex-col justify-start" class:lg:order-1={reversed}>
 			{#if project.id !== 'about'}
 				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="project-text-link text-text no-underline">
 					<h2 class="project-title">{project.name}</h2>
@@ -105,11 +105,14 @@
 		}
 	}
 
+	.project-row {
+		transform-origin: top center;
+		will-change: transform;
+	}
+
 	.project-tile {
 		position: relative;
 		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35), 0 5px 15px rgba(0, 0, 0, 0.2);
-		transform-origin: top center;
-		will-change: transform;
 		/* Align to the x-height of the adjacent title. Verified visually in
 		   the browser by overlaying marker lines against the rendered glyphs
 		   (an inline-span bounding rect reflects the line box, not the glyph
@@ -117,11 +120,6 @@
 		   heading's own box top lines up with the top of its lowercase
 		   letters. */
 		margin-top: 17px;
-	}
-
-	.project-text-col {
-		transform-origin: top center;
-		will-change: transform;
 	}
 
 	.project-title {
