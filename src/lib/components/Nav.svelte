@@ -486,11 +486,10 @@ import projectsData from '../../data/projects.json';
 		gap: 4px;
 		background: linear-gradient(90deg, #e9e8e5 0%, #ffffff 100%);
 		box-shadow:
-			inset -5px 5px 9px rgba(0,0,0,0.22),
-			inset 0 3px 4px rgba(0,0,0,0.18),
+			inset 0 5px 6px rgba(0,0,0,0.26),
 			inset 0 -3px 4px rgba(0,0,0,0.16),
 			inset 3px 0 4px rgba(0,0,0,0.1),
-			inset -4px 0 5px rgba(0,0,0,0.18),
+			inset -5px 0 6px rgba(0,0,0,0.26),
 			inset 0 -1px 1px rgba(255,255,255,0.5);
 		writing-mode: vertical-rl; text-orientation: mixed;
 		text-align: center; line-height: 1.15; padding: 6px 4px;
