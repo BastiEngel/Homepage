@@ -52,6 +52,18 @@ import projectsData from '../../data/projects.json';
 		6: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
 		7: '0% 0%, 100% 0%, 100% 100%, 0% 100%'
 	};
+	// TEMP DEBUG: 1px red outline of the paper insert's own box (all 4
+	// edges), raised above the ring-front img so it isn't covered, to compare
+	// the insert against the real window cutout. Remove once fixed.
+	const WINDOW_DEBUG_PATHS: Record<number, string> = {
+		1: 'M15.9,0 L100,2.7 L84.1,100 L0,97.3 Z',
+		2: 'M0,0 L100,0 L100,100 L0,100 Z',
+		3: 'M0,0 L100,0 L100,100 L0,100 Z',
+		4: 'M0,0 L100,0 L100,100 L0,100 Z',
+		5: 'M0,0.2 L98.6,0 L100,99.8 L1.4,100 Z',
+		6: 'M0,0 L100,0 L100,100 L0,100 Z',
+		7: 'M0,0 L100,0 L100,100 L0,100 Z'
+	};
 	type NavProject = { id: string; name: string; tagImage?: string; tagEmoji?: string; cover: string };
 	const navProjects = (projectsData as NavProject[]).filter((p) => p.id !== 'about');
 
@@ -71,9 +83,11 @@ import projectsData from '../../data/projects.json';
 		const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
 		const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
 		const windowStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip}); ${labelTransform}`;
+		const winDebugPath = WINDOW_DEBUG_PATHS[variant] ?? WINDOW_DEBUG_PATHS[1];
+		const windowDebugStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
 		const dropDelay = `${(i * 0.02).toFixed(3)}s`;
 		const zFront = 8 + i;
-		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, dropDelay, zFront };
+		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, windowDebugStyle, winDebugPath, dropDelay, zFront };
 	});
 
 	// ── RAF physics (same as GarlandTag) ─────────────────────────────────────
@@ -327,6 +341,10 @@ import projectsData from '../../data/projects.json';
 											</div>
 											<div class="tag-plastic" style={td.windowStyle}></div>
 											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.windowStyle}></div>
+										<!-- TEMP DEBUG: 1px red outline of the paper insert. Remove after fixing. -->
+										<svg class="tag-debug-outline" style={td.windowDebugStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
+											<path d={td.winDebugPath} fill="none" stroke="red" stroke-width="1" vector-effect="non-scaling-stroke" />
+										</svg>
 										</a>
 									</div>
 								</div>
@@ -538,6 +556,14 @@ import projectsData from '../../data/projects.json';
 			rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%
 		);
 		box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+	}
+
+	/* TEMP DEBUG: z-index 15 clears the ring-front img (z-index 10). Remove once fixed. */
+	.tag-debug-outline {
+		position: absolute;
+		z-index: 15;
+		pointer-events: none;
+		overflow: visible;
 	}
 
 	.tag-sheen {
