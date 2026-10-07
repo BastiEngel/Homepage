@@ -296,6 +296,7 @@ import projectsData from '../../data/projects.json';
 												<span class="tag-name">{td.project.name}</span>
 												<span class="tag-emoji">{td.project.tagEmoji}</span>
 											</div>
+											<div class="tag-plastic" style={td.labelTransform}></div>
 											<div bind:this={sheenEls[i]} class="tag-sheen" style={td.labelTransform}></div>
 										</a>
 									</div>
@@ -483,13 +484,30 @@ import projectsData from '../../data/projects.json';
 		display: flex; flex-direction: row;
 		align-items: center; justify-content: center;
 		gap: 4px;
-		background: white;
+		background: linear-gradient(160deg, #f8f4ea 0%, #ece5d3 100%);
+		box-shadow: inset 0 2px 3px rgba(0,0,0,0.22), inset 0 -1px 1px rgba(255,255,255,0.5);
 		writing-mode: vertical-rl; text-orientation: mixed;
 		text-align: center; line-height: 1.15; padding: 6px 4px;
 		overflow: hidden;
 	}
 	.tag-emoji { font-size: 20px; line-height: 1; display: inline-block; transform: rotate(90deg); }
 	.tag-name { font-size: 13px; font-weight: 700; color: #1a1a2e; word-break: break-word; }
+
+	/* Static glossy highlight simulating the plastic window covering the
+	   paper label, layered between the paper (tag-cover-text) and the
+	   dynamic sway-driven reflection (tag-sheen). */
+	.tag-plastic {
+		position: absolute;
+		top: 34%; left: 39%; width: 20%; height: 44%;
+		z-index: 2;
+		pointer-events: none;
+		background: linear-gradient(
+			165deg,
+			rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 25%,
+			rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%
+		);
+		box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+	}
 
 	.tag-sheen {
 		position: absolute;
