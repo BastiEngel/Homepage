@@ -484,7 +484,7 @@ import projectsData from '../../data/projects.json';
 		display: flex; flex-direction: row;
 		align-items: center; justify-content: center;
 		gap: 4px;
-		background: linear-gradient(90deg, #fafaf9 0%, #ffffff 100%);
+		background: linear-gradient(90deg, #e9e8e5 0%, #ffffff 100%);
 		box-shadow:
 			inset 0 3px 4px rgba(0,0,0,0.16),
 			inset 0 -3px 4px rgba(0,0,0,0.16),
