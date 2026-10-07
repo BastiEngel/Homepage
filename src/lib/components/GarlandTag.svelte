@@ -8,9 +8,10 @@
 		point: GarlandPoint;
 		index: number;
 		viewportWidth?: number;
+		reverseGradient?: boolean;
 	}
 
-	let { project, point, index, viewportWidth = 1440 }: Props = $props();
+	let { project, point, index, viewportWidth = 1440, reverseGradient = false }: Props = $props();
 
 	const swayDuration = 2.5 + Math.random() * 1.5;
 	const swayDelay = Math.random() * 2;
@@ -183,7 +184,7 @@
 						draggable="false"
 					/>
 					<!-- Text label visible through the transparent label window -->
-					<div class="tag-cover tag-cover-text" style={labelTransform}>
+					<div class="tag-cover tag-cover-text" class:tag-cover-text-reversed={reverseGradient} style={labelTransform}>
 						<span class="tag-name">{project.name}</span>
 						<span class="tag-emoji">{project.tagEmoji}</span>
 					</div>
@@ -298,6 +299,10 @@
 		line-height: 1.15;
 		padding: 6px 4px;
 		overflow: hidden;
+	}
+
+	.tag-cover-text-reversed {
+		background: linear-gradient(270deg, #e9e8e5 0%, #ffffff 100%);
 	}
 
 	/* Static glossy highlight simulating the plastic window covering the

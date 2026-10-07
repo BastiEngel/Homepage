@@ -35,7 +35,13 @@
 	<!-- Garland tags hanging from the line (desktop only) -->
 	{#each featuredProjects as project, i}
 		{#if garlandPoints[i]}
-			<GarlandTag {project} point={garlandPoints[i]} index={i} viewportWidth={innerWidth} />
+			<GarlandTag
+				{project}
+				point={garlandPoints[i]}
+				index={i}
+				viewportWidth={innerWidth}
+				reverseGradient={i >= featuredProjects.length - 3}
+			/>
 		{/if}
 	{/each}
 
