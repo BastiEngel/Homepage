@@ -488,7 +488,7 @@ import projectsData from '../../data/projects.json';
 		text-align: center; line-height: 1.15; padding: 6px 4px;
 		overflow: hidden;
 	}
-	.tag-emoji { font-size: 20px; line-height: 1; }
+	.tag-emoji { font-size: 20px; line-height: 1; display: inline-block; transform: rotate(90deg); }
 	.tag-name { font-size: 13px; font-weight: 700; color: #1a1a2e; word-break: break-word; }
 
 	.tag-sheen {

@@ -296,6 +296,8 @@
 	.tag-emoji {
 		font-size: 20px;
 		line-height: 1;
+		display: inline-block;
+		transform: rotate(90deg);
 	}
 
 	.tag-name {
