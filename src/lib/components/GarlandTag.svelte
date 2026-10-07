@@ -280,7 +280,7 @@
 
 	.tag-cover-text {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		align-items: center;
 		justify-content: center;
 		gap: 4px;

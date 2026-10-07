@@ -480,7 +480,7 @@ import projectsData from '../../data/projects.json';
 		pointer-events: none; user-select: none;
 	}
 	.tag-cover-text {
-		display: flex; flex-direction: column;
+		display: flex; flex-direction: row;
 		align-items: center; justify-content: center;
 		gap: 4px;
 		background: white;
