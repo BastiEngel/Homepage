@@ -44,18 +44,35 @@
 	});
 </script>
 
-<section id={project.id} class="relative z-[6] px-6 py-10 md:px-12 lg:py-16">
-	<div
-		bind:this={rowEl}
-		class="project-row mx-auto grid max-w-3xl grid-cols-1 items-start gap-10 lg:max-w-5xl lg:gap-16"
-		style="--cols: {reversed ? '1fr 1.28fr' : '1.28fr 1fr'};"
-	>
-		<!-- Image -->
+{#if project.id === 'about'}
+	<section id={project.id} class="relative z-[6] px-6 py-10 md:px-12 lg:py-16">
+		<div bind:this={rowEl} class="about-row mx-auto flex max-w-3xl justify-center lg:max-w-5xl">
+			<div class="project-tile relative overflow-hidden rounded-2xl">
+				<img
+					bind:this={imgEl}
+					src={coverSrc}
+					alt="{project.name} cover"
+					loading="lazy"
+					decoding="async"
+					class="aspect-[3/2] w-full object-cover"
+				/>
+				<h2 class="about-title">{project.name}</h2>
+				<div class="bevel-edge"></div>
+			</div>
+		</div>
+	</section>
+{:else}
+	<section id={project.id} class="relative z-[6] px-6 py-10 md:px-12 lg:py-16">
 		<div
-			class="project-tile overflow-hidden rounded-2xl"
-			class:lg:order-2={reversed}
+			bind:this={rowEl}
+			class="project-row mx-auto grid max-w-3xl grid-cols-1 items-start gap-10 lg:max-w-5xl lg:gap-16"
+			style="--cols: {reversed ? '1fr 1.28fr' : '1.28fr 1fr'};"
 		>
-			{#if project.id !== 'about'}
+			<!-- Image -->
+			<div
+				class="project-tile overflow-hidden rounded-2xl"
+				class:lg:order-2={reversed}
+			>
 				<a href="{base}/projects/{project.id}" data-sveltekit-reload>
 					<img
 						bind:this={imgEl}
@@ -66,37 +83,21 @@
 						class="aspect-[3/2] w-full object-cover"
 					/>
 				</a>
-			{:else}
-				<img
-					bind:this={imgEl}
-					src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
-					alt="{project.name} cover"
-					loading="lazy"
-					decoding="async"
-					class="aspect-[3/2] w-full object-cover"
-				/>
-			{/if}
-			<div class="bevel-edge"></div>
-		</div>
+				<div class="bevel-edge"></div>
+			</div>
 
-		<!-- Text column -->
-		<div class="flex flex-col justify-start" class:lg:order-1={reversed}>
-			{#if project.id !== 'about'}
+			<!-- Text column -->
+			<div class="flex flex-col justify-start" class:lg:order-1={reversed}>
 				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="project-text-link text-text no-underline">
 					<h2 class="project-title">{project.name}</h2>
 					<p class="text-text text-base lg:text-lg">
 						{project.description}
 					</p>
 				</a>
-			{:else}
-				<h2 class="text-text project-title">{project.name}</h2>
-				<p class="text-text text-base lg:text-lg">
-					{project.description}
-				</p>
-			{/if}
+			</div>
 		</div>
-	</div>
-</section>
+	</section>
+{/if}
 
 <style>
 	section > div:first-child {
@@ -108,6 +109,34 @@
 	.project-row {
 		transform-origin: top center;
 		will-change: transform;
+	}
+
+	.about-row .project-tile {
+		width: calc((100% - 2.5rem) * 1.28 / 2.28);
+	}
+
+	@media (min-width: 1024px) {
+		.about-row .project-tile {
+			width: calc((100% - 4rem) * 1.28 / 2.28);
+		}
+	}
+
+	.about-title {
+		position: absolute;
+		left: 2rem;
+		bottom: 2rem;
+		margin: 0;
+		font-family: 'area-inktrap', sans-serif;
+		font-weight: 900;
+		font-size: 1.25rem;
+		color: #fff;
+	}
+
+	@media (max-width: 767px) {
+		.about-title {
+			left: 1.25rem;
+			bottom: 1.25rem;
+		}
 	}
 
 	.project-tile {
