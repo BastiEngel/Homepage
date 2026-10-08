@@ -13,6 +13,19 @@
 
 	let { project, point, index, viewportWidth = 1440, reverseGradient = false }: Props = $props();
 
+	// Custom hand-drawn emoji SVGs, keyed by project id. Falls back to the
+	// plain Unicode emoji (project.tagEmoji) for any id without one.
+	const EMOJI_FILE: Record<string, string> = {
+		'kick-and-vote': 'Kich_and_Vote_Emoji.svg',
+		binvisible: 'Binvisible_Emoji.svg',
+		myzelfusion: 'Myceliumfusion_Emoji.svg',
+		peebee: 'PeeBee_Emoji.svg',
+		pivot: 'Pivot_Emoji.svg',
+		archive: 'Archive_Emoji.svg',
+		about: 'Engel_Bastian_Logo.svg'
+	};
+	const emojiFile = EMOJI_FILE[project.id];
+
 	const swayDuration = 2.5 + Math.random() * 1.5;
 	const swayDelay = Math.random() * 2;
 	const variant = (index % 7) + 1;
@@ -33,44 +46,52 @@
 	// several variants are photographed at a slight tilt, so the window isn't
 	// axis-aligned. This is the AABB of that rotated rect.
 	const WINDOW_RECTS: Record<number, [number, number, number, number]> = {
-		1: [35.93, 39.28, 17.79, 39.73],
-		2: [35.70, 43.26, 13.77, 41.35],
-		3: [36.13, 40.18, 18.71, 42.28],
-		4: [36.04, 40.33, 18.36, 41.35],
-		5: [35.96, 42.14, 14.95, 40.47],
-		6: [36.04, 42.38, 15.57, 40.62],
-		7: [36.52, 42.38, 14.50, 39.51]
+		1: [35.69, 39.52, 17.79, 40.21],
+		2: [35.46, 43.02, 14.25, 41.83],
+		3: [35.89, 39.94, 19.19, 42.76],
+		4: [35.80, 40.09, 18.84, 41.83],
+		5: [35.72, 41.90, 15.43, 40.95],
+		6: [35.80, 42.14, 16.05, 41.10],
+		7: [36.28, 42.14, 14.98, 39.99]
 	};
 	// Corners (TL, TR, BR, BL) as % within that AABB — plain rect for the
 	// mostly-untilted variants, an actual quadrilateral for 1 and 5 which are
 	// visibly rotated/skewed in the source photo.
 	const WINDOW_CLIPS: Record<number, string> = {
-		1: '15.7% 0%, 100% 2.7%, 84.3% 100%, 0% 93.2%',
+		1: '14.4% 0%, 100% 2.7%, 84.3% 100%, 0% 92.7%',
 		2: '0% 0.6%, 100% 0%, 100% 100%, 0% 97.0%',
 		3: '0% 0%, 100% 0%, 100% 98.9%, 1.3% 100%',
 		4: '0% 0%, 100% 0%, 100% 100%, 0% 100%',
 		5: '0% 0.2%, 98.6% 0%, 100% 98.6%, 1.4% 100%',
 		6: '0% 0%, 100% 0%, 100% 98.2%, 0% 100%',
-		7: '0% 0%, 100% 0%, 100% 95.8%, 0% 100%'
+		7: '0% 0%, 100% 0%, 100% 95.9%, 0% 100%'
 	};
 	const [winTop, winLeft, winWidth, winHeight] = WINDOW_RECTS[variant] ?? WINDOW_RECTS[1];
 	const winClip = WINDOW_CLIPS[variant] ?? WINDOW_CLIPS[1];
 	const windowRectStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; clip-path: polygon(${winClip});`;
 	const windowStyle = `${windowRectStyle} ${labelTransform}`;
-	// TEMP DEBUG: 1px red outline of the paper insert's own box (all 4
-	// edges), raised above the ring-front img so it isn't covered, to compare
-	// the insert against the real window cutout. Remove once fixed.
-	const WINDOW_DEBUG_PATHS: Record<number, string> = {
-		1: 'M15.7,0 L100,2.7 L84.3,100 L0,93.2 Z',
-		2: 'M0,0.6 L100,0 L100,100 L0,97.0 Z',
-		3: 'M0,0 L100,0 L100,98.9 L1.3,100 Z',
-		4: 'M0,0 L100,0 L100,100 L0,100 Z',
-		5: 'M0,0.2 L98.6,0 L100,98.6 L1.4,100 Z',
-		6: 'M0,0 L100,0 L100,98.2 L0,100 Z',
-		7: 'M0,0 L100,0 L100,95.8 L0,100 Z'
-	};
-	const winDebugPath = WINDOW_DEBUG_PATHS[variant] ?? WINDOW_DEBUG_PATHS[1];
-	const windowDebugStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%; ${labelTransform}`;
+	// Shadow drawn as an SVG stroke along the EXACT same points as the paper's
+	// clip-path (parsed from winClip) — unlike box-shadow, a stroke follows
+	// the true polygon edge precisely for tilted variants too, and this
+	// never touches the paper's own clip-path or position.
+	const shadowRectStyle = `top: ${winTop}%; left: ${winLeft}%; width: ${winWidth}%; height: ${winHeight}%;`;
+	// Points rescaled from 0-100 normalized % into the box's own real
+	// width/height ratio, and the SVG viewBox matches that same ratio —
+	// otherwise (100x100 viewBox + preserveAspectRatio=none on a tall/narrow
+	// box) the blur filter gets stretched non-uniformly per axis, making the
+	// top and left shadows look different even with identical stroke-width.
+	const winPts = winClip
+		.split(',')
+		.map((p) => p.trim().replace(/%/g, '').split(' ').map(Number))
+		.map(([x, y]) => [(x / 100) * winWidth, (y / 100) * winHeight]);
+	const [cTL, cTR, cBR, cBL] = winPts;
+	const shadowTopPath = `M${cTR[0]},${cTR[1]} L${cTL[0]},${cTL[1]}`;
+	const shadowLeftPath = `M${cTL[0]},${cTL[1]} L${cBL[0]},${cBL[1]}`;
+	const shadowWeakPath = `M${cBL[0]},${cBL[1]} L${cBR[0]},${cBR[1]}`; // bottom edge
+	// Rotate only the text glyphs (not the paper/clip shape) to match the
+	// window's slight photographed tilt.
+	const TEXT_ROTATE: Record<number, number> = { 1: 2 };
+	const textRotateStyle = TEXT_ROTATE[variant] ? `transform: rotate(${TEXT_ROTATE[variant]}deg);` : '';
 	let tagScale = $derived(Math.max(0.4, Math.min(0.9, (viewportWidth || 1440) / 1440 * 0.9)));
 	let topY = $derived(point.y - 41 * tagScale + yOff * tagScale - 12 * tagScale);
 
@@ -230,15 +251,28 @@
 					/>
 					<!-- Text label visible through the transparent label window -->
 					<div class="tag-cover tag-cover-text" class:tag-cover-text-reversed={reverseGradient} style={windowStyle}>
-						<span class="tag-name">{project.name}</span>
-						<span class="tag-emoji">{project.tagEmoji}</span>
+						<div class="tag-text-inner" style={textRotateStyle}>
+							{#if emojiFile}
+							<img class="tag-emoji" class:tag-emoji-logo={project.id === 'about'} src="{base}/emojis/{emojiFile}" alt="" />
+						{:else}
+							<span class="tag-emoji">{project.tagEmoji}</span>
+						{/if}
+							<span class="tag-name">{project.name}</span>
+						</div>
 					</div>
-					<div class="tag-plastic" style={windowStyle}></div>
-					<div class="tag-sheen" bind:this={sheenEl} style={windowStyle}></div>
-					<!-- TEMP DEBUG: 1px red outline of the paper insert. Remove after fixing. -->
-					<svg class="tag-debug-outline" style={windowDebugStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
-						<path d={winDebugPath} fill="none" stroke="red" stroke-width="1" vector-effect="non-scaling-stroke" />
+					<svg class="tag-cover tag-shadow" style={shadowRectStyle} viewBox="0 0 {winWidth} {winHeight}">
+						<defs>
+							<filter id="shadowBlur-{project.id}" x="-50%" y="-50%" width="200%" height="200%">
+								<feGaussianBlur stdDeviation="1" />
+							</filter>
+						</defs>
+						<g filter="url(#shadowBlur-{project.id})">
+							<path d={shadowTopPath} fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="6" vector-effect="non-scaling-stroke" />
+						<path d={shadowLeftPath} fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="6" vector-effect="non-scaling-stroke" />
+							<path d={shadowWeakPath} fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="5" vector-effect="non-scaling-stroke" />
+						</g>
 					</svg>
+					<div class="tag-sheen" bind:this={sheenEl} style={windowStyle}></div>
 				</button>
 			</div>
 		</div>
@@ -333,65 +367,59 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 4px;
 		background: linear-gradient(90deg, #e9e8e5 0%, #ffffff 100%);
-		box-shadow:
-			inset 0 7px 8px rgba(0, 0, 0, 0.62),
-			inset 7px 0 8px rgba(0, 0, 0, 0.62);
 		writing-mode: vertical-rl;
 		text-orientation: mixed;
 		text-align: center;
 		line-height: 1.15;
-		padding: 6px 4px;
+		padding: 14px 4px 6px 4px;
 		overflow: hidden;
+	}
+
+	.tag-text-inner {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 8px;
 	}
 
 	.tag-cover-text-reversed {
 		background: linear-gradient(270deg, #e9e8e5 0%, #ffffff 100%);
 	}
 
-	/* Static glossy highlight simulating the plastic window covering the
-	   paper label, layered between the paper (tag-cover-text) and the
-	   dynamic sway-driven reflection (tag-sheen). */
-	.tag-plastic {
+	/* Rounded helper rect (not clipped to the precise window trapezoid) that
+	   exists purely to carry a smooth inset shadow — box-shadow blends
+	   naturally around rounded corners, unlike two separately-positioned
+	   background-gradient strips which left a visible seam at the corner. */
+	.tag-shadow {
 		position: absolute;
-		top: 34%;
-		left: 39%;
-		width: 20%;
-		height: 44%;
 		z-index: 2;
 		pointer-events: none;
-		background: linear-gradient(
-			165deg,
-			rgba(255, 255, 255, 0.55) 0%,
-			rgba(255, 255, 255, 0.15) 25%,
-			rgba(255, 255, 255, 0) 50%,
-			rgba(255, 255, 255, 0) 100%
-		);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+		overflow: visible;
 	}
 
 	.tag-emoji {
-		font-size: 20px;
+		font-size: 40px;
 		line-height: 1;
 		display: inline-block;
+		width: 40px;
+		height: 40px;
+		object-fit: contain;
 		transform: rotate(90deg);
 	}
 
+	.tag-emoji.tag-emoji-logo {
+		transform: rotate(0deg);
+	}
+
 	.tag-name {
-		font-size: 13px;
+		font-size: 15px;
 		font-weight: 700;
 		color: #1a1a2e;
 		word-break: break-word;
-	}
-
-	/* TEMP DEBUG: z-index 15 clears the ring-front img (z-index 10). Remove once fixed. */
-	.tag-debug-outline {
-		position: absolute;
-		z-index: 3;
-		pointer-events: none;
-		overflow: visible;
 	}
 
 	.tag-sheen {
