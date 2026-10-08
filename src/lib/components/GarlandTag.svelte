@@ -416,7 +416,7 @@
 	}
 
 	.tag-name {
-		font-size: 15px;
+		font-size: 13px;
 		font-weight: 700;
 		color: #1a1a2e;
 		word-break: break-word;

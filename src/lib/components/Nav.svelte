@@ -679,7 +679,7 @@ import projectsData from '../../data/projects.json';
 	}
 
 	.tag-emoji { font-size: 40px; line-height: 1; display: inline-block; width: 40px; height: 40px; object-fit: contain; transform: rotate(90deg); }
-	.tag-name { font-size: 15px; font-weight: 700; color: #1a1a2e; word-break: break-word; }
+	.tag-name { font-size: 13px; font-weight: 700; color: #1a1a2e; word-break: break-word; }
 
 	.tag-sheen {
 		position: absolute;
