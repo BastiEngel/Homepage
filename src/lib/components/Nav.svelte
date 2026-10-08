@@ -2,6 +2,7 @@
 	import { getConfig } from '$lib/utils/theme';
 	import { page } from '$app/state';
 	import { base } from '$app/paths';
+	import { goto } from '$app/navigation';
 import projectsData from '../../data/projects.json';
 
 	const config = getConfig();
@@ -11,6 +12,7 @@ import projectsData from '../../data/projects.json';
 	let closingProjects = $state(false);
 	let mobileProjectsOpen = $state(false);
 	let hoveredIdx = $state(-1);
+	let logoFlat = $state(false);
 
 	const isHomepage = $derived(page.url.pathname === `${base}/` || page.url.pathname === base);
 
@@ -287,13 +289,53 @@ import projectsData from '../../data/projects.json';
 		if (isHomepage) scrollTo(id);
 		else window.location.href = `${base}/#${id}`;
 	}
+
+	function flattenLogo(e: MouseEvent) {
+		e.preventDefault();
+		logoFlat = true;
+		setTimeout(() => (logoFlat = false), 180);
+		setTimeout(() => {
+			if (isHomepage) window.scrollTo({ top: 0, behavior: 'smooth' });
+			else goto(`${base}/`);
+		}, 180);
+	}
 </script>
 
 <nav
 	class="nav-bar fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between px-6 transition-all duration-300"
 	class:scrolled={showBg}
 >
-	<a href="{base}/" class="text-text text-2xl font-semibold no-underline">{config.meta.name}</a>
+	<a
+		href="{base}/"
+		class="nav-brand text-text text-2xl font-semibold no-underline"
+		onclick={flattenLogo}
+	>
+		<svg class="nav-logo" viewBox="-1 -1 38.97 38.97" xmlns="http://www.w3.org/2000/svg">
+			<g class="nav-logo-art">
+				<circle class="logo-circle" cx="18.48" cy="18.48" r="17.98" />
+				<line class="logo-dot" x1="14.02" y1="18.49" x2="15.82" y2="18.49" />
+				<path
+					class="logo-bump logo-bump-upper"
+					style={logoFlat ? 'opacity: 0;' : ''}
+					d="M24.04,9.71h.14c2.42,0,4.39,1.97,4.39,4.39v4.25h-8.92v-4.25c0-2.42,1.97-4.39,4.39-4.39Z"
+					transform="translate(38.13 -10.09) rotate(90)"
+				/>
+				<path
+					class="logo-bump logo-bump-flat"
+					style={logoFlat ? '' : 'opacity: 0;'}
+					d="M24.04,18.35h.14c2.42,0,4.39,0,4.39,0v0h-8.92v0c0,0,1.97,0,4.39,0Z"
+					transform="translate(38.13 -10.09) rotate(90)"
+				/>
+				<path
+					class="logo-bump"
+					d="M24.04,18.63h.14c2.42,0,4.39,1.97,4.39,4.39v4.25h-8.92v-4.25c0-2.42,1.97-4.39,4.39-4.39Z"
+					transform="translate(47.05 -1.17) rotate(90)"
+				/>
+				<path class="logo-c" d="M15.87,9.57c-4.64,0-8.45,4.02-8.45,8.91s3.82,8.91,8.45,8.91" />
+			</g>
+		</svg>
+		{config.meta.name}
+	</a>
 
 	<div class="desktop-links">
 		<div class="projects-dropdown-wrapper">
@@ -413,6 +455,62 @@ import projectsData from '../../data/projects.json';
 {/if}
 
 <style>
+	.nav-brand {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.nav-logo {
+		width: 36px;
+		height: 36px;
+		margin-left: -6px;
+		margin-top: 4px;
+		overflow: visible;
+	}
+
+	.nav-logo-art {
+		transition: transform 0.4s ease;
+		transform-box: view-box;
+		transform-origin: 18.48px 18.48px;
+	}
+
+	.nav-brand:hover .nav-logo-art {
+		transform: rotate(-90deg);
+	}
+
+	.logo-circle,
+	.logo-c {
+		fill: none;
+		stroke: #1d1d1b;
+		stroke-width: 2px;
+	}
+
+	.logo-circle {
+		stroke-miterlimit: 10;
+	}
+
+	.logo-dot {
+		fill: #fff;
+		stroke: #1d1d1b;
+		stroke-width: 2px;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.logo-bump {
+		fill: none;
+		stroke: #1d1d1b;
+		stroke-width: 2px;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.logo-bump-upper,
+	.logo-bump-flat {
+		transition: opacity 0.15s ease;
+	}
+
 	.scrolled {
 		background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
 		backdrop-filter: blur(12px);

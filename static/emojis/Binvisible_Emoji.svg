@@ -12,6 +12,7 @@
 
       .cls-2, .cls-3 {
         stroke: #1d1d1b;
+        stroke-width: 1px;
       }
 
       .cls-3 {
