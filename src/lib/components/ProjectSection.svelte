@@ -13,6 +13,8 @@
 	const reversed = index % 2 === 0;
 	const coverSrc = `${base}${project.tileImage ?? project.cover}`;
 	const isGif = project.cover.endsWith('.gif');
+	const isArchiveTile = project.id === 'archive';
+	const projectHref = isArchiveTile ? `${base}/archive` : `${base}/projects/${project.id}`;
 
 	let imgEl: HTMLImageElement | undefined = $state();
 	let rowEl: HTMLElement | undefined = $state();
@@ -73,7 +75,7 @@
 				class="project-tile overflow-hidden rounded-2xl"
 				class:lg:order-2={reversed}
 			>
-				<a href="{base}/projects/{project.id}" data-sveltekit-reload>
+				<a href={projectHref} data-sveltekit-reload={isArchiveTile ? undefined : true}>
 					<img
 						bind:this={imgEl}
 						src={isGif ? (visible ? coverSrc : undefined) : coverSrc}
@@ -81,6 +83,7 @@
 						loading="lazy"
 						decoding="async"
 						class="aspect-[3/2] w-full object-cover"
+						style={isArchiveTile ? 'view-transition-name: archive-hero;' : ''}
 					/>
 				</a>
 				<div class="bevel-edge"></div>
@@ -88,7 +91,7 @@
 
 			<!-- Text column -->
 			<div class="flex flex-col justify-start" class:lg:order-1={reversed}>
-				<a href="{base}/projects/{project.id}" data-sveltekit-reload class="project-text-link text-text no-underline">
+				<a href={projectHref} data-sveltekit-reload={isArchiveTile ? undefined : true} class="project-text-link text-text no-underline">
 					<h2 class="project-title">{project.name}</h2>
 					<p class="text-text text-base lg:text-lg">
 						{project.description}

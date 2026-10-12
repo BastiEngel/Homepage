@@ -2,6 +2,7 @@
 	import { getConfig } from '$lib/utils/theme';
 	import { scrollReveal } from '$lib/utils/scrollAnimation';
 	import { base } from '$app/paths';
+	import { consentUi } from '$lib/utils/fontConsent.svelte';
 
 	const config = getConfig();
 	const currentYear = new Date().getFullYear();
@@ -47,6 +48,13 @@
 		<div class="mt-3 flex flex-col items-center gap-1">
 			<a href="{base}/privacy" class="text-text-muted hover:text-line text-xs transition-colors duration-200">privacy policy</a>
 			<a href="{base}/imprint" class="text-text-muted hover:text-line text-xs transition-colors duration-200">imprint</a>
+			<button
+				type="button"
+				onclick={() => (consentUi.visible = true)}
+				class="text-text-muted hover:text-line text-xs transition-colors duration-200 underline-offset-2"
+			>
+				font settings
+			</button>
 		</div>
 
 		<!-- SVG line endpoint -->

@@ -15,6 +15,7 @@ import projectsData from '../../data/projects.json';
 	let logoFlat = $state(false);
 
 	const isHomepage = $derived(page.url.pathname === `${base}/` || page.url.pathname === base);
+	const isArchive = $derived(page.url.pathname === `${base}/archive`);
 
 	$effect(() => {
 		page.url.pathname;
@@ -102,7 +103,8 @@ import projectsData from '../../data/projects.json';
 		const textRotateStyle = TEXT_ROTATE[variant] ? `transform: rotate(${TEXT_ROTATE[variant]}deg);` : '';
 		const dropDelay = `${(i * 0.02).toFixed(3)}s`;
 		const zFront = 8 + i;
-		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, shadowRectStyle, shadowViewBox, shadowTopPath, shadowLeftPath, shadowWeakPath, textRotateStyle, emojiFile, dropDelay, zFront };
+		const href = project.id === 'archive' ? `${base}/archive` : `${base}/projects/${project.id}`;
+		return { project, fanRot, pad, clipBack, clipFront, labelTransform, windowStyle, shadowRectStyle, shadowViewBox, shadowTopPath, shadowLeftPath, shadowWeakPath, textRotateStyle, emojiFile, dropDelay, zFront, href };
 	});
 
 	// ── RAF physics (same as GarlandTag) ─────────────────────────────────────
@@ -335,6 +337,9 @@ import projectsData from '../../data/projects.json';
 			</g>
 		</svg>
 		{config.meta.name}
+		{#if isArchive}
+			<span class="nav-brand-sub">archive</span>
+		{/if}
 	</a>
 
 	<div class="desktop-links">
@@ -379,7 +384,7 @@ import projectsData from '../../data/projects.json';
 								<div class="sway-arm" bind:this={frontSwayEls[i]}>
 									<div class="tag-scaled">
 										<a
-											href="{base}/projects/{td.project.id}"
+											href={td.href}
 											class="tag-btn"
 											data-sveltekit-reload
 											bind:this={pendulumEls[i]}
@@ -459,6 +464,17 @@ import projectsData from '../../data/projects.json';
 		display: flex;
 		align-items: center;
 		gap: 12px;
+	}
+
+	.nav-brand-sub {
+		color: var(--color-text-muted);
+		font-weight: 400;
+	}
+
+	.nav-brand-sub::before {
+		content: '/';
+		margin-right: 12px;
+		opacity: 0.4;
 	}
 
 	.nav-logo {

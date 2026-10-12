@@ -3,6 +3,7 @@
 	import { generateCssVars, getConfig } from '$lib/utils/theme';
 	import { base } from '$app/paths';
 	import { onNavigate } from '$app/navigation';
+	import FontConsentBanner from '$lib/components/FontConsentBanner.svelte';
 
 	let { children } = $props();
 
@@ -34,3 +35,5 @@
 </svelte:head>
 
 {@render children()}
+
+<FontConsentBanner />

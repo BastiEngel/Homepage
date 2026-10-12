@@ -30,6 +30,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Capture Archive tile screenshot
+        run: |
+          npm run dev -- --port 4173 --strictPort &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4173/archive > /dev/null && break
+            sleep 1
+          done
+          node scripts/capture-archive-tile.mjs http://localhost:4173/archive static/images/projects/Archive/archive-live-tile.webp
+          kill %1 2>/dev/null || true
+
       - name: Build
         env:
           BASE_PATH: ${{ vars.BASE_PATH || '' }}

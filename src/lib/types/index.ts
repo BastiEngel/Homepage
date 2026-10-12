@@ -84,6 +84,7 @@ export interface Project {
 	tags: string[];
 	cover: string;
 	subtitle?: string;
+	shortSubtitle?: string;
 	coverType?: 'image' | 'video';
 	images?: ProjectImage[];
 	externalUrl?: string;

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Nav from '$lib/components/Nav.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import { consentUi } from '$lib/utils/fontConsent.svelte';
 </script>
 
 <Nav />
@@ -32,8 +33,8 @@
 
 		<section>
 			<h2 class="mb-2 text-base font-bold">2. hosting</h2>
-			<p>This website is hosted externally. The personal data collected on this website is stored on the servers of the hoster(s). This may include IP addresses, contact requests, meta and communication data, contract data, contact details, names, website accesses and other data generated via a website.</p>
-			<p class="mt-2">External hosting is carried out for the purpose of fulfilling contracts with our potential and existing customers and in the interest of a secure, fast and efficient provision of our online offer by a professional provider.</p>
+			<p>This website is hosted via GitHub Pages. When you access the website, the hosting provider automatically processes technical data (e.g. IP address, time of access, browser type). This is required to deliver the website and is based on Art. 6 (1) (f) GDPR (legitimate interest in reliably providing the website).</p>
+			<p class="mt-2">GitHub Pages itself does not set any cookies for anonymous visitors. For details, see <a class="underline" href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub's Privacy Statement</a>.</p>
 		</section>
 
 		<section>
@@ -70,6 +71,20 @@
 			<p>If you send us inquiries via the contact form, your details from the inquiry form, including the contact details you provided there, will be stored by us for the purpose of processing the inquiry and in case of follow-up questions. We will not pass on this data without your consent.</p>
 			<p class="mt-2">The processing of this data is based on Art. 6 (1) (b) GDPR if your request is related to the performance of a contract or is necessary for the implementation of pre-contractual measures. In all other cases, the processing is based on our legitimate interest in the effective processing of the inquiries addressed to us (Art. 6 (1) (f) GDPR) or on your consent (Art. 6 (1) (a) GDPR) if this has been requested.</p>
 			<p class="mt-2">The data you enter in the contact form will remain with us until you request us to delete it, revoke your consent to storage or the purpose for data storage no longer applies. Mandatory legal provisions — in particular retention periods — remain unaffected.</p>
+		</section>
+
+		<section>
+			<h3 class="mb-1 font-bold">fonts (Adobe Fonts / Google Fonts)</h3>
+			<p>This website uses custom typefaces hosted by Adobe Fonts (Typekit) and Google Fonts. These stylesheets and font files are loaded directly from Adobe's and Google's servers, which involves transmitting your IP address to servers located in the United States.</p>
+			<p class="mt-2">We only load these external fonts after you have given your consent via the banner shown on your first visit (Art. 6 (1) (a) GDPR). If you decline, these fonts are never requested and the site falls back to your device's default fonts. Your decision is stored in your browser's local storage, not on our servers.</p>
+			<p class="mt-2">Provider: Adobe Inc., 345 Park Avenue, San Jose, CA 95110, USA, and Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland.</p>
+			<button
+				type="button"
+				onclick={() => (consentUi.visible = true)}
+				class="text-text mt-3 rounded-full border border-current px-4 py-1.5 text-xs font-semibold transition-opacity hover:opacity-70"
+			>
+				change font consent
+			</button>
 		</section>
 	</div>
 </main>
